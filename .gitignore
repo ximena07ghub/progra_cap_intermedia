@@ -1,0 +1,19 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# VS Code local
+.vscode/
+
+# Variables privadas
+.env
+
+# Archivos subidos por usuarios
+public/uploads/
+
+# Logs
+*.log
+
+# Dependencias futuras
+vendor/
+node_modules/
