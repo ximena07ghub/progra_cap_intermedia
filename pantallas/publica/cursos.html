@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Cursos | AulaGo</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;600&family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../../public/css/main.css">
+    <link rel="stylesheet" href="../../public/css/components.css">
+
+</head>
+
+
+<body>
+
+    <header class="site-header" data-header>
+
+        <nav
+            class="container nav-shell"
+            aria-label="Navegación principal"
+        >
+
+            <a
+                class="brand"
+                href="../../index.html"
+            >
+
+                <span class="brand__mark">
+                    AG
+                </span>
+
+                <span class="brand__name">
+                    AulaGo
+                </span>
+
+            </a>
+
+
+            <button
+                class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="main-menu"
+                data-nav-toggle
+            >
+
+                <span class="nav-toggle__line"></span>
+                <span class="nav-toggle__line"></span>
+
+                <span class="sr-only">
+                    Abrir menú
+                </span>
+
+            </button>
+
+
+            <div
+                class="nav-menu"
+                id="main-menu"
+                data-nav-menu
+            >
+
+                <div class="nav-links">
+
+                    <a href="../../index.html">
+                        Inicio
+                    </a>
+
+                    <a
+                        href="cursos.html"
+                        aria-current="page"
+                    >
+                        Cursos
+                    </a>
+
+                    <a href="categorias.html">
+                        Categorías
+                    </a>
+
+                </div>
+
+
+                <form
+                    class="nav-search"
+                    action="busqueda.html"
+                    method="get"
+                >
+
+                    <input
+                        type="search"
+                        name="q"
+                        placeholder="Buscar cursos"
+                        aria-label="Buscar cursos"
+                    >
+
+                    <button type="submit">
+                        Buscar
+                    </button>
+
+                </form>
+
+
+                <div class="nav-actions">
+
+                    <a
+                        class="nav-link-soft"
+                        href="../auth/login.html"
+                    >
+                        Iniciar sesión
+                    </a>
+
+                    <a
+                        class="btn btn--primary"
+                        href="../auth/registro.html"
+                    >
+                        Registrarse
+                    </a>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+
+    <main>
+
+        <!-- Cabecera editorial del catálogo -->
+
+        <section class="catalog-hero">
+
+            <div class="container catalog-hero__grid">
+
+                <div>
+
+                    <p class="eyebrow">
+                        Catálogo AulaGo
+                    </p>
+
+                    <h1>
+                        Encuentra tu próxima
+                        <span>ruta de aprendizaje.</span>
+                    </h1>
+
+                </div>
+
+
+                <p>
+                    Explora cursos activos por categoría,
+                    nivel o temática. En esta fase los datos
+                    son de demostración y posteriormente
+                    vendrán desde PHP y MySQL.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <section class="section-block">
+
+            <div class="container">
+
+                <!-- Filtros visuales del prototipo -->
+
+                <form
+                    class="catalog-filters"
+                    action="busqueda.html"
+                    method="get"
+                >
+
+                    <label>
+
+                        <span>
+                            Buscar
+                        </span>
+
+                        <input
+                            type="search"
+                            name="q"
+                            placeholder="Ej. diseño, hábitos..."
+                        >
+
+                    </label>
+
+
+                    <label>
+
+                        <span>
+                            Categoría
+                        </span>
+
+                        <select name="categoria">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            <option value="bienestar">
+                                Bienestar
+                            </option>
+
+                            <option value="diseno">
+                                Diseño
+                            </option>
+
+                            <option value="software">
+                                IT & Software
+                            </option>
+
+                            <option value="marketing">
+                                Marketing
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <label>
+
+                        <span>
+                            Nivel
+                        </span>
+
+                        <select name="nivel">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <option value="inicial">
+                                Inicial
+                            </option>
+
+                            <option value="intermedio">
+                                Intermedio
+                            </option>
+
+                            <option value="avanzado">
+                                Avanzado
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <button
+                        class="btn btn--dark"
+                        type="submit"
+                    >
+                        Buscar
+                    </button>
+
+                </form>
+
+
+
+                <div class="catalog-section__header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            Cursos activos
+                        </p>
+
+                        <h2>
+                            Explora la colección
+                        </h2>
+
+                    </div>
+
+
+                    <div class="filter-chips">
+
+                        <button
+                            class="is-active"
+                            type="button"
+                            data-filter-chip
+                        >
+                            Todos
+                        </button>
+
+                        <button
+                            type="button"
+                            data-filter-chip
+                        >
+                            Gratis
+                        </button>
+
+                        <button
+                            type="button"
+                            data-filter-chip
+                        >
+                            Premium
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="course-grid course-grid--catalog">
+
+                    <!-- Curso 1 -->
+
+                    <article class="course-card">
+
+                        <a href="descripcion-curso.html">
+
+                            <figure class="course-card__media">
+
+                                <img
+                                    class="art-crop art-crop--reset"
+                                    src="../../public/imagenes/aulago-course-gallery.png"
+                                    alt="Curso Reset Sensorial"
+                                >
+
+                            </figure>
+
+
+                            <div class="course-card__content">
+
+                                <span class="badge badge--yellow">
+                                    Gratis
+                                </span>
+
+                                <h3>
+                                    Reset Sensorial
+                                </h3>
+
+                                <p>
+                                    Técnicas breves para recuperar calma y atención.
+                                </p>
+
+                                <div class="course-card__meta">
+
+                                    <span>
+                                        Dra. Elena Varela
+                                    </span>
+
+                                    <span>
+                                        12 niveles
+                                    </span>
+
+                                </div>
+
+
+                                <div class="course-card__footer">
+
+                                    <span>
+                                        ★ 4.9
+                                    </span>
+
+                                    <strong>
+                                        Gratis
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </article>
+
+
+
+                    <!-- Curso 2 -->
+
+                    <article class="course-card">
+
+                        <a href="descripcion-curso.html">
+
+                            <figure class="course-card__media">
+
+                                <img
+                                    class="art-crop art-crop--environment"
+                                    src="../../public/imagenes/aulago-course-gallery.png"
+                                    alt="Curso Psicofísica del Entorno"
+                                >
+
+                            </figure>
+
+
+                            <div class="course-card__content">
+
+                                <span class="badge badge--orange">
+                                    Diseño
+                                </span>
+
+                                <h3>
+                                    Psicofísica del Entorno
+                                </h3>
+
+                                <p>
+                                    Diseña ambientes que favorezcan concentración,
+                                    descanso y bienestar.
+                                </p>
+
+
+                                <div class="course-card__meta">
+
+                                    <span>
+                                        Arq. Marco Ibarra
+                                    </span>
+
+                                    <span>
+                                        24 niveles
+                                    </span>
+
+                                </div>
+
+
+                                <div class="course-card__footer">
+
+                                    <span>
+                                        ★ 4.8
+                                    </span>
+
+                                    <strong>
+                                        $29 USD
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </article>
+
+
+
+                    <!-- Curso 3 -->
+
+                    <article class="course-card">
+
+                        <a href="descripcion-curso.html">
+
+                            <figure class="course-card__media">
+
+                                <img
+                                    class="art-crop art-crop--habits"
+                                    src="../../public/imagenes/aulago-course-gallery.png"
+                                    alt="Curso Neuro-Hábitos"
+                                >
+
+                            </figure>
+
+
+                            <div class="course-card__content">
+
+                                <span class="badge">
+                                    Bienestar
+                                </span>
+
+                                <h3>
+                                    Neuro-Hábitos
+                                </h3>
+
+                                <p>
+                                    Diseña rutinas sostenibles y reduce
+                                    procrastinación y rumiación.
+                                </p>
+
+
+                                <div class="course-card__meta">
+
+                                    <span>
+                                        Psic. Ana Solís
+                                    </span>
+
+                                    <span>
+                                        31 niveles
+                                    </span>
+
+                                </div>
+
+
+                                <div class="course-card__footer">
+
+                                    <span>
+                                        ★ 4.9
+                                    </span>
+
+                                    <strong>
+                                        $39 USD
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </article>
+
+
+
+                    <!-- Curso 4 -->
+
+                    <article class="course-card">
+
+                        <a href="descripcion-curso.html">
+
+                            <figure class="course-card__media">
+
+                                <img
+                                    class="art-crop art-crop--cognitive"
+                                    src="../../public/imagenes/aulago-course-gallery.png"
+                                    alt="Curso Flexibilidad Cognitiva"
+                                >
+
+                            </figure>
+
+
+                            <div class="course-card__content">
+
+                                <span class="badge">
+                                    Desarrollo personal
+                                </span>
+
+                                <h3>
+                                    Flexibilidad Cognitiva
+                                </h3>
+
+                                <p>
+                                    Aprende a responder de forma más flexible
+                                    ante problemas complejos.
+                                </p>
+
+
+                                <div class="course-card__meta">
+
+                                    <span>
+                                        Mtra. Julia Ríos
+                                    </span>
+
+                                    <span>
+                                        28 niveles
+                                    </span>
+
+                                </div>
+
+
+                                <div class="course-card__footer">
+
+                                    <span>
+                                        ★ 4.8
+                                    </span>
+
+                                    <strong>
+                                        $45 USD
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </article>
+
+
+
+                    <!-- Curso 5 -->
+
+                    <article class="course-card">
+
+                        <a href="descripcion-curso.html">
+
+                            <figure class="course-card__media">
+
+                                <img
+                                    class="art-crop art-crop--rest"
+                                    src="../../public/imagenes/aulago-course-gallery.png"
+                                    alt="Curso Arquitectura Antifrágil"
+                                >
+
+                            </figure>
+
+
+                            <div class="course-card__content">
+
+                                <span class="badge badge--orange">
+                                    Premium
+                                </span>
+
+                                <h3>
+                                    Arquitectura Antifrágil
+                                </h3>
+
+                                <p>
+                                    Diseña protocolos personales para recuperación
+                                    y descanso profundo.
+                                </p>
+
+
+                                <div class="course-card__meta">
+
+                                    <span>
+                                        Dr. Bruno Medina
+                                    </span>
+
+                                    <span>
+                                        36 niveles
+                                    </span>
+
+                                </div>
+
+
+                                <div class="course-card__footer">
+
+                                    <span>
+                                        ★ 4.7
+                                    </span>
+
+                                    <strong>
+                                        $49 USD
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="../../public/js/main.js"></script>
+
+</body>
+
+</html>
