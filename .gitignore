@@ -17,3 +17,6 @@ public/uploads/
 # Dependencias futuras
 vendor/
 node_modules/
+
+#archvios privados de la base de datos
+app/config/config.php

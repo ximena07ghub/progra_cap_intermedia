@@ -1,0 +1,1502 @@
+/* ============================================================
+   AULAGO — AUTENTICACIÓN
+   Compartido por login.html y registro.html.
+   ============================================================ */
+
+
+/* ============================================================
+   1. BASE
+   ============================================================ */
+
+   .auth-page {
+    min-height: 100vh;
+
+    background:
+        #0c110e;
+
+    color:
+        white;
+}
+
+
+.auth-shell {
+    position: relative;
+
+    display: grid;
+
+    min-height: 100vh;
+
+    overflow: hidden;
+}
+
+
+
+/* Luz ambiental naranja compartida */
+
+.auth-shell::before {
+    position: absolute;
+
+    z-index: 0;
+
+    width: 650px;
+    height: 650px;
+
+    content: "";
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(239, 138, 67, 0.21),
+            rgba(239, 138, 67, 0.07) 38%,
+            transparent 70%
+        );
+
+    filter:
+        blur(28px);
+
+    pointer-events:
+        none;
+}
+
+
+
+/* ============================================================
+   2. MARCA
+   ============================================================ */
+
+.auth-brand {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    width: fit-content;
+
+    color:
+        white;
+
+    font-size:
+        0.9rem;
+
+    font-weight:
+        800;
+}
+
+
+.auth-brand__mark {
+    display: grid;
+
+    width: 34px;
+    height: 34px;
+
+    place-items: center;
+
+    background:
+        var(--color-green-dark);
+
+    font-family:
+        var(--font-label);
+
+    font-size:
+        0.63rem;
+}
+
+
+.auth-back {
+    color:
+        rgba(255, 255, 255, 0.48);
+
+    font-size:
+        0.72rem;
+
+    font-weight:
+        600;
+
+    transition:
+        color var(--transition-fast);
+}
+
+
+.auth-back:hover {
+    color:
+        var(--color-orange);
+}
+
+
+
+/* ============================================================
+   3. LOGIN — LAYOUT
+   ============================================================ */
+
+.auth-shell--login {
+    grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(420px, 0.85fr);
+}
+
+
+.auth-shell--login::before {
+    left: 22%;
+    bottom: -300px;
+}
+
+
+
+/* ============================================================
+   4. PANEL VISUAL LOGIN
+   ============================================================ */
+
+.auth-art-panel {
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 100vh;
+
+    padding:
+        38px 52px;
+
+    overflow: hidden;
+
+    border-right:
+        1px solid var(--color-border);
+}
+
+
+.auth-art-panel__top {
+    position: relative;
+
+    z-index: 5;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.auth-art-panel__content {
+    position: relative;
+
+    z-index: 4;
+
+    display: grid;
+
+    gap: 16px;
+
+    max-width: 600px;
+
+    margin-top:
+        100px;
+}
+
+
+.auth-art-panel__content h1 {
+    max-width: 650px;
+
+    color: white;
+
+    font-size:
+        clamp(3.5rem, 6vw, 6.3rem);
+
+    line-height:
+        0.87;
+}
+
+
+.auth-art-panel__content h1 em {
+    display: block;
+
+    color:
+        var(--color-orange);
+
+    font-size:
+        0.68em;
+}
+
+
+.auth-art-panel__content > p:last-child {
+    max-width: 470px;
+
+    color:
+        rgba(255, 255, 255, 0.50);
+
+    font-size:
+        0.84rem;
+}
+
+
+
+/* Imagen decorativa inferior */
+
+.auth-art {
+    position: absolute;
+
+    z-index: 2;
+
+    right: -60px;
+    bottom: -110px;
+
+    width: 570px;
+    height: 500px;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    transform:
+        rotate(-4deg);
+
+    opacity: 0.50;
+}
+
+
+.auth-art img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position:
+        center;
+
+    filter:
+        saturate(0.82)
+        brightness(0.68);
+}
+
+
+.auth-art::after {
+    position: absolute;
+
+    inset: 0;
+
+    content: "";
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(12, 17, 14, 0),
+            rgba(12, 17, 14, 0.9)
+        );
+}
+
+
+.auth-art-glow {
+    position: absolute;
+
+    z-index: 1;
+
+    right: 40px;
+    bottom: 60px;
+
+    width: 400px;
+    height: 400px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(239, 138, 67, 0.32),
+            transparent 68%
+        );
+
+    filter:
+        blur(32px);
+}
+
+
+
+/* ============================================================
+   5. FORM PANEL
+   ============================================================ */
+
+.auth-form-panel {
+    position: relative;
+
+    z-index: 2;
+
+    display: grid;
+
+    place-items: center;
+
+    min-width: 0;
+
+    padding:
+        55px;
+}
+
+
+.auth-form-wrapper {
+    display: grid;
+
+    gap: 30px;
+
+    width:
+        min(100%, 440px);
+}
+
+
+.auth-form-heading {
+    display: grid;
+
+    gap: 8px;
+}
+
+
+.auth-form-heading h2,
+.auth-form-heading h1 {
+    color: white;
+
+    font-family:
+        var(--font-editorial);
+
+    font-size:
+        clamp(2.7rem, 4vw, 4rem);
+
+    font-weight:
+        400;
+
+    line-height: 1;
+}
+
+
+.auth-form-heading > p:last-child {
+    color:
+        rgba(255, 255, 255, 0.44);
+
+    font-size:
+        0.78rem;
+}
+
+
+
+/* ============================================================
+   6. CAMPOS
+   ============================================================ */
+
+.auth-form,
+.register-form {
+    display: grid;
+
+    gap: 20px;
+}
+
+
+.form-field {
+    display: grid;
+
+    gap: 7px;
+}
+
+
+.form-label {
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    font-size:
+        0.7rem;
+
+    font-weight:
+        700;
+}
+
+
+.form-field input,
+.form-field select {
+    width: 100%;
+
+    min-height: 46px;
+
+    padding:
+        0 12px;
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        7px;
+
+    outline: 0;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    color:
+        white;
+
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast);
+}
+
+
+.form-field select option {
+    background:
+        #151c17;
+
+    color: white;
+}
+
+
+.form-field input::placeholder {
+    color:
+        rgba(255, 255, 255, 0.26);
+}
+
+
+.form-field input:focus,
+.form-field select:focus {
+    border-color:
+        rgba(239, 138, 67, 0.72);
+
+    background:
+        rgba(255, 255, 255, 0.065);
+}
+
+
+
+/* ============================================================
+   7. CONTRASEÑA
+   ============================================================ */
+
+.password-input {
+    position: relative;
+}
+
+
+.password-input input {
+    padding-right: 62px;
+}
+
+
+.password-toggle {
+    position: absolute;
+
+    top: 50%;
+    right: 8px;
+
+    transform:
+        translateY(-50%);
+
+    padding:
+        6px 8px;
+
+    border: 0;
+
+    background:
+        transparent;
+
+    color:
+        var(--color-orange);
+
+    font-size:
+        0.65rem;
+
+    font-weight:
+        700;
+}
+
+
+
+/* ============================================================
+   8. ERRORES
+   ============================================================ */
+
+.form-error {
+    min-height: 15px;
+
+    color:
+        #f0907b;
+
+    font-size:
+        0.63rem;
+}
+
+
+.form-field input.is-invalid,
+.form-field select.is-invalid {
+    border-color:
+        #d76854;
+}
+
+
+
+/* ============================================================
+   9. LOGIN OPCIONES
+   ============================================================ */
+
+.login-options {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    color:
+        rgba(255, 255, 255, 0.46);
+
+    font-size:
+        0.7rem;
+}
+
+
+.login-options a:hover {
+    color:
+        var(--color-orange);
+}
+
+
+.checkbox-option {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.checkbox-option input {
+    accent-color:
+        var(--color-orange);
+}
+
+
+
+/* ============================================================
+   10. BOTÓN LOGIN / REGISTRO
+   ============================================================ */
+
+.auth-submit {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    min-height: 50px;
+
+    padding:
+        0 18px;
+
+    border: 0;
+
+    border-radius:
+        7px;
+
+    background:
+        var(--color-orange);
+
+    color:
+        #1b120d;
+
+    font-size:
+        0.76rem;
+
+    font-weight:
+        800;
+
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast);
+}
+
+
+.auth-submit:hover {
+    transform:
+        translateY(-2px);
+
+    background:
+        #f39a59;
+}
+
+
+.auth-switch {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    color:
+        rgba(255, 255, 255, 0.40);
+
+    font-size:
+        0.72rem;
+}
+
+
+.auth-switch a,
+.register-actions a {
+    color:
+        var(--color-orange);
+
+    font-weight:
+        700;
+}
+
+
+.auth-note {
+    padding-top: 20px;
+
+    border-top:
+        1px solid var(--color-border);
+
+    color:
+        rgba(255, 255, 255, 0.25);
+
+    font-family:
+        var(--font-label);
+
+    font-size:
+        0.56rem;
+}
+
+
+
+/* ============================================================
+   11. REGISTRO — LAYOUT
+
+   Aquí invertimos la composición:
+   formulario amplio a la izquierda,
+   bloque visual a la derecha.
+   ============================================================ */
+
+.auth-shell--register {
+    grid-template-columns:
+        minmax(600px, 1.3fr)
+        minmax(360px, 0.7fr);
+
+    padding:
+        26px;
+}
+
+
+.auth-shell--register::before {
+    right: 2%;
+    top: -220px;
+}
+
+
+.auth-form-panel--register {
+    display: block;
+
+    min-height:
+        calc(100vh - 52px);
+
+    padding:
+        30px 42px;
+
+    background:
+        #111713;
+
+    border:
+        1px solid var(--color-border);
+
+    border-right: 0;
+}
+
+
+.register-form-wrapper {
+    width:
+        min(100%, 760px);
+
+    margin-inline:
+        auto;
+}
+
+
+.register-topbar {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom:
+        32px;
+}
+
+
+.auth-form-panel--register
+.auth-form-heading {
+    margin-bottom:
+        28px;
+}
+
+
+
+/* ============================================================
+   12. SECCIONES DEL FORMULARIO
+   ============================================================ */
+
+.form-section {
+    display: grid;
+
+    grid-template-columns:
+        150px 1fr;
+
+    gap:
+        28px;
+
+    padding:
+        21px 0;
+
+    border-top:
+        1px solid var(--color-border);
+}
+
+
+.form-section-heading {
+    display: flex;
+
+    gap: 10px;
+
+    align-items: baseline;
+}
+
+
+.form-section-heading > span {
+    color:
+        var(--color-green);
+
+    font-family:
+        var(--font-label);
+
+    font-size:
+        0.59rem;
+}
+
+
+.form-section-heading h2 {
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    font-family:
+        var(--font-interface);
+
+    font-size:
+        0.75rem;
+
+    font-weight:
+        700;
+}
+
+
+
+/* Dos columnas = menos altura */
+
+.form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap:
+        13px 18px;
+}
+
+
+
+/* ============================================================
+   13. SELECTOR DE ROL
+   ============================================================ */
+
+.role-selector {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+}
+
+
+.role-option {
+    position: relative;
+
+    cursor: pointer;
+}
+
+
+.role-option input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.role-option__content {
+    display: grid;
+
+    gap: 7px;
+
+    min-height: 116px;
+
+    padding: 15px;
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        border-color var(--transition-fast),
+        background var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+
+.role-option:hover
+.role-option__content {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        rgba(239, 138, 67, 0.38);
+}
+
+
+.role-option input:checked
++
+.role-option__content {
+    border-color:
+        var(--color-orange);
+
+    background:
+        rgba(239, 138, 67, 0.08);
+}
+
+
+.role-option__number {
+    color:
+        var(--color-green);
+
+    font-family:
+        var(--font-label);
+
+    font-size:
+        0.56rem;
+}
+
+
+.role-option strong {
+    color:
+        white;
+
+    font-family:
+        var(--font-editorial);
+
+    font-size:
+        1.25rem;
+
+    font-weight:
+        400;
+}
+
+
+.role-option small {
+    color:
+        rgba(255, 255, 255, 0.38);
+
+    font-size:
+        0.63rem;
+
+    line-height:
+        1.45;
+}
+
+
+
+/* ============================================================
+   14. AVATAR
+   ============================================================ */
+
+.avatar-upload {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding:
+        10px;
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        9px;
+
+    cursor: pointer;
+}
+
+
+.avatar-preview {
+    display: grid;
+
+    flex: 0 0 54px;
+
+    width: 54px;
+    height: 54px;
+
+    place-items: center;
+
+    border:
+        1px dashed
+        rgba(255, 255, 255, 0.25);
+
+    border-radius:
+        50%;
+
+    color:
+        var(--color-orange);
+
+    font-size:
+        1.1rem;
+
+    overflow: hidden;
+}
+
+
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+.avatar-upload__text {
+    display: grid;
+
+    gap: 2px;
+}
+
+
+.avatar-upload__text strong {
+    color:
+        rgba(255, 255, 255, 0.76);
+
+    font-size:
+        0.7rem;
+}
+
+
+.avatar-upload__text small {
+    color:
+        rgba(255, 255, 255, 0.32);
+
+    font-size:
+        0.58rem;
+}
+
+
+.avatar-upload input {
+    display: none;
+}
+
+
+
+/* ============================================================
+   15. SEGURIDAD
+   ============================================================ */
+
+.security-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 0.85fr;
+
+    gap: 22px;
+}
+
+
+.security-inputs {
+    display: grid;
+
+    gap: 12px;
+}
+
+
+.password-rules {
+    padding:
+        14px;
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.password-rules > span {
+    color:
+        rgba(255, 255, 255, 0.56);
+
+    font-size:
+        0.66rem;
+
+    font-weight:
+        700;
+}
+
+
+.password-rules ul {
+    display: grid;
+
+    gap: 6px;
+
+    margin-top: 10px;
+
+    list-style: none;
+}
+
+
+.password-rules li {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color:
+        rgba(255, 255, 255, 0.35);
+
+    font-size:
+        0.61rem;
+}
+
+
+.password-rules li span {
+    color:
+        var(--color-orange);
+}
+
+
+.password-rules li.is-valid {
+    color:
+        var(--color-green);
+}
+
+
+
+/* ============================================================
+   16. FINAL DEL REGISTRO
+   ============================================================ */
+
+.register-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 20px;
+
+    align-items: center;
+
+    padding-top:
+        20px;
+
+    border-top:
+        1px solid var(--color-border);
+}
+
+
+.register-actions .auth-submit {
+    max-width: 290px;
+}
+
+
+.register-actions p {
+    font-size:
+        0.68rem;
+}
+
+
+
+/* ============================================================
+   17. PANEL DERECHO DEL REGISTRO
+   ============================================================ */
+
+.register-visual {
+    position: relative;
+
+    min-height:
+        calc(100vh - 52px);
+
+    padding:
+        42px;
+
+    overflow: hidden;
+
+    border:
+        1px solid var(--color-border);
+
+    background:
+        var(--color-green-dark);
+}
+
+
+.register-visual__glow {
+    position: absolute;
+
+    top: -180px;
+    right: -150px;
+
+    width: 480px;
+    height: 480px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(239, 138, 67, 0.50),
+            transparent 65%
+        );
+
+    filter:
+        blur(32px);
+}
+
+
+.register-visual__header {
+    position: relative;
+
+    z-index: 4;
+
+    display: grid;
+
+    gap: 13px;
+}
+
+
+.register-visual__header h2 {
+    color:
+        white;
+
+    font-size:
+        clamp(2.8rem, 4vw, 4.4rem);
+
+    line-height:
+        0.88;
+}
+
+
+.register-visual__header h2 em {
+    color:
+        var(--color-orange);
+}
+
+
+.register-visual__image {
+    position: absolute;
+
+    inset:
+        38% -40px -70px 25px;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    transform:
+        rotate(3deg);
+}
+
+
+.register-visual__image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    filter:
+        saturate(0.75)
+        brightness(0.72);
+}
+
+
+.register-visual__image::after {
+    position: absolute;
+
+    inset: 0;
+
+    content: "";
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            rgba(36, 73, 52, 0.94)
+        );
+}
+
+
+.register-visual__card {
+    position: absolute;
+
+    z-index: 5;
+
+    left: 30px;
+    right: 30px;
+    bottom: 30px;
+
+    padding: 18px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.18);
+
+    background:
+        rgba(12, 17, 14, 0.62);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+
+.register-visual__card span {
+    color:
+        var(--color-green);
+
+    font-family:
+        var(--font-label);
+
+    font-size:
+        0.55rem;
+}
+
+
+.register-visual__card p {
+    margin-top: 6px;
+
+    color: white;
+
+    font-family:
+        var(--font-editorial);
+
+    font-size:
+        1.2rem;
+
+    line-height:
+        1.05;
+}
+
+
+
+/* ============================================================
+   18. TABLET
+   ============================================================ */
+
+@media (max-width: 950px) {
+
+    .auth-shell--login {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .auth-art-panel {
+        min-height:
+            430px;
+
+        padding:
+            30px;
+    }
+
+
+    .auth-art-panel__content {
+        margin-top:
+            75px;
+    }
+
+
+    .auth-form-panel {
+        padding:
+            65px 30px;
+    }
+
+
+    .auth-shell--register {
+        grid-template-columns:
+            1fr;
+
+        padding:
+            18px;
+    }
+
+
+    .auth-form-panel--register {
+        border-right:
+            1px solid var(--color-border);
+    }
+
+
+    .register-visual {
+        display: none;
+    }
+
+
+    .register-form-wrapper {
+        width:
+            min(100%, 760px);
+    }
+
+}
+
+
+
+/* ============================================================
+   19. MÓVIL
+   ============================================================ */
+
+@media (max-width: 620px) {
+
+    .auth-art-panel {
+        min-height:
+            390px;
+
+        padding:
+            24px;
+    }
+
+
+    .auth-art-panel__content {
+        margin-top:
+            65px;
+    }
+
+
+    .auth-art-panel__content h1 {
+        font-size:
+            3.2rem;
+    }
+
+
+    .auth-form-panel {
+        padding:
+            50px 20px;
+    }
+
+
+    .login-options {
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+    }
+
+
+    .auth-shell--register {
+        padding:
+            0;
+    }
+
+
+    .auth-form-panel--register {
+        min-height: 100vh;
+
+        padding:
+            24px 18px;
+
+        border: 0;
+    }
+
+
+    .form-section {
+        grid-template-columns:
+            1fr;
+
+        gap: 15px;
+    }
+
+
+    .form-grid,
+    .role-selector,
+    .security-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .register-actions {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .register-actions .auth-submit {
+        max-width:
+            none;
+    }
+
+}
+
+/* ============================================================
+   AJUSTE TEMPORAL DEL LOGO DEL LOGIN
+   ============================================================ */
+
+.auth-logo img {
+    width: 120px;
+    height: auto;
+
+    display: block;
+    object-fit: contain;
+}
+
+.auth-art-panel__top {
+    gap: 30px;
+}
+
+.auth-back {
+    white-space: nowrap;
+}
+
+/* ============================================================
+   AJUSTES DE TEXTO DEL HERO DEL LOGIN
+   ============================================================ */
+
+.auth-art-panel__content {
+    gap: 14px;
+}
+
+
+/* Separamos un poco el texto naranja del título blanco */
+.auth-art-panel__content h1 em {
+    margin-top: 8px;
+}
+
+
+/* Damos aire entre el título grande y la descripción */
+.auth-hero-description {
+    max-width: 430px;
+
+    margin-top: 18px;
+
+    color:
+        rgba(255, 255, 255, 0.58);
+
+    font-size: 0.88rem;
+
+    line-height: 1.75;
+}

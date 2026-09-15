@@ -1,0 +1,137 @@
+import habitsImage from '../assets/images/AULA (1).png'
+import designImage from '../assets/images/AULA (2).png'
+import softwareImage from '../assets/images/AULA (3).png'
+import focusImage from '../assets/images/aula3.jpg'
+import marketingImage from '../assets/images/aula4.jpg'
+
+export const categories = [
+  {
+    id: 'bienestar',
+    name: 'Bienestar',
+    eyebrow: 'Hábitos y equilibrio',
+    description: 'Rutinas, concentración, autocuidado y herramientas para aprender con mayor intención.',
+    symbol: '01',
+  },
+  {
+    id: 'diseno',
+    name: 'Diseño',
+    eyebrow: 'Ideas que toman forma',
+    description: 'Fundamentos visuales, composición y procesos creativos aplicados a proyectos reales.',
+    symbol: '02',
+  },
+  {
+    id: 'software',
+    name: 'IT & Software',
+    eyebrow: 'Construye y experimenta',
+    description: 'Programación, herramientas digitales y conceptos técnicos explicados paso a paso.',
+    symbol: '03',
+  },
+  {
+    id: 'marketing',
+    name: 'Marketing',
+    eyebrow: 'Comunica con propósito',
+    description: 'Estrategia, contenido y lectura de audiencias para comunicar proyectos con claridad.',
+    symbol: '04',
+  },
+]
+
+export const courses = [
+  {
+    id: 1,
+    slug: 'neuro-habitos',
+    title: 'Neuro-Hábitos',
+    category: 'Bienestar',
+    categoryId: 'bienestar',
+    level: 'Inicial',
+    instructor: 'Psic. Ana Solís',
+    duration: '4 h 20 min',
+    lessons: 12,
+    price: '$39 USD',
+    description: 'Construye rutinas sostenibles y reduce ciclos de procrastinación con estrategias prácticas.',
+    image: habitsImage,
+    accent: 'Rutinas sostenibles',
+  },
+  {
+    id: 2,
+    slug: 'diseno-que-comunica',
+    title: 'Diseño que comunica',
+    category: 'Diseño',
+    categoryId: 'diseno',
+    level: 'Inicial',
+    instructor: 'Lucía Rojas',
+    duration: '5 h 10 min',
+    lessons: 15,
+    price: '$45 USD',
+    description: 'Aprende a organizar información visual y construir composiciones más claras y expresivas.',
+    image: designImage,
+    accent: 'Composición visual',
+  },
+  {
+    id: 3,
+    slug: 'fundamentos-web',
+    title: 'Fundamentos Web',
+    category: 'IT & Software',
+    categoryId: 'software',
+    level: 'Inicial',
+    instructor: 'Diego Villarreal',
+    duration: '6 h 40 min',
+    lessons: 18,
+    price: '$49 USD',
+    description: 'Comprende HTML, CSS y JavaScript construyendo una experiencia web desde cero.',
+    image: softwareImage,
+    accent: 'HTML · CSS · JS',
+  },
+  {
+    id: 4,
+    slug: 'enfoque-profundo',
+    title: 'Enfoque profundo',
+    category: 'Bienestar',
+    categoryId: 'bienestar',
+    level: 'Intermedio',
+    instructor: 'Mariana Leal',
+    duration: '3 h 50 min',
+    lessons: 10,
+    price: '$35 USD',
+    description: 'Diseña sesiones de estudio más intencionales y reduce las distracciones que fragmentan tu atención.',
+    image: focusImage,
+    accent: 'Atención y estudio',
+  },
+  {
+    id: 5,
+    slug: 'contenido-con-intencion',
+    title: 'Contenido con intención',
+    category: 'Marketing',
+    categoryId: 'marketing',
+    level: 'Intermedio',
+    instructor: 'Sara Méndez',
+    duration: '4 h 45 min',
+    lessons: 13,
+    price: '$42 USD',
+    description: 'Convierte ideas en mensajes consistentes y crea una estructura de contenido sostenible.',
+    image: marketingImage,
+    accent: 'Estrategia de contenido',
+  },
+  {
+    id: 6,
+    slug: 'interfaces-con-vue',
+    title: 'Interfaces con Vue',
+    category: 'IT & Software',
+    categoryId: 'software',
+    level: 'Intermedio',
+    instructor: 'Marco Garza',
+    duration: '7 h 15 min',
+    lessons: 20,
+    price: '$55 USD',
+    description: 'Pasa de páginas estáticas a interfaces por componentes, rutas y estado reutilizable con Vue.',
+    image: softwareImage,
+    accent: 'Vue · Componentes',
+  },
+]
+
+export const enrolledCourses = [
+  { ...courses[0], progress: 68, nextLesson: 'Cómo diseñar una señal de inicio' },
+  { ...courses[2], progress: 34, nextLesson: 'Modelo de caja y layout' },
+  { ...courses[1], progress: 12, nextLesson: 'Jerarquía y contraste' },
+]
+
+export const recommendedCourse = courses[5]
