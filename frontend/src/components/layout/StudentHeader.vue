@@ -12,6 +12,12 @@
         <RouterLink class="text-sm font-bold text-white/65 transition hover:text-white" to="/estudiante#mis-cursos">
           Mis cursos
         </RouterLink>
+        <RouterLink class="text-sm font-bold text-white/65 transition hover:text-white" to="/estudiante/kardex">
+          Kardex
+        </RouterLink>
+        <RouterLink class="text-sm font-bold text-white/65 transition hover:text-white" to="/estudiante/mensajes">
+          Mensajes
+        </RouterLink>
         <RouterLink class="text-sm font-bold text-white/65 transition hover:text-white" to="/categorias">
           Categorías
         </RouterLink>
@@ -59,6 +65,8 @@
     <div v-if="menuOpen" class="border-t border-white/10 px-6 py-5 lg:hidden">
       <nav class="mx-auto grid max-w-aula gap-4">
         <RouterLink to="/estudiante" class="text-sm font-bold text-white/80" @click="menuOpen = false">Mi espacio</RouterLink>
+        <RouterLink to="/estudiante/kardex" class="text-sm font-bold text-white/80" @click="menuOpen = false">Kardex</RouterLink>
+        <RouterLink to="/estudiante/mensajes" class="text-sm font-bold text-white/80" @click="menuOpen = false">Mensajes</RouterLink>
         <RouterLink to="/categorias" class="text-sm font-bold text-white/80" @click="menuOpen = false">Categorías</RouterLink>
         <RouterLink to="/estudiante/cuenta" class="text-sm font-bold text-white/80" @click="menuOpen = false">Mi cuenta</RouterLink>
         <button type="button" class="w-fit bg-transparent text-sm font-bold text-aula-orange" @click="logout">Cerrar sesión</button>
@@ -71,11 +79,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logoUrl from '../../assets/images/aula-logo.svg'
-import { endDemoSession } from '../../utils/demoSession.js'
+import { useSessionStore } from '../../stores/session.js'
 
 const router = useRouter()
 const query = ref('')
 const menuOpen = ref(false)
+const session = useSessionStore()
 
 function submitSearch() {
   const q = query.value.trim()
@@ -83,7 +92,8 @@ function submitSearch() {
 }
 
 function logout() {
-  endDemoSession()
+  session.logout()
   router.push('/')
 }
 </script>
+

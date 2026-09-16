@@ -31,11 +31,11 @@
 
       <div class="hidden items-center gap-3 md:flex">
         <template v-if="authenticated">
-          <RouterLink to="/estudiante" class="text-sm font-bold text-white/70 transition hover:text-white">
+          <RouterLink :to="session.homeRoute" class="text-sm font-bold text-white/70 transition hover:text-white">
             Mi espacio
           </RouterLink>
           <RouterLink
-            to="/estudiante/cuenta"
+            :to="session.accountRoute"
             class="inline-flex min-h-10 items-center justify-center bg-aula-cream px-4 text-xs font-extrabold text-aula-bg transition hover:-translate-y-0.5"
           >
             Mi cuenta
@@ -70,7 +70,7 @@
         <RouterLink to="/" class="text-sm font-bold text-white/80" @click="menuOpen = false">Inicio</RouterLink>
         <RouterLink to="/cursos" class="text-sm font-bold text-white/80" @click="menuOpen = false">Cursos</RouterLink>
         <RouterLink to="/categorias" class="text-sm font-bold text-white/80" @click="menuOpen = false">Categorías</RouterLink>
-        <RouterLink v-if="authenticated" to="/estudiante" class="text-sm font-bold text-aula-orange" @click="menuOpen = false">Mi espacio</RouterLink>
+        <RouterLink v-if="authenticated" :to="session.homeRoute" class="text-sm font-bold text-aula-orange" @click="menuOpen = false">Mi espacio</RouterLink>
         <RouterLink v-else to="/login" class="text-sm font-bold text-aula-orange" @click="menuOpen = false">Iniciar sesión</RouterLink>
       </nav>
     </div>
@@ -79,17 +79,20 @@
 
 <script setup>
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import logoUrl from '../../assets/images/aula-logo.svg'
-import { isDemoAuthenticated } from '../../utils/demoSession.js'
+import { useSessionStore } from '../../stores/session.js'
 
 const router = useRouter()
 const query = ref('')
 const menuOpen = ref(false)
-const authenticated = ref(isDemoAuthenticated())
+const session = useSessionStore()
+const { authenticated } = storeToRefs(session)
 
 function submitSearch() {
   const q = query.value.trim()
   router.push({ path: '/buscar', query: q ? { q } : {} })
 }
 </script>
+
