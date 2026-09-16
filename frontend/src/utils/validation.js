@@ -1,101 +1,101 @@
-/*
- * Utilidades de validacion para formularios futuros.
- * No se conectan a autenticacion real en esta primera fase.
- */
-export const AulaGoValidations = (() => {
-    const passwordRules = [
-        {
-            key: "minLength",
-            message: "La contrasena debe tener al menos 8 caracteres.",
-            test: (value) => value.length >= 8,
-        },
-        {
-            key: "uppercase",
-            message: "La contrasena debe incluir al menos una mayuscula.",
-            test: (value) => /[A-Z]/.test(value),
-        },
-        {
-            key: "number",
-            message: "La contrasena debe incluir al menos un numero.",
-            test: (value) => /\d/.test(value),
-        },
-        {
-            key: "special",
-            message: "La contrasena debe incluir al menos un caracter especial.",
-            test: (value) => /[^A-Za-z0-9]/.test(value),
-        },
-    ];
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    const isRequired = (value) => String(value || "").trim().length > 0;
+const passwordRules = [
+  {
+    key: 'length',
+    message: 'Debe tener al menos 8 caracteres.',
+    test: (value) => value.length >= 8,
+  },
+  {
+    key: 'uppercase',
+    message: 'Debe incluir al menos una letra mayúscula.',
+    test: (value) => /[A-Z]/.test(value),
+  },
+  {
+    key: 'number',
+    message: 'Debe incluir al menos un número.',
+    test: (value) => /\d/.test(value),
+  },
+  {
+    key: 'special',
+    message: 'Debe incluir al menos un carácter especial.',
+    test: (value) => /[^A-Za-z0-9]/.test(value),
+  },
+]
 
-    const isEmail = (value) => {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export function useFormValidation() {
+  function isRequired(value) {
+    return String(value ?? '').trim().length > 0
+  }
 
-        return emailPattern.test(String(value || "").trim());
-    };
+  function isEmail(value) {
+    return emailPattern.test(String(value ?? '').trim())
+  }
 
-    const validatePassword = (value) => {
-        const password = String(value || "");
-        const failedRules = passwordRules.filter((rule) => !rule.test(password));
+  function validateRequired(value, message = 'Este campo es obligatorio.') {
+    return isRequired(value) ? '' : message
+  }
 
-        return {
-            isValid: failedRules.length === 0,
-            failedRules,
-        };
-    };
+  function validateEmail(value) {
+    if (!isRequired(value)) return 'El correo electrónico es obligatorio.'
+    if (!isEmail(value)) return 'Ingresa un correo electrónico válido.'
+    return ''
+  }
 
-    const validateField = (field) => {
-        if (!field) {
-            return { isValid: true, errors: [] };
-        }
+  function getPasswordChecks(value) {
+    const password = String(value ?? '')
 
-        const errors = [];
-        const value = field.value;
+    return passwordRules.reduce((checks, rule) => {
+      checks[rule.key] = rule.test(password)
+      return checks
+    }, {})
+  }
 
-        if (field.required && !isRequired(value)) {
-            errors.push("Este campo es obligatorio.");
-        }
+  function validatePassword(value) {
+    if (!isRequired(value)) return 'La contraseña es obligatoria.'
 
-        if (field.type === "email" && isRequired(value) && !isEmail(value)) {
-            errors.push("Ingresa un correo electronico valido.");
-        }
+    const password = String(value ?? '')
+    const failedRule = passwordRules.find((rule) => !rule.test(password))
+    return failedRule?.message ?? ''
+  }
 
-        if (field.dataset.validation === "password" && isRequired(value)) {
-            validatePassword(value).failedRules.forEach((rule) => errors.push(rule.message));
-        }
+  function validatePasswordConfirmation(password, confirmation) {
+    if (!isRequired(confirmation)) return 'Confirma tu contraseña.'
+    if (password !== confirmation) return 'Las contraseñas no coinciden.'
+    return ''
+  }
 
-        return {
-            isValid: errors.length === 0,
-            errors,
-        };
-    };
+  function validateBirthdate(value) {
+    if (!isRequired(value)) return 'La fecha de nacimiento es obligatoria.'
 
-    const bindFormValidation = (form) => {
-        if (!form) {
-            return;
-        }
+    const selectedDate = new Date(`${value}T00:00:00`)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-        const fields = Array.from(form.querySelectorAll("input, textarea, select"));
+    if (Number.isNaN(selectedDate.getTime())) return 'Selecciona una fecha válida.'
+    if (selectedDate > today) return 'La fecha de nacimiento no puede estar en el futuro.'
+    return ''
+  }
 
-        fields.forEach((field) => {
-            field.addEventListener("blur", () => validateField(field));
-        });
+  function validateAvatar(file) {
+    if (!file) return 'Selecciona una imagen de perfil.'
 
-        form.addEventListener("submit", (event) => {
-            const hasErrors = fields.some((field) => !validateField(field).isValid);
+    const allowedTypes = ['image/jpeg', 'image/png']
+    if (!allowedTypes.includes(file.type)) return 'La fotografía debe ser JPG o PNG.'
 
-            if (hasErrors) {
-                event.preventDefault();
-            }
-        });
-    };
+    return ''
+  }
 
-    return {
-        bindFormValidation,
-        isEmail,
-        isRequired,
-        passwordRules,
-        validateField,
-        validatePassword,
-    };
-})();
+  return {
+    isRequired,
+    isEmail,
+    passwordRules,
+    validateRequired,
+    validateEmail,
+    getPasswordChecks,
+    validatePassword,
+    validatePasswordConfirmation,
+    validateBirthdate,
+    validateAvatar,
+  }
+}
