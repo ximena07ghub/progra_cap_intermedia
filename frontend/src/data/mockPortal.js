@@ -1,3 +1,5 @@
+import { categories as catalogCategories, courses as catalogCourses } from './courses.js'
+
 export const kardexRecords = [
   {
     id: 1,
@@ -61,6 +63,44 @@ export const courseReviews = {
       comment: 'Muy claro y directo. Sí sentí diferencia al organizar mis señales de inicio.',
     },
   ],
+  'desbloqueo-creativo-dibujo': [
+    {
+      id: 1,
+      name: 'María T.',
+      avatar: 'MT',
+      rating: 5,
+      completedAt: '2026-09-12',
+      comment: 'Volví a dibujar sin sentir que cada boceto tenía que quedar perfecto.',
+    },
+    {
+      id: 2,
+      name: 'Andrea P.',
+      avatar: 'AP',
+      rating: 5,
+      completedAt: '2026-09-04',
+      comment: 'Los ejercicios cortos me ayudaron a empezar incluso en días con poca energía.',
+    },
+  ],
+  'interfaces-con-vue': [
+    {
+      id: 1,
+      name: 'Eduardo R.',
+      avatar: 'ER',
+      rating: 5,
+      completedAt: '2026-08-30',
+      comment: 'Me funcionó dividir el aprendizaje en bloques pequeños y practicar un concepto por sesión.',
+    },
+  ],
+  'movimiento-para-estres': [
+    {
+      id: 1,
+      name: 'Daniela S.',
+      avatar: 'DS',
+      rating: 5,
+      completedAt: '2026-09-01',
+      comment: 'Las pausas son fáciles de integrar entre sesiones de trabajo y no requieren equipo.',
+    },
+  ],
 }
 
 export const conversations = [
@@ -120,12 +160,13 @@ export const salesTransactions = [
   { id: 'V-1033', courseSlug: 'enfoque-profundo', course: 'Enfoque profundo', student: 'Luis Peña', date: '2026-08-29', amount: 610 },
 ]
 
-export const adminCategories = [
-  { id: 1, name: 'Bienestar', slug: 'bienestar', courses: 12, active: true },
-  { id: 2, name: 'Diseño', slug: 'diseno', courses: 8, active: true },
-  { id: 3, name: 'IT & Software', slug: 'software', courses: 15, active: true },
-  { id: 4, name: 'Marketing', slug: 'marketing', courses: 7, active: true },
-]
+export const adminCategories = catalogCategories.map((category, index) => ({
+  id: index + 1,
+  name: category.name,
+  slug: category.id,
+  courses: catalogCourses.filter((course) => course.categoryId === category.id).length,
+  active: true,
+}))
 
 export const adminUsers = [
   { id: 1, name: 'Mariana Torres', email: 'mariana@example.com', role: 'estudiante', status: 'Activo', reports: 0 },

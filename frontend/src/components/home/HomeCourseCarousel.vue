@@ -1,135 +1,180 @@
-<template>
-  <div
-    class="course-showcase"
-    tabindex="0"
-    aria-label="Cursos destacados"
-    @keydown.left.prevent="goPrevious"
-    @keydown.right.prevent="goNext"
-  >
-    <div class="showcase-heading">
-      <div>
-        <p class="eyebrow eyebrow--light">Selección de la semana</p>
-        <h2>Cursos para descubrir<br />algo nuevo.</h2>
-      </div>
-
-      <div class="selected-course-info">
-        <span class="selected-course-category">{{ activeCourse.category }}</span>
-        <h3>{{ activeCourse.title }}</h3>
-        <p>{{ activeCourse.description }}</p>
-        <div class="selected-course-meta">
-          <span>{{ activeCourse.instructor }}</span>
-          <strong>{{ activeCourse.price }}</strong>
-        </div>
-      </div>
-    </div>
-
-    <div
-      class="floating-course-track"
-      @pointerdown="onPointerDown"
-      @pointermove="onPointerMove"
-      @pointerup="onPointerUp"
-      @pointercancel="resetPointer"
-    >
-      <article
-        v-for="(course, index) in featuredCourses"
-        :key="course.id"
-        class="floating-course-card"
-        :class="{ 'is-selected': index === activeIndex }"
-        :data-position="getRelativePosition(index)"
-      >
-        <button
-          class="floating-course-card__button"
-          type="button"
-          :aria-label="`Seleccionar curso ${course.title}`"
-          @click="selectCourse(index)"
-        >
-          <img :class="['course-visual', course.imageClass]" :src="course.image" :alt="`Ilustración relacionada con ${course.title}`" />
-          <div class="floating-course-card__overlay">
-            <span>{{ String(index + 1).padStart(2, '0') }} · {{ course.shortCategory }}</span>
-            <h3>{{ course.title }}</h3>
-          </div>
-        </button>
-      </article>
-    </div>
-
-    <div class="showcase-controls">
-      <button class="carousel-arrow" type="button" aria-label="Curso anterior" @click="goPrevious">←</button>
-      <div class="showcase-counter">
-        <strong>{{ String(activeIndex + 1).padStart(2, '0') }}</strong>
-        <span>/ {{ String(featuredCourses.length).padStart(2, '0') }}</span>
-      </div>
-      <button class="carousel-arrow" type="button" aria-label="Curso siguiente" @click="goNext">→</button>
-    </div>
-
-    <div class="selected-course-action">
-      <RouterLink class="text-link text-link--light" :to="activeCourse.url">
-        Conocer este curso <span aria-hidden="true">↗</span>
-      </RouterLink>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import imageOne from '../../assets/images/aula4.jpg'
-import imageTwo from '../../assets/images/AULA (3).png'
-import imageThree from '../../assets/images/aula3.jpg'
-import imageFour from '../../assets/images/AULA (1).png'
-import imageFive from '../../assets/images/AULA (2).png'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { A11y, EffectCoverflow, Keyboard } from 'swiper/modules'
 
-const router = useRouter()
-const activeIndex = ref(2)
-const pointerStartX = ref(null)
-const pointerMoved = ref(false)
+import 'swiper/css'
+import 'swiper/css/effect-coverflow'
 
-const featuredCourses = [
-  { id: 1, title: 'Reset Sensorial', category: 'Bienestar', shortCategory: 'Bienestar', instructor: 'Dra. Elena Varela', price: 'Gratis', description: 'Técnicas breves para reducir la sobrecarga sensorial y recuperar concentración durante el día.', url: '/cursos/neuro-habitos', image: imageOne, imageClass: 'course-visual--one' },
-  { id: 2, title: 'Psicofísica del Entorno', category: 'Diseño y bienestar', shortCategory: 'Diseño', instructor: 'Arq. Marco Ibarra', price: '$29 USD', description: 'Descubre cómo la luz, el sonido y la organización del espacio influyen en atención, estrés y descanso.', url: '/cursos/neuro-habitos', image: imageTwo, imageClass: 'course-visual--two' },
-  { id: 3, title: 'Neuro-Hábitos', category: 'Bienestar', shortCategory: 'Bienestar', instructor: 'Psic. Ana Solís', price: '$39 USD', description: 'Construye rutinas sostenibles y aprende a reducir ciclos de procrastinación mediante estrategias prácticas.', url: '/cursos/neuro-habitos', image: imageThree, imageClass: 'course-visual--three' },
-  { id: 4, title: 'Flexibilidad Cognitiva', category: 'Desarrollo personal', shortCategory: 'Desarrollo', instructor: 'Mtra. Julia Ríos', price: '$45 USD', description: 'Entrena nuevas formas de interpretar problemas y desarrolla respuestas más flexibles ante situaciones complejas.', url: '/cursos/neuro-habitos', image: imageFour, imageClass: 'course-visual--four' },
-  { id: 5, title: 'Arquitectura Antifrágil', category: 'Bienestar', shortCategory: 'Bienestar', instructor: 'Dr. Bruno Medina', price: '$49 USD', description: 'Diseña protocolos personales de descanso, recuperación y respuesta para enfrentar periodos de mayor exigencia.', url: '/cursos/neuro-habitos', image: imageFive, imageClass: 'course-visual--five' },
-]
+import { courses } from '../../data/courses.js'
 
-const activeCourse = computed(() => featuredCourses[activeIndex.value])
+const modules = [EffectCoverflow, Keyboard, A11y]
+const swiperInstance = ref(null)
+const activeIndex = ref(1)
 
-function getRelativePosition(index) {
-  const total = featuredCourses.length
-  const half = Math.floor(total / 2)
-  let difference = index - activeIndex.value
-  if (difference > half) difference -= total
-  if (difference < -half) difference += total
-  return difference
+const featuredCourses = computed(() => courses.slice(0, 7))
+const activeCourse = computed(() => featuredCourses.value[activeIndex.value] || featuredCourses.value[0])
+
+function registerSwiper(swiper) {
+  swiperInstance.value = swiper
+  activeIndex.value = swiper.realIndex
 }
 
-function goTo(index) {
-  activeIndex.value = (index + featuredCourses.length) % featuredCourses.length
+function handleSlideChange(swiper) {
+  activeIndex.value = swiper.realIndex
 }
-function goPrevious() { goTo(activeIndex.value - 1) }
-function goNext() { goTo(activeIndex.value + 1) }
-function selectCourse(index) {
-  if (pointerMoved.value) return
-  if (index === activeIndex.value) router.push(featuredCourses[index].url)
-  else goTo(index)
+
+function selectSlide(index) {
+  swiperInstance.value?.slideTo(index)
 }
-function onPointerDown(event) {
-  pointerStartX.value = event.clientX
-  pointerMoved.value = false
+
+function goPrevious() {
+  swiperInstance.value?.slidePrev()
 }
-function onPointerMove(event) {
-  if (pointerStartX.value === null) return
-  if (Math.abs(event.clientX - pointerStartX.value) > 10) pointerMoved.value = true
-}
-function onPointerUp(event) {
-  if (pointerStartX.value === null) return
-  const distance = event.clientX - pointerStartX.value
-  if (Math.abs(distance) > 55) distance > 0 ? goPrevious() : goNext()
-  window.setTimeout(() => { pointerMoved.value = false }, 120)
-  pointerStartX.value = null
-}
-function resetPointer() {
-  pointerStartX.value = null
-  pointerMoved.value = false
+
+function goNext() {
+  swiperInstance.value?.slideNext()
 }
 </script>
 
+<template>
+  <section id="cursos-destacados" class="relative overflow-hidden border-b border-white/10 bg-aula-bg-soft px-6 py-20 lg:px-8 lg:py-24" aria-labelledby="courses-title">
+    <div class="pointer-events-none absolute -right-32 top-20 h-72 w-72 rounded-full bg-brand-blue/[0.045] blur-3xl"></div>
+    <div class="pointer-events-none absolute bottom-0 left-[20%] h-80 w-80 rounded-full bg-brand-orange/[0.035] blur-3xl"></div>
+
+    <div class="relative mx-auto max-w-aula">
+      <div class="grid gap-7 lg:grid-cols-[1fr_.58fr] lg:items-end">
+        <div class="max-w-3xl">
+          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-aula-orange-soft">Selección para explorar</p>
+          <h2 id="courses-title" class="mt-4 font-editorial text-4xl font-semibold leading-[0.98] tracking-[-0.025em] text-aula-cream sm:text-5xl lg:text-6xl">
+            Cursos para descubrir algo nuevo.
+          </h2>
+        </div>
+        <p class="max-w-md text-sm leading-7 text-white/45 lg:justify-self-end">
+          Selecciona una tarjeta lateral para llevarla al centro. El curso activo muestra sus detalles sin salir de la sección.
+        </p>
+      </div>
+
+      <div class="mt-12 grid items-center gap-9 lg:grid-cols-[minmax(0,1.7fr)_minmax(290px,0.72fr)]">
+        <div class="min-w-0">
+          <Swiper
+            :modules="modules"
+            effect="coverflow"
+            :centered-slides="true"
+            :slide-to-clicked-slide="true"
+            :grab-cursor="true"
+            :initial-slide="1"
+            :slides-per-view="1.14"
+            :space-between="16"
+            :keyboard="{ enabled: true }"
+            :coverflow-effect="{
+              rotate: 0,
+              stretch: 0,
+              depth: 155,
+              modifier: 1.28,
+              scale: 0.84,
+              slideShadows: false,
+            }"
+            :breakpoints="{
+              640: { slidesPerView: 1.72, spaceBetween: 20 },
+              1024: { slidesPerView: 2.32, spaceBetween: 24 },
+            }"
+            class="pb-7"
+            @swiper="registerSwiper"
+            @slideChange="handleSlideChange"
+          >
+            <SwiperSlide v-for="(course, index) in featuredCourses" :key="course.id">
+              <button
+                type="button"
+                class="group block w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-aula-surface text-left shadow-aula transition duration-300 hover:border-white/20"
+                :aria-label="`Seleccionar ${course.title}`"
+                @click="selectSlide(index)"
+              >
+                <div class="relative aspect-[4/3] overflow-hidden bg-aula-green-dark">
+                  <img
+                    :src="course.image"
+                    :alt="course.title"
+                    class="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-95"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-aula-bg via-aula-bg/15 to-transparent"></div>
+                  <div class="absolute inset-0 bg-aula-plum/5 mix-blend-multiply"></div>
+
+                  <span class="absolute left-5 top-5 rounded-full border border-white/10 bg-aula-bg/65 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-aula-cream/80 backdrop-blur">
+                    {{ course.category }}
+                  </span>
+
+                  <div class="absolute inset-x-0 bottom-0 p-6">
+                    <p class="text-[11px] font-semibold text-aula-orange-soft">{{ course.accent }}</p>
+                    <h3 class="mt-2 font-editorial text-3xl font-semibold leading-[1.02] text-aula-cream">{{ course.title }}</h3>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-4 p-5">
+                  <div class="flex items-center gap-2">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4 text-aula-yellow" aria-hidden="true">
+                      <path d="m12 2.8 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 16.83l-5.5 2.89 1.05-6.12L3.1 9.27l6.15-.9L12 2.8Z" />
+                    </svg>
+                    <span class="text-sm font-bold text-aula-cream">{{ course.rating }}</span>
+                  </div>
+                  <span class="text-xs text-white/35">{{ course.duration }}</span>
+                </div>
+              </button>
+            </SwiperSlide>
+          </Swiper>
+
+          <div class="mt-2 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              class="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.02] text-aula-cream transition hover:border-aula-orange/60 hover:bg-white/[0.04]"
+              aria-label="Curso anterior"
+              @click="goPrevious"
+            >
+              ←
+            </button>
+
+            <span class="min-w-16 text-center text-xs font-bold text-white/35">
+              {{ String(activeIndex + 1).padStart(2, '0') }} / {{ String(featuredCourses.length).padStart(2, '0') }}
+            </span>
+
+            <button
+              type="button"
+              class="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.02] text-aula-cream transition hover:border-aula-orange/60 hover:bg-white/[0.04]"
+              aria-label="Curso siguiente"
+              @click="goNext"
+            >
+              →
+            </button>
+          </div>
+        </div>
+
+        <aside class="rounded-[1.8rem] border border-white/10 bg-white/[0.025] p-7 backdrop-blur lg:p-8">
+          <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#79b8c7]">Curso seleccionado</p>
+          <h3 class="mt-4 font-editorial text-3xl font-semibold leading-tight text-aula-cream">{{ activeCourse.title }}</h3>
+          <p class="mt-5 text-sm leading-7 text-white/48">{{ activeCourse.description }}</p>
+
+          <div class="mt-7 space-y-3 border-t border-white/10 pt-6 text-sm">
+            <div class="flex justify-between gap-5">
+              <span class="text-white/35">Nivel</span>
+              <span class="font-semibold text-white/75">{{ activeCourse.level }}</span>
+            </div>
+            <div class="flex justify-between gap-5">
+              <span class="text-white/35">Instructor</span>
+              <span class="text-right font-semibold text-white/75">{{ activeCourse.instructor }}</span>
+            </div>
+            <div class="flex justify-between gap-5">
+              <span class="text-white/35">Bienestar relacionado</span>
+              <span class="text-right font-semibold text-white/75">{{ activeCourse.wellbeingFocus }}</span>
+            </div>
+          </div>
+
+          <RouterLink
+            :to="`/cursos/${activeCourse.slug}`"
+            class="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-aula-orange/60 bg-aula-orange/10 px-5 text-sm font-bold text-aula-orange-soft transition hover:bg-aula-orange hover:text-aula-bg focus:outline-none focus:ring-2 focus:ring-aula-orange focus:ring-offset-2 focus:ring-offset-aula-bg-soft"
+          >
+            Conocer el curso
+          </RouterLink>
+        </aside>
+      </div>
+    </div>
+  </section>
+</template>

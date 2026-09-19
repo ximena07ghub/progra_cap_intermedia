@@ -1,32 +1,35 @@
-# AulaGo — organización propuesta
+# AulaGo — siguientes avances
 
-## Vistas públicas
+## Primer avance actual
 
-- `/` — Home existente.
-- `/cursos` — catálogo existente.
-- `/cursos/:slug` — descripción de curso.
-- `/categorias` — categorías y filtrado.
-- `/buscar?q=` — resultados de búsqueda.
-- `/login` y `/registro` — autenticación visual existente.
+Ya existe navegación para:
 
-## Vistas de estudiante
+Landing → Login / Registro → Estudiante / Instructor / Administrador → Cursos
 
-- `/estudiante` — dashboard posterior al login.
-- `/estudiante/curso/:slug` — reproducción, lecciones y progreso.
-- `/estudiante/cuenta` — perfil y preferencias.
+También existen catálogo, categorías, búsqueda, detalle de curso y diferentes vistas privadas por rol.
 
-## Componentes reutilizables agregados
+## Lo que sigue para convertir el prototipo en aplicación real
 
-- `PublicHeader.vue`
-- `StudentHeader.vue`
-- `CourseCard.vue`
-- `ProgressCourseCard.vue`
+1. Sustituir la sesión simulada de Pinia/localStorage por autenticación del backend.
+2. Validar roles y permisos también en el servidor.
+3. Mover cursos, categorías, comentarios y progreso desde `src/data` a la API/base de datos.
+4. Conectar inscripción y compra real.
+5. Conectar contenido real de cursos: videos, documentos, actividades y niveles.
+6. Guardar progreso por estudiante y lección.
+7. Generar certificados desde datos reales.
+8. Conectar panel del instructor con creación/edición real de cursos.
+9. Conectar panel administrador con usuarios, categorías y moderación reales.
+10. Añadir pruebas de navegación y permisos antes de publicar.
 
-## Siguiente fase recomendada
+## Orden recomendado
 
-1. Extraer el header antiguo de Home/Cursos/Descripción a un componente compartido.
-2. Reemplazar las interacciones DOM de `mainInteraction.js` por estado de Vue en componentes concretos.
-3. Sustituir `demoSession.js` por autenticación real del backend/API.
-4. Mover cursos/categorías de `src/data/courses.js` a una API.
-5. Guardar progreso real del estudiante por curso y lección.
-6. Añadir roles y rutas separadas si se implementa panel de instructor.
+```text
+1. Frontend visual y navegación
+2. Autenticación real
+3. Cursos y categorías desde API
+4. Inscripción / progreso
+5. Instructor
+6. Administrador
+7. Pagos / certificados
+8. Pruebas y despliegue
+```

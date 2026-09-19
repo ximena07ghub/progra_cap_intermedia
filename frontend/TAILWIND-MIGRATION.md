@@ -1,86 +1,75 @@
-# AulaGo — Tailwind + Vue/Vite
+# Migración Tailwind — completada para el frontend actual
 
-## Qué se hizo
+## Resultado
 
-Este proyecto ya tenía `tailwindcss@3.3.2`, `postcss` y `autoprefixer` instalados, pero faltaban los archivos de configuración que hacen que Vite procese las directivas de Tailwind y escanee los componentes `.vue`.
+Se retiraron las hojas antiguas:
 
-Se agregaron:
+- `src/assets/styles/main.css`
+- `src/assets/styles/components.css`
+- `src/assets/styles/forms.css`
 
-- `tailwind.config.js`
-- `postcss.config.js`
-- configuración de rutas `content` para `index.html` y `src/**/*.{vue,js,ts,jsx,tsx}`
-- colores, tipografías y medidas de AulaGo como tokens de Tailwind
-- `preflight: false` para no romper las vistas antiguas mientras se migran poco a poco
+La presentación de las vistas se expresa ahora con utilidades Tailwind dentro de los componentes Vue.
 
-## Estrategia recomendada
+El único archivo CSS local restante es `src/assets/styles/tailwind.css`, requerido como punto de entrada de Tailwind y sin reglas personalizadas.
 
-No borres `main.css`, `components.css` ni `forms.css` todavía. Home, Login, Registro y parte del catálogo dependen de ellos.
+## Configuración visual
 
-A partir de ahora:
+`tailwind.config.js` contiene:
 
-1. Las vistas nuevas se construyen con Tailwind.
-2. Si un patrón se repite, conviértelo en un componente Vue (`src/components`).
-3. Solo agrega CSS manual cuando Tailwind no sea suficiente o cuando sea una regla global realmente compartida.
-4. Migra las vistas antiguas una por una, no todo el proyecto de golpe.
+### Paleta principal nueva
 
-## Ejemplo
+- `brand-orange` → `#ff7704`
+- `brand-green` → `#73c103`
+- `brand-blue` → `#20afe8`
+- `brand-magenta` → `#ca1181`
+- `brand-coral` → `#ff2c48`
 
-Antes:
-
-```html
-<div class="student-card">...</div>
-```
-
-```css
-.student-card {
-  padding: 24px;
-  background: #1a221c;
-  border: 1px solid rgba(255,255,255,.1);
-}
-```
-
-Ahora:
+Uso:
 
 ```html
-<div class="border border-white/10 bg-aula-surface p-6">...</div>
+<div class="bg-brand-orange text-white"></div>
+<span class="text-brand-blue"></span>
 ```
 
-## Tokens de AulaGo disponibles
+### Tokens AulaGo existentes
 
-Puedes usar, entre otros:
+También se conservan los tokens `aula-*` usados por dashboards de estudiante, instructor y administrador para no romper esas pantallas durante la limpieza.
 
-- `bg-aula-bg`
-- `bg-aula-surface`
-- `text-aula-cream`
-- `text-aula-muted`
-- `text-aula-green`
-- `text-aula-orange`
-- `font-editorial`
-- `font-mono`
-- `max-w-aula`
-- `shadow-aula`
+## Landing
 
-## Flujo local
+La Landing fue separada en:
 
-Desde la carpeta `frontend`:
+- `HomeHero.vue`
+- `HomeCourseCarousel.vue`
+- `HomeHowItWorks.vue`
+- `HomeLearningModes.vue`
+- `HomeVideoShowcase.vue`
+- `HomeTestimonials.vue`
+
+`HomeView.vue` solo ensambla los componentes.
+
+## Línea de aprendizaje
+
+La sección **Aprende a tu ritmo, nivel por nivel** ya no usa cards horizontales. Ahora es una línea de tiempo vertical con cinco pasos.
+
+## Swiper
+
+El carrusel utiliza:
+
+```text
+swiper ^12.1.2
+```
+
+Instalación:
 
 ```bash
 npm install
-npm run dev
 ```
 
-Para validar antes de subir a GitHub:
+o si estás copiando únicamente los archivos modificados a otro proyecto:
 
 ```bash
-npm run build
+npm install swiper@^12.1.2
 ```
 
-## Qué CSS debería quedarse a largo plazo
-
-Idealmente el CSS manual debería terminar reducido a:
-
-- variables/globales realmente necesarias;
-- estilos muy especiales de animación o arte;
-- alguna regla que no tenga sentido expresar con utilidades.
-
-El layout, spacing, tipografía, colores, grids, responsive y estados visuales comunes pueden vivir en Tailwind.
+El Coverflow usa `slideToClickedSlide`, de forma que una tarjeta lateral pasa al centro cuando se selecciona.

@@ -14,7 +14,7 @@
       </div>
 
       <div class="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10" aria-label="Progreso del curso">
-        <div class="h-full rounded-full bg-aula-orange" :style="{ width: `${course.progress}%` }"></div>
+        <div class="h-full rounded-full bg-aula-orange transition-all" :class="progressWidthClass(course.progress)"></div>
       </div>
 
       <p class="mt-4 text-xs text-white/45">Siguiente: {{ course.nextLesson }}</p>
@@ -30,6 +30,21 @@
 </template>
 
 <script setup>
+function progressWidthClass(value) {
+  const progress = Number(value) || 0
+  if (progress >= 95) return 'w-full'
+  if (progress >= 85) return 'w-[90%]'
+  if (progress >= 75) return 'w-[80%]'
+  if (progress >= 65) return 'w-[70%]'
+  if (progress >= 55) return 'w-[60%]'
+  if (progress >= 45) return 'w-1/2'
+  if (progress >= 35) return 'w-[40%]'
+  if (progress >= 25) return 'w-[30%]'
+  if (progress >= 15) return 'w-1/5'
+  if (progress >= 5) return 'w-[10%]'
+  return 'w-0'
+}
+
 defineProps({
   course: {
     type: Object,

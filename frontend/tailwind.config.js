@@ -4,35 +4,39 @@ export default {
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx}',
   ],
-  // The existing project already has its own reset/base CSS. Disabling
-  // Tailwind preflight lets us migrate page-by-page without changing the
-  // appearance of Home/Login/Register unexpectedly.
-  corePlugins: {
-    preflight: false,
-    container: false,
-  },
   theme: {
     extend: {
       colors: {
+        brand: {
+          orange: '#ff7704',
+          green: '#73c103',
+          blue: '#20afe8',
+          magenta: '#ca1181',
+          coral: '#ff2c48',
+        },
         aula: {
-          bg: '#0c110e',
-          'bg-soft': '#506857',
-          surface: '#1a221c',
-          'surface-strong': '#404d44',
-          cream: '#f4f1e8',
-          muted: '#aaa9a1',
-          green: '#68b982',
-          'green-dark': '#244934',
-          'green-soft': '#21382a',
-          orange: '#ef8a43',
-          'orange-soft': '#f4b77f',
-          yellow: '#c6bb35',
+          bg: '#100d10',
+          'bg-soft': '#171318',
+          surface: '#19161b',
+          'surface-strong': '#231e24',
+          cream: '#f5f0e8',
+          muted: '#aaa1a7',
+          green: '#8eb67b',
+          'green-dark': '#223125',
+          'green-soft': '#1a251d',
+          orange: '#e88950',
+          'orange-soft': '#efb38d',
+          yellow: '#cdbb73',
+          plum: '#744a63',
+          'plum-soft': '#241820',
+          smoke: '#706971',
+          mist: '#d9d0ca',
         },
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Arial', 'Helvetica', 'sans-serif'],
-        editorial: ['DM Serif Display', 'Georgia', 'serif'],
-        mono: ['Azeret Mono', 'Consolas', 'monospace'],
+        sans: ['Sora', 'Arial', 'Helvetica', 'sans-serif'],
+        editorial: ['Bricolage Grotesque', 'Sora', 'Arial', 'sans-serif'],
+        mono: ['Sora', 'Arial', 'sans-serif'],
       },
       maxWidth: {
         aula: '1180px',

@@ -62,7 +62,7 @@
               <span class="text-xs font-extrabold text-aula-orange">{{ progress }}%</span>
             </div>
             <div class="mt-4 h-1 overflow-hidden rounded-full bg-white/10">
-              <div class="h-full bg-aula-orange" :style="{ width: `${progress}%` }"></div>
+              <div class="h-full bg-aula-orange transition-all" :class="progressWidthClass"></div>
             </div>
           </div>
 
@@ -106,6 +106,20 @@ const route = useRoute()
 const course = computed(() => courses.find((item) => item.slug === route.params.slug) || courses[0])
 const enrollment = computed(() => enrolledCourses.find((item) => item.slug === course.value.slug))
 const progress = computed(() => enrollment.value?.progress ?? 18)
+const progressWidthClass = computed(() => {
+  const value = Number(progress.value) || 0
+  if (value >= 95) return 'w-full'
+  if (value >= 85) return 'w-[90%]'
+  if (value >= 75) return 'w-[80%]'
+  if (value >= 65) return 'w-[70%]'
+  if (value >= 55) return 'w-[60%]'
+  if (value >= 45) return 'w-1/2'
+  if (value >= 35) return 'w-[40%]'
+  if (value >= 25) return 'w-[30%]'
+  if (value >= 15) return 'w-1/5'
+  if (value >= 5) return 'w-[10%]'
+  return 'w-0'
+})
 
 const modules = [
   {

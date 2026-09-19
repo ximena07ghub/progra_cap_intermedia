@@ -38,7 +38,7 @@
 
           <p v-if="status" class="border border-aula-green/30 bg-aula-green/10 px-4 py-3 text-sm text-aula-green">{{ status }}</p>
 
-          <button type="submit" class="min-h-12 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Confirmar compra mock</button>
+          <button type="submit" class="min-h-12 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Confirmar compra</button>
         </form>
       </section>
 
@@ -72,7 +72,7 @@ const status = ref('')
 const card = reactive({ name: '', number: '', expiry: '', cvv: '' })
 
 function submitPurchase() {
-  status.value = 'Compra simulada correctamente. El curso ya puede abrirse desde tu espacio.'
+  status.value = 'Compra realizada correctamente. El curso ya puede abrirse desde tu espacio.'
   window.setTimeout(() => router.push(`/estudiante/curso/${course.value.slug}`), 700)
 }
 </script>

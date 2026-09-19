@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 z-50 border-b border-white/10 bg-aula-bg/95 backdrop-blur-xl">
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-aula-bg/90 backdrop-blur-xl">
     <div class="mx-auto flex max-w-aula items-center gap-5 px-6 py-4 lg:px-8">
       <RouterLink to="/estudiante" class="shrink-0" aria-label="Ir a mi espacio AulaGo">
         <img :src="logoUrl" alt="AulaGo" class="h-9 w-auto" />
