@@ -12,7 +12,7 @@ const modules = [EffectCoverflow, Keyboard, A11y]
 const swiperInstance = ref(null)
 const activeIndex = ref(1)
 
-const featuredCourses = computed(() => courses.slice(0, 7))
+const featuredCourses = computed(() => courses.slice(0, 12))
 const activeCourse = computed(() => featuredCourses.value[activeIndex.value] || featuredCourses.value[0])
 
 function registerSwiper(swiper) {
@@ -25,7 +25,7 @@ function handleSlideChange(swiper) {
 }
 
 function selectSlide(index) {
-  swiperInstance.value?.slideTo(index)
+  swiperInstance.value?.slideToLoop(index)
 }
 
 function goPrevious() {
@@ -61,6 +61,8 @@ function goNext() {
             :modules="modules"
             effect="coverflow"
             :centered-slides="true"
+            :loop="true"
+            :loop-additional-slides="3"
             :slide-to-clicked-slide="true"
             :grab-cursor="true"
             :initial-slide="1"
