@@ -32,57 +32,47 @@ Apache / XAMPP
       └── MySQL: siguiente etapa
 ```
 
-No hay `localhost:5173`, Vue Router, Pinia ni servidor frontend independiente.
+#=======
+# AulaGo — migración PHP/XAMPP
 
-## Conversión pública
+Este checkpoint reemplaza la capa Vue/Vite por páginas PHP servidas directamente por Apache/XAMPP, conservando Tailwind, JavaScript y Swiper.
 
-| Vue | PHP |
-|---|---|
-| `HomeView.vue` + componentes Home | `index.php` + `includes/home/*` |
-| `CoursesView.vue` | `cursos.php` |
-| `CategoriesView.vue` | `categorias.php` + `catalog-filter.js` |
-| `SearchView.vue` | `buscar.php` |
-| `CourseDescriptionView.vue` | `curso.php` |
-| `LoginView.vue` | `login.php` + `actions/login.php` |
-| `RegisterView.vue` | `registro.php` + `actions/register.php` |
-| `ForgotPasswordView.vue` | `recuperar-contrasena.php` |
-| `CourseCard.vue` | `includes/components/course-card.php` |
-| `swiper/vue` | Swiper JS en `assets/vendor/swiper` |
+## Cómo abrir el proyecto
 
-Los 24 cursos y las 12 categorías de la versión Vue se conservaron en `data/catalog.php`. Los datos de kardex, mensajes, ventas y administración se migraron a `data/portal.php` como fuente temporal antes de MySQL.
+1. Extrae la carpeta como `C:\xampp\htdocs\prograCapaInter_php`.
+2. En XAMPP enciende **Apache**. MySQL puede quedar apagado en este checkpoint porque los datos siguen siendo mock.
+3. Abre `http://localhost/prograCapaInter_php/`.
 
-## Nuevo workspace
 
-Se reemplaza la idea de múltiples pantallas internas independientes por una carcasa de trabajo consistente:
+## Páginas públicas migradas
 
-```text
-┌──────────────┬──────────────────────────────┬──────────────────┐
-│ barra lateral│ contenido de la sección      │ resumen persistente│
-│ izquierda    │ seleccionada                 │ / progreso         │
-└──────────────┴──────────────────────────────┴──────────────────┘
-```
+- `index.php`: Home completo, incluido el carrusel infinito con Swiper JS.
+- `cursos.php`: catálogo completo de 24 cursos.
+- `categorias.php`: buscador, categorías y filtro por nivel en la misma pantalla.
+- `buscar.php`: búsqueda pública.
+- `curso.php?slug=...`: ficha completa de un curso.
+- `login.php`: acceso.
+- `registro.php`: registro estudiante/instructor.
+- `recuperar-contrasena.php`: recuperación simulada.
 
-La barra lateral cambia secciones dentro de la misma página usando `workspace.js` y hashes. El contenido principal puede desplazarse sin perder la navegación o la columna de resumen.
+## Workspaces por rol
 
-### Estudiante
+- `estudiante/`: Dashboard, Todos los cursos, Mensajes, Kardex, Certificados y Mi cuenta. La columna derecha permanece visible con progreso y actividad.
+- `instructor/`: Dashboard, Mis cursos, Crear curso, Mensajes, Ventas y Mi cuenta. La columna derecha resume alumnos, rating e ingresos.
+- `admin/`: Dashboard, Categorías, Usuarios, Comentarios, Reportes y Mi cuenta. La columna derecha resume salud operativa y pendientes.
 
-Sidebar: Dashboard, Todos los cursos, Mensajes, Kardex, Certificados, Mi cuenta. La derecha muestra progreso promedio, cursos activos, completados, actividad semanal y curso actual.
+### Accesos de demostración
 
-### Instructor
+Mientras conectamos MySQL, el login infiere el rol por el correo:
 
-Sidebar: Dashboard, Mis cursos, Crear curso, Mensajes, Ventas, Mi cuenta. La derecha reemplaza el progreso académico por indicadores útiles para el instructor: alumnos, rating, ingresos, mensajes y última venta.
+- estudiante: `estudiante@demo.com`
+- instructor: `instructor@demo.com`
+- administrador: `admin@demo.com`
 
-### Administrador
 
-Sidebar: Dashboard, Categorías, Usuarios, Comentarios, Reportes, Mi cuenta. La derecha muestra salud operativa, pendientes y moderación, no métricas académicas.
+## Siguiente etapa
 
-Usar el mismo patrón para los tres roles es conveniente porque mantiene la aplicación coherente, pero cada rol conserva información y prioridades distintas.
-
-## Archivos que ya no son necesarios
-
-Se retiraron los headers internos anteriores (`student-header.php`, `workspace-header.php`) y el placeholder de migración. El workspace nuevo incluye su propia navegación lateral compartida en `includes/workspace/sidebar.php`.
-
-## Próximo trabajo
+Conectar MySQL y reemplazar `data/catalog.php` y `data/portal.php` por consultas PHP reales manteniendo exactamente estas vistas.
 
 1. Definir esquema MySQL.
 2. Conectar registro/login con usuarios reales y `password_hash`/`password_verify`.
@@ -90,10 +80,3 @@ Se retiraron los headers internos anteriores (`student-header.php`, `workspace-h
 4. Implementar compra/inscripción y contenido del curso.
 5. Persistir progreso, mensajes, kardex, certificados, ventas y moderación.
 
-## Corrección posterior: carrusel y workspace
-
-- Se retiró el efecto `coverflow` del carrusel público porque junto con `overflow: visible` permitía que las slides laterales invadieran visualmente la ficha de información. Swiper sigue siendo infinito (`loop: true`), centrado y navegable por botones/clic/teclado, pero queda contenido en su columna.
-- La interacción de la ficha del curso se implementa con `home-carousel.js`, sin componentes Vue.
-- El dashboard de estudiante adopta el patrón de "curso abierto" solicitado: selector de cursos activos, bloque de sesión actual y lista de siguientes lecciones. Es una simulación alimentada por los mocks actuales y está preparada para sustituirse por progreso MySQL.
-- Mensajes ya no cambia solamente el nombre del participante: cada conversación se serializa desde PHP a JSON local y `workspace.js` renderiza el hilo correcto al seleccionarla.
-- La columna contextual derecha se hizo no desplazable en escritorio. El contenido central y las subáreas que sí necesitan desplazamiento conservan scroll.
