@@ -1,0 +1,395 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'kardexRecords' => [
+            [
+                        'id' => 1,
+                        'slug' => 'neuro-habitos',
+                        'course' => 'Neuro-Hábitos',
+                        'category' => 'Bienestar',
+                        'instructor' => 'Psic. Ana Solís',
+                        'finishedAt' => '2026-09-15',
+                        'grade' => 96,
+                        'amount' => 680,
+                        'certificateId' => 'AG-2026-0001'
+                    ],
+            [
+                        'id' => 2,
+                        'slug' => 'diseno-que-comunica',
+                        'course' => 'Diseño que comunica',
+                        'category' => 'Diseño',
+                        'instructor' => 'Lucía Rojas',
+                        'finishedAt' => '2026-08-22',
+                        'grade' => 91,
+                        'amount' => 790,
+                        'certificateId' => 'AG-2026-0002'
+                    ],
+            [
+                        'id' => 3,
+                        'slug' => 'fundamentos-web',
+                        'course' => 'Fundamentos Web',
+                        'category' => 'IT & Software',
+                        'instructor' => 'Diego Villarreal',
+                        'finishedAt' => '2025-12-11',
+                        'grade' => 88,
+                        'amount' => 850,
+                        'certificateId' => 'AG-2025-0018'
+                    ]
+        ],
+    'courseReviews' => [
+            'neuro-habitos' => [
+                        [
+                                        'id' => 1,
+                                        'name' => 'Mariana T.',
+                                        'avatar' => 'MT',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-09-10',
+                                        'comment' => 'La estructura por niveles me ayudó a aplicar los ejercicios sin sentir el contenido pesado.'
+                                    ],
+                        [
+                                        'id' => 2,
+                                        'name' => 'Carlos R.',
+                                        'avatar' => 'CR',
+                                        'rating' => 4,
+                                        'completedAt' => '2026-08-28',
+                                        'comment' => 'Me gustaron las actividades prácticas. Agregaría un ejemplo extra en el último módulo.'
+                                    ],
+                        [
+                                        'id' => 3,
+                                        'name' => 'Fernanda G.',
+                                        'avatar' => 'FG',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-08-17',
+                                        'comment' => 'Muy claro y directo. Sí sentí diferencia al organizar mis señales de inicio.'
+                                    ]
+                    ],
+            'desbloqueo-creativo-dibujo' => [
+                        [
+                                        'id' => 1,
+                                        'name' => 'María T.',
+                                        'avatar' => 'MT',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-09-12',
+                                        'comment' => 'Volví a dibujar sin sentir que cada boceto tenía que quedar perfecto.'
+                                    ],
+                        [
+                                        'id' => 2,
+                                        'name' => 'Andrea P.',
+                                        'avatar' => 'AP',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-09-04',
+                                        'comment' => 'Los ejercicios cortos me ayudaron a empezar incluso en días con poca energía.'
+                                    ]
+                    ],
+            'interfaces-con-vue' => [
+                        [
+                                        'id' => 1,
+                                        'name' => 'Eduardo R.',
+                                        'avatar' => 'ER',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-08-30',
+                                        'comment' => 'Me funcionó dividir el aprendizaje en bloques pequeños y practicar un concepto por sesión.'
+                                    ]
+                    ],
+            'movimiento-para-estres' => [
+                        [
+                                        'id' => 1,
+                                        'name' => 'Daniela S.',
+                                        'avatar' => 'DS',
+                                        'rating' => 5,
+                                        'completedAt' => '2026-09-01',
+                                        'comment' => 'Las pausas son fáciles de integrar entre sesiones de trabajo y no requieren equipo.'
+                                    ]
+                    ]
+        ],
+    'conversations' => [
+            [
+                        'id' => 1,
+                        'participant' => 'Psic. Ana Solís',
+                        'participantRole' => 'Instructor',
+                        'avatar' => 'AS',
+                        'course' => 'Neuro-Hábitos',
+                        'messages' => [
+                                        [
+                                                            'id' => 1,
+                                                            'from' => 'other',
+                                                            'date' => '2026-09-15',
+                                                            'time' => '18:35',
+                                                            'text' => 'Hola, ¿cómo vas con el ejercicio del nivel 3?'
+                                                        ],
+                                        [
+                                                            'id' => 2,
+                                                            'from' => 'me',
+                                                            'date' => '2026-09-15',
+                                                            'time' => '18:42',
+                                                            'text' => 'Ya lo terminé. Solo tengo duda sobre cómo medir la señal de inicio.'
+                                                        ],
+                                        [
+                                                            'id' => 3,
+                                                            'from' => 'other',
+                                                            'date' => '2026-09-15',
+                                                            'time' => '18:48',
+                                                            'text' => 'Puedes usar una acción concreta y repetible. Si quieres, mañana revisamos tu ejemplo.'
+                                                        ]
+                                    ]
+                    ],
+            [
+                        'id' => 2,
+                        'participant' => 'Diego Villarreal',
+                        'participantRole' => 'Instructor',
+                        'avatar' => 'DV',
+                        'course' => 'Fundamentos Web',
+                        'messages' => [
+                                        [
+                                                            'id' => 1,
+                                                            'from' => 'other',
+                                                            'date' => '2026-09-12',
+                                                            'time' => '11:05',
+                                                            'text' => 'Recuerda subir tu ejercicio antes de continuar con la siguiente lección.'
+                                                        ]
+                                    ]
+                    ]
+        ],
+    'instructorCourses' => [
+            [
+                        'id' => 1,
+                        'slug' => 'neuro-habitos',
+                        'title' => 'Neuro-Hábitos',
+                        'category' => 'Bienestar',
+                        'status' => 'Publicado',
+                        'students' => 128,
+                        'price' => 680,
+                        'rating' => 4.7,
+                        'updatedAt' => '2026-09-14'
+                    ],
+            [
+                        'id' => 2,
+                        'slug' => 'enfoque-profundo',
+                        'title' => 'Enfoque profundo',
+                        'category' => 'Bienestar',
+                        'status' => 'Borrador',
+                        'students' => 0,
+                        'price' => 610,
+                        'rating' => 0,
+                        'updatedAt' => '2026-09-08'
+                    ]
+        ],
+    'salesTransactions' => [
+            [
+                        'id' => 'V-1042',
+                        'courseSlug' => 'neuro-habitos',
+                        'course' => 'Neuro-Hábitos',
+                        'student' => 'Mariana Torres',
+                        'date' => '2026-09-15',
+                        'amount' => 680
+                    ],
+            [
+                        'id' => 'V-1041',
+                        'courseSlug' => 'neuro-habitos',
+                        'course' => 'Neuro-Hábitos',
+                        'student' => 'Carlos Ramírez',
+                        'date' => '2026-09-14',
+                        'amount' => 680
+                    ],
+            [
+                        'id' => 'V-1039',
+                        'courseSlug' => 'neuro-habitos',
+                        'course' => 'Neuro-Hábitos',
+                        'student' => 'Fernanda García',
+                        'date' => '2026-09-11',
+                        'amount' => 680
+                    ],
+            [
+                        'id' => 'V-1033',
+                        'courseSlug' => 'enfoque-profundo',
+                        'course' => 'Enfoque profundo',
+                        'student' => 'Luis Peña',
+                        'date' => '2026-08-29',
+                        'amount' => 610
+                    ]
+        ],
+    'adminCategories' => [
+            [
+                        'id' => 1,
+                        'name' => 'Bienestar',
+                        'slug' => 'bienestar',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 2,
+                        'name' => 'Creatividad',
+                        'slug' => 'creatividad',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 3,
+                        'name' => 'Diseño',
+                        'slug' => 'diseno',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 4,
+                        'name' => 'IT & Software',
+                        'slug' => 'software',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 5,
+                        'name' => 'Productividad',
+                        'slug' => 'productividad',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 6,
+                        'name' => 'Comunicación',
+                        'slug' => 'comunicacion',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 7,
+                        'name' => 'Movimiento',
+                        'slug' => 'movimiento',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 8,
+                        'name' => 'Música',
+                        'slug' => 'musica',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 9,
+                        'name' => 'Cocina',
+                        'slug' => 'cocina',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 10,
+                        'name' => 'Naturaleza',
+                        'slug' => 'naturaleza',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 11,
+                        'name' => 'Marketing',
+                        'slug' => 'marketing',
+                        'courses' => 2,
+                        'active' => true
+                    ],
+            [
+                        'id' => 12,
+                        'name' => 'Finanzas personales',
+                        'slug' => 'finanzas',
+                        'courses' => 2,
+                        'active' => true
+                    ]
+        ],
+    'adminUsers' => [
+            [
+                        'id' => 1,
+                        'name' => 'Mariana Torres',
+                        'email' => 'mariana@example.com',
+                        'role' => 'estudiante',
+                        'status' => 'Activo',
+                        'reports' => 0
+                    ],
+            [
+                        'id' => 2,
+                        'name' => 'Ana Solís',
+                        'email' => 'ana@aulago.mx',
+                        'role' => 'instructor',
+                        'status' => 'Activo',
+                        'reports' => 1
+                    ],
+            [
+                        'id' => 3,
+                        'name' => 'Usuario Reportado',
+                        'email' => 'reportado@example.com',
+                        'role' => 'estudiante',
+                        'status' => 'Activo',
+                        'reports' => 3
+                    ]
+        ],
+    'adminComments' => [
+            [
+                        'id' => 1,
+                        'user' => 'Mariana Torres',
+                        'course' => 'Neuro-Hábitos',
+                        'rating' => 5,
+                        'date' => '2026-09-15',
+                        'status' => 'Visible',
+                        'text' => 'Me ayudó mucho la estructura del curso.'
+                    ],
+            [
+                        'id' => 2,
+                        'user' => 'Carlos Ramírez',
+                        'course' => 'Neuro-Hábitos',
+                        'rating' => 4,
+                        'date' => '2026-09-14',
+                        'status' => 'Visible',
+                        'text' => 'Buen curso, agregaría más ejemplos al final.'
+                    ],
+            [
+                        'id' => 3,
+                        'user' => 'Usuario Reportado',
+                        'course' => 'Fundamentos Web',
+                        'rating' => 1,
+                        'date' => '2026-09-13',
+                        'status' => 'Reportado',
+                        'text' => 'Comentario pendiente de moderación por reporte.'
+                    ]
+        ],
+    'instructorConversations' => [
+            [
+                        'id' => 101,
+                        'participant' => 'Mariana Torres',
+                        'participantRole' => 'Estudiante',
+                        'avatar' => 'MT',
+                        'course' => 'Neuro-Hábitos',
+                        'messages' => [
+                                        [
+                                                            'id' => 1,
+                                                            'from' => 'other',
+                                                            'date' => '2026-09-15',
+                                                            'time' => '18:42',
+                                                            'text' => 'Ya terminé el ejercicio. ¿Cómo puedo medir mejor la señal de inicio?'
+                                                        ],
+                                        [
+                                                            'id' => 2,
+                                                            'from' => 'me',
+                                                            'date' => '2026-09-15',
+                                                            'time' => '18:48',
+                                                            'text' => 'Usa una acción concreta y repetible. Mañana podemos revisar tu ejemplo.'
+                                                        ]
+                                    ]
+                    ],
+            [
+                        'id' => 102,
+                        'participant' => 'Carlos Ramírez',
+                        'participantRole' => 'Estudiante',
+                        'avatar' => 'CR',
+                        'course' => 'Neuro-Hábitos',
+                        'messages' => [
+                                        [
+                                                            'id' => 1,
+                                                            'from' => 'other',
+                                                            'date' => '2026-09-14',
+                                                            'time' => '09:15',
+                                                            'text' => '¿El material complementario del nivel 2 se entrega en PDF?'
+                                                        ]
+                                    ]
+                    ]
+        ]
+];

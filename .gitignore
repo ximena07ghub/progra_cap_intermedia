@@ -5,9 +5,6 @@ Thumbs.db
 # VS Code local
 .vscode/
 
-# Variables privadas
-.env
-
 # Archivos subidos por usuarios
 public/uploads/
 
@@ -20,3 +17,14 @@ node_modules/
 
 #archvios privados de la base de datos
 app/config/config.php
+
+# Dependencias de Node
+node_modules/
+
+# Variables privadas
+.env
+.env.local
+
+# Editor
+.vscode/
+.idea/

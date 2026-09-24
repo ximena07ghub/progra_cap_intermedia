@@ -1,0 +1,174 @@
+/* Ajustes globales mínimos. La identidad visual principal vive en Tailwind. */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #100d10;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 80% 8%, rgba(116, 74, 99, 0.055), transparent 28rem),
+    radial-gradient(circle at 12% 42%, rgba(142, 182, 123, 0.035), transparent 30rem),
+    #100d10;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+::selection {
+  background: rgba(232, 137, 80, 0.28);
+  color: #f5f0e8;
+}
+
+/*
+ * Carrusel público.
+ * Swiper funciona como JS normal: no hay swiper/vue ni runtime de Vue.
+ * El escenario recorta las diapositivas para impedir que invadan la ficha lateral.
+ */
+.carousel-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-courses-swiper {
+  overflow: hidden;
+  padding: 8px 0 10px;
+}
+
+.home-courses-swiper .swiper-slide {
+  opacity: 0.36;
+  transform: scale(0.9);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.home-courses-swiper .swiper-slide-prev,
+.home-courses-swiper .swiper-slide-next {
+  opacity: 0.66;
+  transform: scale(0.95);
+}
+
+.home-courses-swiper .swiper-slide-active {
+  z-index: 2;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.course-carousel-card {
+  min-height: 100%;
+}
+
+.course-carousel-detail {
+  min-width: 0;
+}
+
+/* Workspace: navegación contenida y activa sin convertir todo en tarjetas redondeadas. */
+.workspace-nav-link.is-active {
+  border-left-color: #e88950;
+  background: rgba(232, 137, 80, 0.07);
+  color: #f5f0e8;
+}
+
+.workspace-nav-link.is-active > span:first-child {
+  color: #efb38d;
+}
+
+.workspace-sidebar,
+.workspace-context,
+.workspace-main {
+  min-width: 0;
+}
+
+.workspace-context {
+  overscroll-behavior: none;
+}
+
+.dashboard-course-option.is-current {
+  border-color: rgba(142, 182, 123, 0.38);
+  background: rgba(142, 182, 123, 0.055);
+  box-shadow: inset 2px 0 0 #8eb67b;
+}
+
+.conversation-button.is-selected {
+  background: rgba(142, 182, 123, 0.07);
+  box-shadow: inset 2px 0 0 #8eb67b;
+}
+
+.message-stream {
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 1023px) {
+  .workspace-message-shell {
+    min-height: 620px;
+  }
+}
+
+/*
+ * En escritorio la columna de contexto queda fija y sin scroll.
+ * Solamente el contenido central (y subáreas como mensajes/tablas) puede desplazarse.
+ */
+@media (min-width: 1024px) {
+  .workspace-context {
+    height: 100vh;
+    overflow: hidden !important;
+  }
+
+  .workspace-main {
+    overscroll-behavior: contain;
+  }
+
+  [data-workspace-panel="mensajes"] {
+    min-height: 100%;
+  }
+
+  .workspace-message-shell {
+    height: calc(100vh - 178px);
+    min-height: 500px;
+    max-height: 720px;
+    overflow: hidden;
+  }
+
+  .conversation-list,
+  .conversation-list-scroll,
+  [data-message-thread],
+  .message-stream {
+    min-height: 0;
+  }
+
+  .conversation-list {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .conversation-list-scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  [data-workspace] * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 240, 232, 0.16) transparent;
+  }
+
+  [data-workspace] *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  [data-workspace] *::-webkit-scrollbar-thumb {
+    background: rgba(245, 240, 232, 0.14);
+  }
+}
+
+@media (min-width: 1280px) {
+  .workspace-message-shell {
+    height: calc(100vh - 170px);
+    max-height: none;
+  }
+}
