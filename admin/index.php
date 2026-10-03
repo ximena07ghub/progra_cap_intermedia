@@ -10,6 +10,8 @@ $portal = portal_data();
 $adminCategories = $portal['adminCategories'] ?? [];
 $adminUsers = $portal['adminUsers'] ?? [];
 $adminComments = $portal['adminComments'] ?? [];
+$payments = sales_transactions();
+$paypalPayments = array_values(array_filter($payments, fn(array $payment): bool => ($payment['provider'] ?? '') === 'PayPal'));
 $totalReports = array_sum(array_column($adminUsers, 'reports'));
 $reportedComments = array_values(array_filter($adminComments, fn(array $comment): bool => ($comment['status'] ?? '') === 'Reportado'));
 $workspaceRoleLabel = 'Workspace administrativo';
@@ -17,6 +19,7 @@ $workspaceItems = [
     ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => '⌂'],
     ['id' => 'categorias', 'label' => 'Categorías', 'icon' => '▦'],
     ['id' => 'usuarios', 'label' => 'Usuarios', 'icon' => '◎'],
+    ['id' => 'pagos', 'label' => 'Pagos', 'icon' => '$'],
     ['id' => 'comentarios', 'label' => 'Comentarios', 'icon' => '✉'],
     ['id' => 'reportes', 'label' => 'Reportes', 'icon' => '!'],
     ['id' => 'cuenta', 'label' => 'Mi cuenta', 'icon' => '○'],
@@ -37,10 +40,11 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
     <main class="workspace-main min-h-0 flex-1 overflow-y-auto px-5 py-6 md:px-7 lg:px-8 lg:py-7">
       <section data-workspace-panel="dashboard" data-title="Dashboard" data-eyebrow="Estado general">
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="admin-dashboard-metrics">
           <article class="border border-white/10 bg-white/[0.02] p-4"><span class="text-[9px] uppercase tracking-[0.12em] text-white/30">Usuarios</span><strong class="mt-2 block text-2xl"><?= e(count($adminUsers)) ?></strong><small class="mt-1 block text-[10px] text-white/30">Cuentas registradas</small></article>
           <article class="border border-white/10 bg-white/[0.02] p-4"><span class="text-[9px] uppercase tracking-[0.12em] text-white/30">Categorías</span><strong class="mt-2 block text-2xl text-aula-green"><?= e(count($adminCategories)) ?></strong><small class="mt-1 block text-[10px] text-white/30">Catálogo activo</small></article>
           <article class="border border-white/10 bg-white/[0.02] p-4"><span class="text-[9px] uppercase tracking-[0.12em] text-white/30">Comentarios</span><strong class="mt-2 block text-2xl text-[#9fcbd5]"><?= e(count($adminComments)) ?></strong><small class="mt-1 block text-[10px] text-white/30">Opiniones registradas</small></article>
+          <article class="border border-white/10 bg-white/[0.02] p-4"><span class="text-[9px] uppercase tracking-[0.12em] text-white/30">Pagos</span><strong class="mt-2 block text-2xl text-aula-green"><?= e(count($payments)) ?></strong><small class="mt-1 block text-[10px] text-white/30"><?= e(count($paypalPayments)) ?> confirmados por PayPal</small></article>
           <article class="border border-white/10 bg-white/[0.02] p-4"><span class="text-[9px] uppercase tracking-[0.12em] text-white/30">Reportes</span><strong class="mt-2 block text-2xl text-aula-orange-soft"><?= e($totalReports) ?></strong><small class="mt-1 block text-[10px] text-white/30">Pendientes de revisar</small></article>
         </div>
 
@@ -68,6 +72,31 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         <div class="overflow-x-auto border border-white/10"><table class="min-w-full text-left text-sm"><thead class="bg-white/[0.025] text-[10px] uppercase tracking-[0.12em] text-white/35"><tr><th class="px-5 py-4">Usuario</th><th class="px-5 py-4">Rol</th><th class="px-5 py-4">Estado</th><th class="px-5 py-4">Reportes</th><th class="px-5 py-4">Acción</th></tr></thead><tbody class="divide-y divide-white/10"><?php foreach ($adminUsers as $user): ?><tr><td class="px-5 py-4"><strong class="block text-white/80"><?= e($user['name']) ?></strong><span class="mt-1 block text-xs text-white/30"><?= e($user['email']) ?></span></td><td class="px-5 py-4 text-white/45"><?= e(ucfirst($user['role'])) ?></td><td class="px-5 py-4 text-aula-green"><?= e($user['status']) ?></td><td class="px-5 py-4 <?= $user['reports'] > 0 ? 'font-bold text-aula-orange-soft' : 'text-white/35' ?>"><?= e($user['reports']) ?></td><td class="px-5 py-4"><button type="button" class="text-xs font-bold text-white/45 hover:text-white">Revisar →</button></td></tr><?php endforeach; ?></tbody></table></div>
       </section>
 
+      <section data-workspace-panel="pagos" data-title="Pagos" data-eyebrow="Transacciones e inscripciones" hidden>
+        <div class="mb-6 flex flex-col gap-3 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div><p class="max-w-2xl text-sm leading-7 text-white/45">Esta vista recibe las transacciones confirmadas por el proveedor de pago. Mientras no haya MySQL, las compras nuevas de Sandbox viven en la sesión actual.</p></div>
+          <span class="text-xs font-bold text-aula-green"><?= e(count($paypalPayments)) ?> PayPal confirmadas</span>
+        </div>
+        <div class="overflow-x-auto border border-white/10">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-white/[0.025] text-[10px] uppercase tracking-[0.12em] text-white/35"><tr><th class="px-5 py-4">Orden</th><th class="px-5 py-4">Curso</th><th class="px-5 py-4">Estudiante</th><th class="px-5 py-4">Proveedor</th><th class="px-5 py-4">Estado</th><th class="px-5 py-4">Fecha</th><th class="px-5 py-4">Monto</th></tr></thead>
+            <tbody class="divide-y divide-white/10">
+              <?php foreach ($payments as $payment): ?>
+                <tr>
+                  <td class="px-5 py-4 text-xs text-white/35"><?= e($payment['order_id'] ?? $payment['id'] ?? '—') ?></td>
+                  <td class="px-5 py-4 font-bold text-white/75"><?= e($payment['course'] ?? '—') ?></td>
+                  <td class="px-5 py-4 text-white/45"><?= e($payment['student'] ?? '—') ?></td>
+                  <td class="px-5 py-4 text-xs text-white/40"><?= e($payment['provider'] ?? 'AulaGo') ?></td>
+                  <td class="px-5 py-4 text-xs font-bold <?= ($payment['status'] ?? '') === 'COMPLETED' ? 'text-aula-green' : 'text-aula-yellow' ?>"><?= e($payment['status'] ?? '—') ?></td>
+                  <td class="px-5 py-4 text-white/40"><?= e(format_date_es((string) ($payment['date'] ?? ''))) ?></td>
+                  <td class="px-5 py-4 font-bold text-aula-orange-soft"><?= e(format_transaction_amount($payment)) ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section data-workspace-panel="comentarios" data-title="Comentarios" data-eyebrow="Moderación de contenido" hidden>
         <div class="space-y-4">
           <?php foreach ($adminComments as $comment): ?>
@@ -90,7 +119,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
   <aside class="workspace-context hidden overflow-hidden bg-[#151116] p-5 lg:block">
     <div class="flex items-center justify-between"><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">Salud operativa</p><span class="text-aula-green">●</span></div>
     <div class="mt-6 flex items-center gap-4"><span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark text-lg font-extrabold text-aula-green"><?= e(user_initials()) ?></span><div><strong class="block text-sm text-white/85"><?= e(user_name()) ?></strong><span class="mt-1 block text-xs text-white/30">Administrador · AulaGo</span></div></div>
-    <div class="mt-8 grid grid-cols-2 gap-px bg-white/10"><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Usuarios</span><strong class="mt-2 block text-2xl"><?= e(count($adminUsers)) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Categorías</span><strong class="mt-2 block text-2xl text-aula-green"><?= e(count($adminCategories)) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Reportes</span><strong class="mt-2 block text-2xl text-aula-orange-soft"><?= e($totalReports) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Moderación</span><strong class="mt-2 block text-2xl text-[#9fcbd5]"><?= e(count($reportedComments)) ?></strong></div></div>
+    <div class="mt-8 grid grid-cols-2 gap-px bg-white/10"><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Usuarios</span><strong class="mt-2 block text-2xl"><?= e(count($adminUsers)) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Categorías</span><strong class="mt-2 block text-2xl text-aula-green"><?= e(count($adminCategories)) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Pagos</span><strong class="mt-2 block text-2xl text-[#9fcbd5]"><?= e(count($payments)) ?></strong></div><div class="bg-[#151116] p-4"><span class="text-[9px] uppercase tracking-[0.1em] text-white/30">Reportes</span><strong class="mt-2 block text-2xl text-aula-orange-soft"><?= e($totalReports) ?></strong></div></div>
     <section class="mt-8 border border-white/10 bg-aula-bg/35 p-4"><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Prioridad actual</p><h2 class="mt-3 font-editorial text-xl font-semibold">Revisar contenido reportado</h2><p class="mt-2 text-xs leading-5 text-white/35">Hay <?= e($totalReports) ?> reportes vinculados a usuarios y <?= e(count($reportedComments)) ?> comentario señalado.</p><a href="#reportes" data-workspace-link="reportes" class="mt-4 inline-block text-xs font-bold text-aula-orange-soft">Abrir reportes →</a></section>
     <section class="mt-8 border-t border-white/10 pt-6"><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Sistema</p><div class="mt-4 space-y-3 text-xs"><div class="flex justify-between"><span class="text-white/35">Catálogo</span><strong class="text-aula-green">Operativo</strong></div><div class="flex justify-between"><span class="text-white/35">Sesiones</span><strong class="text-aula-green">Operativas</strong></div><div class="flex justify-between"><span class="text-white/35">Moderación</span><strong class="text-aula-orange-soft">Requiere atención</strong></div></div></section>
   </aside>

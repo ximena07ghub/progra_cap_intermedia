@@ -24,12 +24,25 @@ usort($relatedCourses, function (array $a, array $b) use ($course): int {
 });
 $relatedCourses = array_slice($relatedCourses, 0, 3);
 
+$priceInfo = course_price_info($course);
+$purchaseMode = 'link';
+$checkoutTarget = url('estudiante/checkout.php?slug=' . rawurlencode($course['slug']));
+
 if (!is_authenticated()) {
-    $purchaseTarget = url('login.php?redirect=' . rawurlencode(url('curso.php?slug=' . $course['slug'])));
-    $purchaseLabel = 'Comenzar curso';
+    $purchaseTarget = url('login.php?redirect=' . rawurlencode($checkoutTarget));
+    $purchaseLabel = $priceInfo['free'] ? 'Iniciar sesión para inscribirme' : 'Comprar curso';
 } elseif (user_role() === 'estudiante') {
-    $purchaseTarget = url('estudiante/#cursos');
-    $purchaseLabel = 'Comprar curso';
+    if (student_owns_course($course['slug'])) {
+        $purchaseTarget = url('estudiante/?course=' . rawurlencode($course['slug']) . '#cursos');
+        $purchaseLabel = 'Ir a mis cursos';
+    } elseif ($priceInfo['free']) {
+        $purchaseTarget = url('actions/enroll-free.php');
+        $purchaseLabel = 'Inscribirme gratis';
+        $purchaseMode = 'free-form';
+    } else {
+        $purchaseTarget = $checkoutTarget;
+        $purchaseLabel = 'Comprar curso';
+    }
 } else {
     $purchaseTarget = role_home_url();
     $purchaseLabel = 'Volver a mi espacio';
@@ -64,9 +77,17 @@ require PROJECT_ROOT . '/includes/layout/head.php';
               <span class="block text-[10px] uppercase tracking-[0.12em] text-white/35">Acceso completo</span>
               <strong class="mt-1 block text-xl text-aula-cream"><?= e($course['price']) ?></strong>
             </div>
-            <a href="<?= e($purchaseTarget) ?>" class="inline-flex min-h-11 items-center justify-center bg-aula-orange px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg transition hover:-translate-y-0.5">
-              <?= e($purchaseLabel) ?>
-            </a>
+            <?php if ($purchaseMode === 'free-form'): ?>
+              <form action="<?= e($purchaseTarget) ?>" method="post">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
+                <button type="submit" class="inline-flex min-h-11 items-center justify-center bg-aula-orange px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg transition hover:-translate-y-0.5"><?= e($purchaseLabel) ?></button>
+              </form>
+            <?php else: ?>
+              <a href="<?= e($purchaseTarget) ?>" class="inline-flex min-h-11 items-center justify-center bg-aula-orange px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg transition hover:-translate-y-0.5">
+                <?= e($purchaseLabel) ?>
+              </a>
+            <?php endif; ?>
           </div>
         </div>
 

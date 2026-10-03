@@ -31,3 +31,6 @@ node_modules/
 
 # API PayPal
 /config/paypal.local.php
+
+# Estado temporal de pagos/inscripciones antes de MySQL
+/data/runtime/*.json

@@ -41,6 +41,13 @@ function url(string $path = ''): string
     return ($base !== '' ? $base : '') . '/' . $path;
 }
 
+function absolute_url(string $path = ''): string
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = trim((string) ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+    return $scheme . '://' . $host . url($path);
+}
+
 function asset(string $path): string
 {
     return url('assets/' . ltrim($path, '/'));
@@ -64,6 +71,56 @@ function portal_data(): array
     return $portal;
 }
 
+function runtime_store_path(): string
+{
+    return PROJECT_ROOT . '/data/runtime/payment-state.json';
+}
+
+function runtime_store(): array
+{
+    $path = runtime_store_path();
+    if (!is_file($path)) {
+        return ['purchases' => [], 'transactions' => []];
+    }
+
+    $decoded = json_decode((string) file_get_contents($path), true);
+    if (!is_array($decoded)) {
+        return ['purchases' => [], 'transactions' => []];
+    }
+
+    return [
+        'purchases' => is_array($decoded['purchases'] ?? null) ? $decoded['purchases'] : [],
+        'transactions' => is_array($decoded['transactions'] ?? null) ? $decoded['transactions'] : [],
+    ];
+}
+
+function save_runtime_store(array $store): void
+{
+    $path = runtime_store_path();
+    $directory = dirname($path);
+    if (!is_dir($directory)) {
+        mkdir($directory, 0775, true);
+    }
+
+    $handle = fopen($path, 'c+');
+    if ($handle === false) {
+        throw new RuntimeException('No fue posible abrir el almacenamiento temporal de pagos.');
+    }
+
+    try {
+        if (!flock($handle, LOCK_EX)) {
+            throw new RuntimeException('No fue posible bloquear el almacenamiento temporal de pagos.');
+        }
+        ftruncate($handle, 0);
+        rewind($handle);
+        fwrite($handle, json_encode($store, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        fflush($handle);
+        flock($handle, LOCK_UN);
+    } finally {
+        fclose($handle);
+    }
+}
+
 function courses(): array
 {
     return catalog()['courses'] ?? [];
@@ -74,9 +131,64 @@ function categories(): array
     return catalog()['categories'] ?? [];
 }
 
-function enrolled_courses(): array
+function base_enrolled_courses(): array
 {
     return catalog()['enrolledCourses'] ?? [];
+}
+
+function completed_purchases(): array
+{
+    $sessionPurchases = is_array($_SESSION['completed_purchases'] ?? null)
+        ? $_SESSION['completed_purchases']
+        : [];
+
+    $email = text_lower(trim(user_email()));
+    if ($email === '') {
+        return $sessionPurchases;
+    }
+
+    $store = runtime_store();
+    $persisted = is_array($store['purchases'][$email] ?? null)
+        ? $store['purchases'][$email]
+        : [];
+
+    return array_replace($persisted, $sessionPurchases);
+}
+
+function student_owns_course(string $slug): bool
+{
+    foreach (base_enrolled_courses() as $course) {
+        if (($course['slug'] ?? '') === $slug) {
+            return true;
+        }
+    }
+
+    return isset(completed_purchases()[$slug]);
+}
+
+function enrolled_courses(): array
+{
+    $enrolled = base_enrolled_courses();
+    $ownedSlugs = array_column($enrolled, 'slug');
+
+    foreach (completed_purchases() as $slug => $purchase) {
+        if (in_array($slug, $ownedSlugs, true)) {
+            continue;
+        }
+
+        $course = course_by_slug($slug);
+        if (!$course) {
+            continue;
+        }
+
+        $course['progress'] = 0;
+        $course['nextLesson'] = 'Introducción y mapa del curso';
+        $course['purchasedAt'] = $purchase['date'] ?? date('Y-m-d');
+        $enrolled[] = $course;
+        $ownedSlugs[] = $slug;
+    }
+
+    return $enrolled;
 }
 
 function course_by_slug(string $slug): ?array
@@ -99,6 +211,35 @@ function category_by_id(string $categoryId): ?array
     return null;
 }
 
+function course_price_info(array $course): array
+{
+    $raw = trim((string) ($course['price'] ?? ''));
+    if ($raw === '' || text_lower($raw) === 'gratis') {
+        return [
+            'free' => true,
+            'amount' => '0.00',
+            'currency' => null,
+            'label' => $raw !== '' ? $raw : 'Gratis',
+        ];
+    }
+
+    $amount = null;
+    if (preg_match('/([0-9]+(?:[.,][0-9]{1,2})?)/', $raw, $match)) {
+        $amount = (float) str_replace(',', '.', $match[1]);
+    }
+
+    $currency = 'USD';
+    if (preg_match('/\b([A-Z]{3})\b/', strtoupper($raw), $match)) {
+        $currency = $match[1];
+    }
+
+    return [
+        'free' => $amount === null || $amount <= 0,
+        'amount' => number_format(max(0, (float) $amount), 2, '.', ''),
+        'currency' => $currency,
+        'label' => $raw,
+    ];
+}
 
 function text_lower(string $value): string
 {
@@ -184,6 +325,133 @@ function require_role(string $role): void
         header('Location: ' . role_home_url());
         exit;
     }
+}
+
+function csrf_token(): string
+{
+    if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verify_csrf(?string $token): bool
+{
+    $sessionToken = $_SESSION['csrf_token'] ?? null;
+    return is_string($sessionToken) && is_string($token) && $token !== '' && hash_equals($sessionToken, $token);
+}
+
+function record_completed_purchase(
+    array $course,
+    string $provider,
+    string $orderId,
+    string $amount,
+    ?string $currency,
+    string $status = 'COMPLETED'
+): void {
+    $slug = (string) ($course['slug'] ?? '');
+    if ($slug === '') {
+        return;
+    }
+
+    $purchase = [
+        'slug' => $slug,
+        'course' => $course['title'] ?? $slug,
+        'provider' => $provider,
+        'order_id' => $orderId,
+        'amount' => $amount,
+        'currency' => $currency,
+        'status' => $status,
+        'date' => date('Y-m-d'),
+        'student' => user_name(),
+        'student_email' => user_email(),
+    ];
+
+    $_SESSION['completed_purchases'] ??= [];
+    $_SESSION['completed_purchases'][$slug] = $purchase;
+
+    $email = text_lower(trim(user_email()));
+    if ($email !== '') {
+        $store = runtime_store();
+        $store['purchases'][$email] ??= [];
+        $store['purchases'][$email][$slug] = $purchase;
+
+        if ((float) $amount > 0) {
+            $alreadyStored = false;
+            foreach ($store['transactions'] as $transaction) {
+                if (($transaction['order_id'] ?? '') === $orderId) {
+                    $alreadyStored = true;
+                    break;
+                }
+            }
+
+            if (!$alreadyStored) {
+                array_unshift($store['transactions'], [
+                    'id' => 'PAY-' . substr($orderId, -8),
+                    'order_id' => $orderId,
+                    'courseSlug' => $slug,
+                    'course' => $course['title'] ?? $slug,
+                    'student' => user_name(),
+                    'student_email' => user_email(),
+                    'date' => date('Y-m-d'),
+                    'amount' => (float) $amount,
+                    'currency' => $currency ?? 'USD',
+                    'provider' => $provider,
+                    'status' => $status,
+                ]);
+            }
+        }
+
+        save_runtime_store($store);
+    }
+}
+
+function sales_transactions(): array
+{
+    $base = portal_data()['salesTransactions'] ?? [];
+    $normalized = array_map(static function (array $sale): array {
+        $sale['currency'] = $sale['currency'] ?? 'MXN';
+        $sale['provider'] = $sale['provider'] ?? 'AulaGo demo';
+        $sale['status'] = $sale['status'] ?? 'COMPLETED';
+        $sale['order_id'] = $sale['order_id'] ?? ($sale['id'] ?? '');
+        return $sale;
+    }, $base);
+
+    $store = runtime_store();
+    $runtimeTransactions = $store['transactions'] ?? [];
+
+    return array_values(array_merge($runtimeTransactions, $normalized));
+}
+
+function format_transaction_amount(array $transaction): string
+{
+    $amount = (float) ($transaction['amount'] ?? 0);
+    $currency = strtoupper((string) ($transaction['currency'] ?? 'MXN'));
+    return '$' . number_format($amount, 2, '.', ',') . ' ' . $currency;
+}
+
+function transaction_totals_by_currency(array $transactions): array
+{
+    $totals = [];
+    foreach ($transactions as $transaction) {
+        $currency = strtoupper((string) ($transaction['currency'] ?? 'MXN'));
+        $totals[$currency] = ($totals[$currency] ?? 0.0) + (float) ($transaction['amount'] ?? 0);
+    }
+    return $totals;
+}
+
+function format_transaction_totals(array $transactions): string
+{
+    $totals = transaction_totals_by_currency($transactions);
+    if (!$totals) {
+        return '$0.00';
+    }
+
+    $parts = [];
+    foreach ($totals as $currency => $amount) {
+        $parts[] = '$' . number_format($amount, 2, '.', ',') . ' ' . $currency;
+    }
+    return implode(' · ', $parts);
 }
 
 function format_number(int|float|string $number): string

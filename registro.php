@@ -10,6 +10,7 @@ $pageTitle = 'Crear cuenta | AulaGo';
 $pageDescription = 'Crea tu cuenta de estudiante o instructor en AulaGo.';
 $pageScripts = ['auth.js'];
 $error = trim((string) ($_GET['error'] ?? ''));
+$redirect = trim((string) ($_GET['redirect'] ?? ''));
 
 require PROJECT_ROOT . '/includes/layout/head.php';
 ?>
@@ -32,6 +33,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       <?php endif; ?>
 
       <form class="mt-10 grid gap-10" action="<?= e(url('actions/register.php')) ?>" method="post" enctype="multipart/form-data" novalidate data-auth-form="register">
+        <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
         <section class="border-t border-white/10 pt-7">
           <div class="mb-6 flex items-center gap-4"><span class="text-xs font-bold text-aula-orange-soft">01</span><h2 class="text-lg font-extrabold text-white">Información personal</h2></div>
           <div class="grid gap-5 sm:grid-cols-2">
@@ -90,7 +92,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
         <div class="flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
           <button type="submit" class="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-aula-orange px-7 text-sm font-extrabold text-aula-bg transition hover:-translate-y-0.5">Crear cuenta <span>→</span></button>
-          <p class="text-sm text-white/45">¿Ya tienes una cuenta? <a href="<?= e(url('login.php')) ?>" class="font-bold text-white transition hover:text-[#9fcbd5]">Iniciar sesión</a></p>
+          <p class="text-sm text-white/45">¿Ya tienes una cuenta? <a href="<?= e(url('login.php' . ($redirect !== '' ? '?redirect=' . rawurlencode($redirect) : ''))) ?>" class="font-bold text-white transition hover:text-[#9fcbd5]">Iniciar sesión</a></p>
         </div>
       </form>
     </div>

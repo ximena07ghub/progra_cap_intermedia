@@ -13,14 +13,23 @@ $gender = trim((string) ($_POST['genero'] ?? ''));
 $role = trim((string) ($_POST['rol'] ?? 'estudiante'));
 $password = (string) ($_POST['password'] ?? '');
 $confirmation = (string) ($_POST['password_confirmation'] ?? '');
+$redirect = trim((string) ($_POST['redirect'] ?? ''));
 
 $validRole = in_array($role, ['estudiante', 'instructor'], true);
 $passwordOk = strlen($password) >= 8 && preg_match('/[A-Z]/', $password) && preg_match('/\d/', $password) && preg_match('/[^A-Za-z0-9]/', $password);
 
 if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $birthdate === '' || $gender === '' || !$validRole || !$passwordOk || $password !== $confirmation) {
-    header('Location: ' . url('registro.php?error=' . rawurlencode('Hay información pendiente o inválida. Revisa los campos antes de continuar.')));
+    $query = 'error=' . rawurlencode('Hay información pendiente o inválida. Revisa los campos antes de continuar.');
+    if ($redirect !== '') {
+        $query .= '&redirect=' . rawurlencode($redirect);
+    }
+    header('Location: ' . url('registro.php?' . $query));
     exit;
 }
 
-header('Location: ' . url('login.php?registered=1&role=' . rawurlencode($role)));
+$query = 'registered=1&role=' . rawurlencode($role);
+if ($redirect !== '') {
+    $query .= '&redirect=' . rawurlencode($redirect);
+}
+header('Location: ' . url('login.php?' . $query));
 exit;

@@ -16,6 +16,8 @@ $recommended = array_slice(array_values(array_filter($allCourses, fn(array $cour
 $averageProgress = $enrolled ? (int) round(array_sum(array_column($enrolled, 'progress')) / count($enrolled)) : 0;
 $completedCount = count($kardex);
 $currentCourse = $enrolled[0] ?? null;
+$paymentState = trim((string) ($_GET['payment'] ?? ''));
+$purchasedSlug = trim((string) ($_GET['course'] ?? ''));
 $dashboardLessons = [
     ['title' => $currentCourse['nextLesson'] ?? 'Continúa donde te quedaste', 'meta' => 'Lección actual', 'duration' => '18 min', 'state' => 'current'],
     ['title' => 'Práctica guiada y registro', 'meta' => 'Siguiente', 'duration' => '22 min', 'state' => 'next'],
@@ -303,21 +305,47 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       </section>
 
       <section data-workspace-panel="cursos" data-title="Todos los cursos" data-eyebrow="Catálogo dentro de tu espacio" hidden>
-        <div class="mb-6 max-w-2xl"><p class="text-sm leading-7 text-white/45">Consulta toda la colección sin abandonar tu workspace. Los cursos inscritos muestran tu avance y el resto conserva el acceso a la ficha pública antes de comprar.</p></div>
+        <div class="mb-6 max-w-2xl"><p class="text-sm leading-7 text-white/45">Consulta toda la colección sin abandonar tu workspace. Los cursos inscritos muestran tu avance y el resto puede comprarse directamente desde aquí.</p></div>
+
+        <?php if ($paymentState === 'success'): ?>
+          <div class="mb-6 border border-aula-green/30 bg-aula-green/10 px-5 py-4 text-sm text-aula-green">
+            Pago confirmado. <strong class="text-aula-cream"><?= e(course_by_slug($purchasedSlug)['title'] ?? 'Tu curso') ?></strong> ya está disponible en tu espacio.
+          </div>
+        <?php elseif ($paymentState === 'free'): ?>
+          <div class="mb-6 border border-aula-green/30 bg-aula-green/10 px-5 py-4 text-sm text-aula-green">Inscripción completada. El curso ya forma parte de tu espacio.</div>
+        <?php elseif ($paymentState === 'invalid'): ?>
+          <div class="mb-6 border border-aula-yellow/30 bg-aula-yellow/10 px-5 py-4 text-sm text-aula-yellow">No pudimos relacionar la respuesta del pago con una orden pendiente. Revisa el curso e inténtalo nuevamente.</div>
+        <?php endif; ?>
+
         <div class="border-t border-white/10">
           <?php $enrolledBySlug = array_column($enrolled, null, 'slug'); ?>
           <?php foreach ($allCourses as $course): ?>
-            <?php $owned = $enrolledBySlug[$course['slug']] ?? null; ?>
-            <article class="grid gap-4 border-b border-white/10 py-5 md:grid-cols-[92px_minmax(0,1fr)_auto] md:items-center">
+            <?php
+              $owned = $enrolledBySlug[$course['slug']] ?? null;
+              $priceInfo = course_price_info($course);
+              $justPurchased = $purchasedSlug !== '' && $purchasedSlug === $course['slug'] && in_array($paymentState, ['success', 'free'], true);
+            ?>
+            <article class="grid gap-4 border-b border-white/10 py-5 md:grid-cols-[92px_minmax(0,1fr)_auto] md:items-center <?= $justPurchased ? 'px-3' : '' ?>" <?= $justPurchased ? 'style="background-color:rgba(142,182,123,.045)"' : '' ?>">
               <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="<?= e($course['title']) ?>" class="h-20 w-full object-cover opacity-75 md:w-[92px]">
-              <div class="min-w-0"><div class="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em]"><span class="text-aula-green"><?= e($course['category']) ?></span><span class="text-white/25">·</span><span class="text-white/35"><?= e($course['level']) ?></span></div><h3 class="mt-2 font-editorial text-xl font-semibold text-white/85"><?= e($course['title']) ?></h3><p class="mt-1 line-clamp-1 text-xs text-white/35"><?= e($course['accent']) ?> · <?= e($course['instructor']) ?></p><div class="mt-2 flex flex-wrap gap-4 text-[11px] text-white/30"><span>★ <?= e($course['rating']) ?></span><span><?= e($course['duration']) ?></span><span><?= e(number_format((int) $course['students'])) ?> estudiantes</span></div></div>
+              <div class="min-w-0"><div class="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em]"><span class="text-aula-green"><?= e($course['category']) ?></span><span class="text-white/25">·</span><span class="text-white/35"><?= e($course['level']) ?></span><?php if ($justPurchased): ?><span class="text-aula-orange-soft">· NUEVO</span><?php endif; ?></div><h3 class="mt-2 font-editorial text-xl font-semibold text-white/85"><?= e($course['title']) ?></h3><p class="mt-1 line-clamp-1 text-xs text-white/35"><?= e($course['accent']) ?> · <?= e($course['instructor']) ?></p><div class="mt-2 flex flex-wrap gap-4 text-[11px] text-white/30"><span>★ <?= e($course['rating']) ?></span><span><?= e($course['duration']) ?></span><span><?= e(number_format((int) $course['students'])) ?> estudiantes</span></div></div>
               <div class="md:text-right">
                 <?php if ($owned): ?>
                   <strong class="block text-sm text-aula-orange-soft"><?= e($owned['progress']) ?>% completado</strong>
                   <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']))) ?>" class="mt-2 inline-block text-xs font-bold text-white/50 hover:text-white">Continuar →</a>
                 <?php else: ?>
                   <strong class="block text-sm text-white/70"><?= e($course['price']) ?></strong>
-                  <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']))) ?>" class="mt-2 inline-block text-xs font-bold text-aula-orange-soft">Ver curso →</a>
+                  <div class="mt-2 flex flex-wrap items-center gap-3 md:justify-end">
+                    <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']))) ?>" class="text-xs font-bold text-white/40 hover:text-white">Ver ficha</a>
+                    <?php if ($priceInfo['free']): ?>
+                      <form action="<?= e(url('actions/enroll-free.php')) ?>" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
+                        <button type="submit" class="text-xs font-bold text-aula-orange-soft">Inscribirme →</button>
+                      </form>
+                    <?php else: ?>
+                      <a href="<?= e(url('estudiante/checkout.php?slug=' . rawurlencode($course['slug']))) ?>" class="text-xs font-bold text-aula-orange-soft">Comprar →</a>
+                    <?php endif; ?>
+                  </div>
                 <?php endif; ?>
               </div>
             </article>

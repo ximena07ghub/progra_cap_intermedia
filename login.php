@@ -87,7 +87,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
       <div class="mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6 text-sm text-white/45">
         <span>¿Todavía no tienes una cuenta?</span>
-        <a href="<?= e(url('registro.php')) ?>" class="font-bold text-white transition hover:text-[#9fcbd5]">Crear cuenta</a>
+        <a href="<?= e(url('registro.php' . ($redirect !== '' ? '?redirect=' . rawurlencode($redirect) : ''))) ?>" class="font-bold text-white transition hover:text-[#9fcbd5]">Crear cuenta</a>
       </div>
     </div>
   </section>

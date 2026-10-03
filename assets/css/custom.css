@@ -172,3 +172,41 @@ body {
     max-height: none;
   }
 }
+
+/* Checkout PayPal: estructura estable aunque Tailwind aún no se haya recompilado. */
+.checkout-layout {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+.checkout-course-summary {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.admin-dashboard-metrics {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .checkout-course-summary {
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .admin-dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .checkout-layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+  }
+
+  .admin-dashboard-metrics {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
