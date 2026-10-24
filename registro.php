@@ -46,26 +46,27 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
         <section class="border-t border-white/10 pt-7">
           <div class="mb-6 flex items-center gap-4"><span class="text-xs font-bold text-[#9fcbd5]">02</span><h2 class="text-lg font-extrabold text-white">¿Cómo usarás AulaGo?</h2></div>
-          <div class="grid gap-4 sm:grid-cols-2" data-role-selector>
+          <div class="grid gap-4 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de cuenta" aria-describedby="rol-error" data-role-selector>
             <label class="role-choice cursor-pointer rounded-2xl border border-brand-blue bg-brand-blue/10 p-5 transition" data-role-card="estudiante">
-              <input type="radio" name="rol" value="estudiante" class="sr-only" checked>
+              <input type="radio" name="rol" value="estudiante" class="sr-only" required checked>
               <span class="text-[10px] font-bold text-[#9fcbd5]">01</span><strong class="mt-5 block text-base text-white">Estudiante</strong><small class="mt-2 block text-xs leading-6 text-white/45">Quiero tomar cursos, avanzar por niveles y obtener certificados.</small>
             </label>
             <label class="role-choice cursor-pointer rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition" data-role-card="instructor">
-              <input type="radio" name="rol" value="instructor" class="sr-only">
+              <input type="radio" name="rol" value="instructor" class="sr-only" required>
               <span class="text-[10px] font-bold text-aula-orange-soft">02</span><strong class="mt-5 block text-base text-white">Instructor</strong><small class="mt-2 block text-xs leading-6 text-white/45">Quiero crear cursos, niveles y consultar mis ventas.</small>
             </label>
           </div>
+          <small id="rol-error" class="mt-2 block min-h-4 text-[11px] text-brand-coral" data-error-for="rol" aria-live="polite"></small>
         </section>
 
         <section class="border-t border-white/10 pt-7">
           <div class="mb-6 flex items-center gap-4"><span class="text-xs font-bold text-aula-green">03</span><h2 class="text-lg font-extrabold text-white">Imagen de perfil</h2></div>
           <label class="flex cursor-pointer flex-col gap-5 rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-5 transition hover:border-brand-green sm:flex-row sm:items-center">
             <span class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-white/15 bg-white/[0.04] text-2xl text-aula-green" data-avatar-preview>+</span>
-            <span><strong class="block text-sm text-white">Selecciona una fotografía</strong><small class="mt-2 block text-xs leading-6 text-white/40">JPG o PNG. Esta vista previa seguirá siendo local hasta conectar el almacenamiento real.</small></span>
-            <input type="file" name="avatar" accept="image/png,image/jpeg" class="sr-only" data-avatar-input>
+            <span><strong class="block text-sm text-white">Selecciona una fotografía</strong><small class="mt-2 block text-xs leading-6 text-white/40">JPG o PNG. Elige la fotografía que usarás en tu perfil.</small></span>
+            <input type="file" name="avatar" accept=".png,.jpg,.jpeg,image/png,image/jpeg" class="sr-only" aria-describedby="avatar-error" data-avatar-input>
           </label>
-          <small class="mt-2 block min-h-4 text-[11px] text-brand-coral" data-error-for="avatar"></small>
+          <small id="avatar-error" class="mt-2 block min-h-4 text-[11px] text-brand-coral" data-error-for="avatar" aria-live="polite"></small>
         </section>
 
         <section class="border-t border-white/10 pt-7">
