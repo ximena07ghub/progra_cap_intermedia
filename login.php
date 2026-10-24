@@ -10,7 +10,6 @@ $pageTitle = 'Iniciar sesión | AulaGo';
 $pageDescription = 'Accede a tu espacio personal de AulaGo.';
 $pageScripts = ['auth.js'];
 $redirect = trim((string) ($_GET['redirect'] ?? ''));
-$requestedRole = trim((string) ($_GET['role'] ?? ''));
 $error = trim((string) ($_GET['error'] ?? ''));
 $registered = isset($_GET['registered']);
 
@@ -58,7 +57,6 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
       <form class="mt-9 grid gap-5" action="<?= e(url('actions/login.php')) ?>" method="post" novalidate data-auth-form="login">
         <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
-        <input type="hidden" name="role" value="<?= e($requestedRole) ?>">
 
         <label class="grid gap-2">
           <span class="text-xs font-bold text-white/70">Correo electrónico</span>
@@ -75,8 +73,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           <small class="min-h-4 text-[11px] text-brand-coral" data-error-for="password"></small>
         </label>
 
-        <div class="flex flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <label class="inline-flex items-center gap-2 text-white/60"><input type="checkbox" name="remember" class="h-4 w-4 rounded border-white/20 bg-transparent accent-aula-orange"><span>Recordarme</span></label>
+        <div class="flex justify-end text-xs">
           <a href="<?= e(url('recuperar-contrasena.php')) ?>" class="font-bold text-[#9fcbd5] transition hover:text-aula-orange-soft">¿Olvidaste tu contraseña?</a>
         </div>
 
