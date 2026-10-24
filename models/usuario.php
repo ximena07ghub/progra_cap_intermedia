@@ -120,30 +120,34 @@ class Usuario
 
 
             public function buscarPorId(int $idUsuario): ?array
-        {
-            $sql = '
-                select
-                    id_usuario,
-                    nombre,
-                    email,
-                    genero,
-                    fecha_nacimiento,
-                    avatar
-                from usuarios
-                where id_usuario = :id_usuario
-                limit 1
-            ';
-
-            $consulta = $this->conexion->prepare($sql);
-
-            $consulta->execute([
-                'id_usuario' => $idUsuario
-            ]);
-
-            $usuario = $consulta->fetch();
-
-            return $usuario ?: null;
-        }
+            {
+                $sql = '
+                    select
+                        usuarios.id_usuario,
+                        usuarios.nombre,
+                        usuarios.email,
+                        usuarios.genero,
+                        usuarios.fecha_nacimiento,
+                        usuarios.avatar,
+                        usuarios.bloqueado,
+                        roles.nombre as rol
+                    from usuarios
+                    inner join roles
+                        on usuarios.id_rol = roles.id_rol
+                    where usuarios.id_usuario = :id_usuario
+                    limit 1
+                ';
+            
+                $consulta = $this->conexion->prepare($sql);
+            
+                $consulta->execute([
+                    'id_usuario' => $idUsuario
+                ]);
+            
+                $usuario = $consulta->fetch();
+            
+                return $usuario ?: null;
+            }
 
         public function actualizarDatos(
             int $idUsuario,

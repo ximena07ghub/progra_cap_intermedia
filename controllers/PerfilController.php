@@ -2,80 +2,132 @@
 
 declare(strict_types=1);
 
-class PerfilController
+require_once dirname(__DIR__) . '/middlewares/Cors.php';
+
+Cors::aplicar('http://localhost');
+
+require_once dirname(__DIR__) . '/config/app.php';
+require_once PROJECT_ROOT . '/models/Conexion.php';
+require_once PROJECT_ROOT . '/models/Usuario.php';
+require_once PROJECT_ROOT . '/controllers/PerfilController.php';
+require_once PROJECT_ROOT . '/middlewares/Acceso.php';
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+
+function responder(int $estado, array $contenido): void
 {
-    private Usuario $modeloUsuario;
+    http_response_code($estado);
 
-    public function __construct(Usuario $modeloUsuario)
-    {
-        $this->modeloUsuario = $modeloUsuario;
+    echo json_encode(
+        $contenido,
+        JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+    );
+
+    exit;
+}
+
+try {
+    $metodo = $_SERVER['REQUEST_METHOD'];
+
+    if (!in_array($metodo, ['GET', 'PATCH'], true)) {
+        header('Allow: GET, PATCH, OPTIONS');
+
+        responder(405, [
+            'exito' => false,
+            'mensaje' => 'Método no permitido.'
+        ]);
     }
 
-    public function actualizar(int $idUsuario, array $datos): array
-    {
-        if (
-            !isset($datos['nombre'], $datos['email'])
-            || !is_string($datos['nombre'])
-            || !is_string($datos['email'])
-        ) {
-            return [
-                'exito' => false,
-                'mensaje' => 'Completa el nombre y el correo.'
-            ];
-        }
+    $configuracion = require PROJECT_ROOT . '/config/database.local.php';
 
-        $nombre = trim($datos['nombre']);
-        $email = strtolower(trim($datos['email']));
+    $objetoConexion = new Conexion($configuracion);
+    $modeloUsuario = new Usuario(
+        $objetoConexion->obtenerConexion()
+    );
 
-        if ($nombre === '' || mb_strlen($nombre, 'UTF-8') > 150) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El nombre debe tener entre 1 y 150 caracteres.'
-            ];
-        }
+    $acceso = new Acceso($modeloUsuario);
+    $usuario = $acceso->exigirRol('estudiante');
 
-        if (
-            strlen($email) > 255
-            || !filter_var($email, FILTER_VALIDATE_EMAIL)
-        ) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El correo electrónico no es válido.'
-            ];
-        }
-
-        $usuarioActual = $this->modeloUsuario->buscarPorId($idUsuario);
-
-        if ($usuarioActual === null) {
-            return [
-                'exito' => false,
-                'mensaje' => 'La cuenta no existe.'
-            ];
-        }
-
-        $usuarioConCorreo = $this->modeloUsuario->buscarPorEmail($email);
-
-        if (
-            $usuarioConCorreo !== null
-            && (int) $usuarioConCorreo['id_usuario'] !== $idUsuario
-        ) {
-            return [
-                'exito' => false,
-                'mensaje' => 'Ese correo pertenece a otra cuenta.'
-            ];
-        }
-
-        $this->modeloUsuario->actualizarDatos(
-            $idUsuario,
-            $nombre,
-            $email
-        );
-
-        return [
+    if ($metodo === 'GET') {
+        responder(200, [
             'exito' => true,
-            'mensaje' => 'Perfil actualizado correctamente.',
-            'nombre' => $nombre,
-            'email' => $email
-        ];
+            'perfil' => [
+                'nombre' => $usuario['nombre'],
+                'email' => $usuario['email']
+            ],
+            'csrf_token' => csrf_token()
+        ]);
     }
+
+    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+
+    if (!verify_csrf($token)) {
+        responder(403, [
+            'exito' => false,
+            'mensaje' => 'La solicitud no es válida. Recarga la página.'
+        ]);
+    }
+
+    $datos = json_decode(
+        file_get_contents('php://input'),
+        true,
+        512,
+        JSON_THROW_ON_ERROR
+    );
+
+    if (!is_array($datos)) {
+        responder(400, [
+            'exito' => false,
+            'mensaje' => 'El cuerpo debe ser un objeto JSON.'
+        ]);
+    }
+
+    $controlador = new PerfilController($modeloUsuario);
+
+    $resultado = $controlador->actualizar(
+        (int) $usuario['id_usuario'],
+        $datos
+    );
+
+    if (!$resultado['exito']) {
+        responder(400, $resultado);
+    }
+
+    $_SESSION['usuario_nombre'] = $resultado['nombre'];
+    $_SESSION['usuario_correo'] = $resultado['email'];
+
+    responder(200, $resultado);
+} catch (JsonException $error) {
+    responder(400, [
+        'exito' => false,
+        'mensaje' => 'El JSON enviado no es válido.'
+    ]);
+} catch (PDOException $error) {
+    error_log($error->getMessage());
+
+    $duplicado = ($error->errorInfo[1] ?? null) === 1062;
+
+    responder($duplicado ? 409 : 500, [
+        'exito' => false,
+        'mensaje' => $duplicado
+            ? 'Ese correo ya está registrado.'
+            : 'No fue posible procesar la solicitud.'
+    ]);
+} catch (Throwable $error) {
+    $estado = (int) $error->getCode();
+
+    if (!in_array($estado, [401, 403], true)) {
+        error_log($error->getMessage());
+
+        responder(500, [
+            'exito' => false,
+            'mensaje' => 'Ocurrió un error al procesar la solicitud.'
+        ]);
+    }
+
+    responder($estado, [
+        'exito' => false,
+        'mensaje' => $error->getMessage()
+    ]);
 }

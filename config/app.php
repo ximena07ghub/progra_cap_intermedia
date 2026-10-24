@@ -315,15 +315,39 @@ function role_account_url(): string
 
 function require_role(string $role): void
 {
-    if (!is_authenticated()) {
-        $redirect = $_SERVER['REQUEST_URI'] ?? role_home_url();
-        header('Location: ' . url('login.php?redirect=' . rawurlencode($redirect)));
-        exit;
-    }
+    require_once PROJECT_ROOT . '/models/Conexion.php';
+    require_once PROJECT_ROOT . '/models/Usuario.php';
+    require_once PROJECT_ROOT . '/middlewares/Acceso.php';
 
-    if (user_role() !== $role) {
-        header('Location: ' . role_home_url());
-        exit;
+    try {
+        $configuracion = require PROJECT_ROOT . '/config/database.local.php';
+
+        $objetoConexion = new Conexion($configuracion);
+        $modeloUsuario = new Usuario(
+            $objetoConexion->obtenerConexion()
+        );
+
+        $acceso = new Acceso($modeloUsuario);
+        $usuario = $acceso->exigirRol($role);
+
+        $_SESSION['usuario_rol'] = $usuario['rol'];
+        $_SESSION['usuario_nombre'] = $usuario['nombre'];
+        $_SESSION['usuario_correo'] = $usuario['email'];
+    } catch (Throwable $error) {
+        if ($error->getCode() === 401) {
+            header('Location: ' . url('login.php'));
+            exit;
+        }
+
+        if ($error->getCode() === 403) {
+            http_response_code(403);
+            exit('No tienes permiso para acceder a esta página.');
+        }
+
+        error_log($error->getMessage());
+
+        http_response_code(500);
+        exit('No fue posible verificar el acceso.');
     }
 }
 
