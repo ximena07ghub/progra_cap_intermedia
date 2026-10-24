@@ -1,38 +1,55 @@
 <?php
+
+declare(strict_types=1);
+
 require_once dirname(__DIR__) . '/config/app.php';
+require_once PROJECT_ROOT . '/models/Conexion.php';
+require_once PROJECT_ROOT . '/models/Usuario.php';
+require_once PROJECT_ROOT . '/controllers/LoginController.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . url('login.php'));
     exit;
 }
 
-$email = trim((string) ($_POST['email'] ?? ''));
-$password = (string) ($_POST['password'] ?? '');
-$requestedRole = trim((string) ($_POST['role'] ?? ''));
-$redirect = trim((string) ($_POST['redirect'] ?? ''));
+try {
+    $configuracion = require PROJECT_ROOT . '/config/database.local.php';
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || trim($password) === '') {
-    header('Location: ' . url('login.php?error=' . rawurlencode('Revisa el correo y la contraseña antes de continuar.')));
-    exit;
+    $objetoConexion = new Conexion($configuracion);
+
+    $modeloUsuario = new Usuario(
+        $objetoConexion->obtenerConexion()
+    );
+
+    $controlador = new LoginController($modeloUsuario);
+    $resultado = $controlador->ingresar($_POST);
+
+    if ($resultado['exito']) {
+        $usuario = $resultado['usuario'];
+
+        session_regenerate_id(true);
+
+        $_SESSION['usuario_id'] = (int) $usuario['id_usuario'];
+        $_SESSION['usuario_rol'] = $usuario['rol'];
+        $_SESSION['usuario_nombre'] = $usuario['nombre'];
+        $_SESSION['usuario_correo'] = $usuario['email'];
+
+        header('Location: ' . role_home_url());
+        exit;
+    }
+} catch (Throwable $error) {
+    error_log($error->getMessage());
+
+    $resultado = [
+        'exito' => false,
+        'mensaje' => 'No fue posible iniciar sesión. Intenta nuevamente.'
+    ];
 }
 
-$allowedRoles = ['estudiante', 'instructor', 'administrador'];
-if (!in_array($requestedRole, $allowedRoles, true)) {
-    $normalized = text_lower($email);
-    $requestedRole = str_starts_with($normalized, 'admin@')
-        ? 'administrador'
-        : (str_starts_with($normalized, 'instructor@') ? 'instructor' : 'estudiante');
-}
+header(
+    'Location: '
+    . url('login.php?')
+    . http_build_query(['error' => $resultado['mensaje']])
+);
 
-$_SESSION['usuario_id'] = 1;
-$_SESSION['usuario_rol'] = $requestedRole;
-$_SESSION['usuario_correo'] = $email;
-$_SESSION['usuario_nombre'] = match ($requestedRole) {
-    'instructor' => 'Instructor AulaGo',
-    'administrador' => 'Administrador AulaGo',
-    default => 'Estudiante AulaGo',
-};
-
-$fallback = role_home_url();
-header('Location: ' . safe_redirect_target($redirect, $fallback));
 exit;
