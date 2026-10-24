@@ -1,35 +1,79 @@
 <?php
-require_once dirname(__DIR__) . '/config/app.php';
+
+declare(strict_types=1);
+
+//cargamos los archivos antes creados 
+
+require_once dirname(__DIR__) . '/config/app.php'; //funciones y config del portal
+require_once PROJECT_ROOT . '/models/Conexion.php'; //abre conexion pdo
+require_once PROJECT_ROOT . '/models/Usuario.php'; //consulta y registro
+require_once PROJECT_ROOT . '/models/Rol.php'; //id de rol
+require_once PROJECT_ROOT . '/controllers/RegistroController.php'; //valida regitro
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . url('registro.php'));
     exit;
 }
 
-$name = trim((string) ($_POST['nombre'] ?? ''));
-$email = trim((string) ($_POST['email'] ?? ''));
-$birthdate = trim((string) ($_POST['fecha_nacimiento'] ?? ''));
-$gender = trim((string) ($_POST['genero'] ?? ''));
-$role = trim((string) ($_POST['rol'] ?? 'estudiante'));
-$password = (string) ($_POST['password'] ?? '');
-$confirmation = (string) ($_POST['password_confirmation'] ?? '');
+$configuracion = require PROJECT_ROOT . '/config/database.local.php';
+
+try {
+    $objetoConexion = new Conexion($configuracion);
+    $pdo = $objetoConexion->obtenerConexion();
+
+    $modeloUsuario = new Usuario($pdo);
+    $modeloRol = new Rol($pdo);
+
+    $controlador = new RegistroController( //creamos controlador y se cargan los modelos
+        $modeloUsuario,
+        $modeloRol
+    );
+
+    $resultado = $controlador->registrar(
+        $_POST, //nombre, correo, fecha, género, rol y contra
+        $_FILES //imagenes subidas
+    );
+} catch (Throwable $error) {
+    error_log($error->getMessage());
+
+    $resultado = [
+        'exito' => false,
+        'mensaje' => 'Ocurrió un error al procesar el registro.'
+    ];
+}
+
 $redirect = trim((string) ($_POST['redirect'] ?? ''));
 
-$validRole = in_array($role, ['estudiante', 'instructor'], true);
-$passwordOk = strlen($password) >= 8 && preg_match('/[A-Z]/', $password) && preg_match('/\d/', $password) && preg_match('/[^A-Za-z0-9]/', $password);
+if (!$resultado['exito']) {
+    $parametros = [
+        'error' => $resultado['mensaje']
+    ];
 
-if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $birthdate === '' || $gender === '' || !$validRole || !$passwordOk || $password !== $confirmation) {
-    $query = 'error=' . rawurlencode('Hay información pendiente o inválida. Revisa los campos antes de continuar.');
     if ($redirect !== '') {
-        $query .= '&redirect=' . rawurlencode($redirect);
+        $parametros['redirect'] = $redirect;
     }
-    header('Location: ' . url('registro.php?' . $query));
+
+    header(
+        'Location: '
+        . url('registro.php?')
+        . http_build_query($parametros)
+    );
+
     exit;
 }
 
-$query = 'registered=1&role=' . rawurlencode($role);
+$parametros = [
+    'registered' => '1'
+];
+
 if ($redirect !== '') {
-    $query .= '&redirect=' . rawurlencode($redirect);
+    $parametros['redirect'] = $redirect;
 }
-header('Location: ' . url('login.php?' . $query));
+
+header(
+    'Location: '
+    . url('login.php?')
+    . http_build_query($parametros)
+);
+
 exit;

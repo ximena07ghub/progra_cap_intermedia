@@ -11,12 +11,13 @@ public/uploads/
 # Logs
 *.log
 
-# Dependencias futuras
+# Dependencias 
 vendor/
 node_modules/
 
 #archvios privados de la base de datos
 app/config/config.php
+/config/database.local.php
 
 # Dependencias de Node
 node_modules/
@@ -34,3 +35,4 @@ node_modules/
 
 # Estado temporal de pagos/inscripciones antes de MySQL
 /data/runtime/*.json
+
