@@ -18,7 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
-            throw new Error(datos.mensaje || 'No fue posible cargar el perfil.');
+            throw new Error(
+                datos.mensaje || 'No fue posible cargar el perfil.'
+            );
         }
 
         formulario.elements.nombre.value = datos.perfil.nombre;
@@ -58,7 +60,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const datos = await respuesta.json();
 
             if (!respuesta.ok) {
-                throw new Error(datos.mensaje || 'No fue posible guardar.');
+                throw new Error(
+                    datos.mensaje || 'No fue posible guardar.'
+                );
             }
 
             mensaje.textContent = datos.mensaje;

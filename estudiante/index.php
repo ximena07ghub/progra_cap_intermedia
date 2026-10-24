@@ -4,7 +4,7 @@ require_role('estudiante');
 
 $pageTitle = 'Mi espacio | AulaGo';
 $pageDescription = 'Workspace del estudiante de AulaGo.';
-$pageScripts = ['workspace.js'];
+$pageScripts = ['workspace.js', 'perfil.js'];
 $bodyClass = 'min-h-screen bg-aula-bg font-sans text-aula-cream antialiased lg:overflow-hidden';
 
 $enrolled = enrolled_courses();
@@ -401,7 +401,26 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       <section data-workspace-panel="cuenta" data-title="Mi cuenta" data-eyebrow="Preferencias y perfil" hidden>
         <div class="grid gap-6 xl:grid-cols-[.75fr_1.25fr]">
           <aside class="border border-white/10 bg-white/[0.02] p-6"><span class="grid h-20 w-20 place-items-center rounded-full bg-aula-green-dark text-xl font-extrabold text-aula-green"><?= e(user_initials()) ?></span><h2 class="mt-5 font-editorial text-3xl font-semibold"><?= e(user_name()) ?></h2><p class="mt-2 text-sm text-white/35"><?= e(user_email()) ?></p><p class="mt-6 border-t border-white/10 pt-5 text-xs leading-6 text-white/35">El perfil se guardará en MySQL cuando conectemos usuarios. El workspace ya está preparado para consumir esos datos desde PHP.</p></aside>
-          <form class="border border-white/10 p-6" onsubmit="return false;"><h2 class="font-editorial text-2xl font-semibold">Datos de perfil</h2><div class="mt-6 grid gap-5 sm:grid-cols-2"><label class="grid gap-2"><span class="text-xs font-bold text-white/55">Nombre</span><input value="<?= e(user_name()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange"></label><label class="grid gap-2"><span class="text-xs font-bold text-white/55">Correo</span><input value="<?= e(user_email()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange"></label><label class="grid gap-2 sm:col-span-2"><span class="text-xs font-bold text-white/55">Objetivo de aprendizaje</span><textarea class="min-h-28 border border-white/10 bg-aula-bg p-3 text-sm text-white outline-none focus:border-aula-orange">Aprender con constancia sin saturarme.</textarea></label></div><button type="button" class="mt-6 min-h-10 bg-aula-orange px-5 text-xs font-extrabold text-aula-bg">Guardar cambios</button></form>
+          <form id="form-perfil" data-api="<?= e(url('api/perfil.php')) ?>" class="border border-white/10 p-6">
+            <h2 class="font-editorial text-2xl font-semibold">Datos de perfil</h2>
+            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+              <label class="grid gap-2">
+                <span class="text-xs font-bold text-white/55">Nombre</span>
+                <input type="text" name="nombre" required maxlength="150" value="<?= e(user_name()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+              </label>
+              <label class="grid gap-2">
+                <span class="text-xs font-bold text-white/55">Correo</span>
+                <input type="email" name="email" required maxlength="255" value="<?= e(user_email()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+              </label>
+              <label class="grid gap-2 sm:col-span-2">
+                <span class="text-xs font-bold text-white/55">Objetivo de aprendizaje</span>
+                <textarea disabled class="min-h-28 border border-white/10 bg-aula-bg p-3 text-sm text-white outline-none focus:border-aula-orange">Aprender con constancia sin saturarme.</textarea>
+                <small class="text-xs text-white/35">Disponible próximamente. Por ahora se guardan nombre y correo.</small>
+              </label>
+            </div>
+            <p class="mt-4 text-sm text-white/70" data-perfil-mensaje role="status"></p>
+            <button type="submit" disabled class="mt-6 min-h-10 bg-aula-orange px-5 text-xs font-extrabold text-aula-bg">Guardar cambios</button>
+          </form>
         </div>
       </section>
     </main>
