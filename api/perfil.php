@@ -7,8 +7,8 @@ require_once dirname(__DIR__) . '/middlewares/Cors.php';
 Cors::aplicar('http://localhost');
 
 require_once dirname(__DIR__) . '/config/app.php';
-require_once PROJECT_ROOT . '/models/Conexion.php';
-require_once PROJECT_ROOT . '/models/Usuario.php';
+require_once PROJECT_ROOT . '/models/conexion.php';
+require_once PROJECT_ROOT . '/models/usuario.php';
 require_once PROJECT_ROOT . '/controllers/PerfilController.php';
 require_once PROJECT_ROOT . '/middlewares/Acceso.php';
 

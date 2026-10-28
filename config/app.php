@@ -315,8 +315,8 @@ function role_account_url(): string
 
 function require_role(string $role): void
 {
-    require_once PROJECT_ROOT . '/models/Conexion.php';
-    require_once PROJECT_ROOT . '/models/Usuario.php';
+    require_once PROJECT_ROOT . '/models/conexion.php';
+    require_once PROJECT_ROOT . '/models/usuario.php';
     require_once PROJECT_ROOT . '/middlewares/Acceso.php';
 
     try {

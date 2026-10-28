@@ -5,10 +5,10 @@ declare(strict_types=1);
 //cargamos los archivos antes creados 
 
 require_once dirname(__DIR__) . '/config/app.php'; //funciones y config del portal
-require_once PROJECT_ROOT . '/models/Conexion.php'; //abre conexion pdo
-require_once PROJECT_ROOT . '/models/Usuario.php'; //consulta y registro
-require_once PROJECT_ROOT . '/models/Rol.php'; //id de rol
-require_once PROJECT_ROOT . '/controllers/RegistroController.php'; //valida regitro
+require_once PROJECT_ROOT . '/models/conexion.php'; //abre conexion pdo
+require_once PROJECT_ROOT . '/models/usuario.php'; //consulta y registro
+require_once PROJECT_ROOT . '/models/rol.php'; //id de rol
+require_once PROJECT_ROOT . '/controllers/registroController.php'; //valida regitro
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . url('registro.php'));
