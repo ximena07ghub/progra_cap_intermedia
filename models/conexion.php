@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 class Conexion
 {
+    //Aqui se define la conexionn 
+    
     private PDO $conexion;
 
     public function __construct(array $configuracion)
@@ -13,6 +15,7 @@ class Conexion
             . ';dbname=' . $configuracion['base_datos']
             . ';charset=' . $configuracion['charset'];
 
+            //crea el objeto conexion
         $this->conexion = new PDO(
             $dsn,
             $configuracion['usuario'],
@@ -25,7 +28,7 @@ class Conexion
         );
     }
 
-    public function obtenerConexion(): PDO
+    public function obtenerConexion(): PDO 
     {
         return $this->conexion;
     }

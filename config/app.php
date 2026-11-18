@@ -333,12 +333,20 @@ function require_role(string $role): void
         $_SESSION['usuario_rol'] = $usuario['rol'];
         $_SESSION['usuario_nombre'] = $usuario['nombre'];
         $_SESSION['usuario_correo'] = $usuario['email'];
-    } catch (Throwable $error) {
+    } 
+    
+    catch (Throwable $error)
+    
+    {
+
         if ($error->getCode() === 401) {
-            header('Location: ' . url('login.php'));
+            $rutaLogin = $role === 'administrador'
+                ? 'admin/login.php'
+                : 'login.php';
+
+            header('Location: ' . url($rutaLogin));
             exit;
         }
-
         if ($error->getCode() === 403) {
             http_response_code(403);
             exit('No tienes permiso para acceder a esta página.');

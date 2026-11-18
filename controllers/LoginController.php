@@ -11,8 +11,10 @@ class LoginController
         $this->modeloUsuario = $modeloUsuario;
     }
 
-    public function ingresar(array $datos): array
-    {
+    public function ingresar(
+        array $datos,
+        array $rolesPermitidos = ['estudiante', 'instructor']
+    ): array {
         if (
             !isset($datos['email'], $datos['password'])
             || !is_string($datos['email'])
@@ -39,7 +41,10 @@ class LoginController
 
         $usuario = $this->modeloUsuario->buscarPorEmail($email);
 
-        if ($usuario === null) {
+        if (
+            $usuario === null
+            || !in_array($usuario['rol'], $rolesPermitidos, true)
+        ) {
             return [
                 'exito' => false,
                 'mensaje' => 'Correo o contraseña incorrectos.'
@@ -60,14 +65,7 @@ class LoginController
 
             return [
                 'exito' => false,
-                'mensaje' => 'Correo o contraseña incorrectos. Al tercer fallo se bloquea la cuenta.'
-            ];
-        }
-
-        if (!in_array($usuario['rol'], ['estudiante', 'instructor'], true)) {
-            return [
-                'exito' => false,
-                'mensaje' => 'Esta cuenta no utiliza el acceso público.'
+                'mensaje' => 'Correo o contraseña incorrectos.'
             ];
         }
 

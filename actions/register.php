@@ -15,9 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$configuracion = require PROJECT_ROOT . '/config/database.local.php';
+
 
 try {
+
+    $configuracion = require PROJECT_ROOT . '/config/database.local.php';
     $objetoConexion = new Conexion($configuracion);
     $pdo = $objetoConexion->obtenerConexion();
 
