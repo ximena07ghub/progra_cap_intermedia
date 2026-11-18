@@ -22,8 +22,10 @@ try {
     );
 
     $controlador = new LoginController($modeloUsuario);
-    $resultado = $controlador->ingresar($_POST);
-
+    $resultado = $controlador->ingresar(
+        $_POST,
+        ['estudiante', 'instructor', 'administrador']
+    );
     if ($resultado['exito']) {
         $usuario = $resultado['usuario'];
 

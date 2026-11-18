@@ -51,8 +51,10 @@ class LoginController
             ];
         }
 
-        if ((int) $usuario['bloqueado'] === 1) {
-            return [
+        if (
+            (int) $usuario['bloqueado'] === 1
+            || (int) $usuario['bloqueo_admin'] === 1
+        ) {            return [
                 'exito' => false,
                 'mensaje' => 'La cuenta está bloqueada. Contacta al administrador.'
             ];

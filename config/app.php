@@ -338,13 +338,8 @@ function require_role(string $role): void
     catch (Throwable $error)
     
     {
-
         if ($error->getCode() === 401) {
-            $rutaLogin = $role === 'administrador'
-                ? 'admin/login.php'
-                : 'login.php';
-
-            header('Location: ' . url($rutaLogin));
+            header('Location: ' . url('login.php'));
             exit;
         }
         if ($error->getCode() === 403) {

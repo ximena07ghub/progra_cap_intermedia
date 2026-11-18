@@ -25,7 +25,8 @@ class Usuario
                 usuarios.email,
                 usuarios.contrasena_hash,
                 usuarios.intentos_fallidos,
-                usuarios.bloqueado
+                usuarios.bloqueado,
+                usuarios.bloqueo_admin
             from usuarios
             inner join roles
                 on usuarios.id_rol = roles.id_rol
@@ -130,6 +131,7 @@ class Usuario
                         usuarios.fecha_nacimiento,
                         usuarios.avatar,
                         usuarios.bloqueado,
+                        usuarios.bloqueo_admin,
                         roles.nombre as rol
                     from usuarios
                     inner join roles

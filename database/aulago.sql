@@ -26,18 +26,19 @@ create table usuarios (
     id_usuario int unsigned auto_increment primary key,
     id_rol tinyint unsigned not null,
     nombre varchar(150) not null,
-    genero enum(
-        'mujer',
-        'hombre',
-        'otro',
-        'prefiero_no_decir'
-    ) not null,
-    fecha_nacimiento date not null,
-    avatar varchar(255) not null,
+	genero enum(
+		'mujer',
+		'hombre',
+		'otro',
+		'prefiero_no_decir'
+	) null,
+	fecha_nacimiento date null,
+	avatar varchar(255) null,
     email varchar(255) not null unique,
     contrasena_hash varchar(255) not null,
     intentos_fallidos tinyint unsigned not null default 0,
     bloqueado tinyint unsigned not null default 0,
+    bloqueo_admin tinyint(1) not null default 0,
     fecha_registro datetime not null default current_timestamp,
     fecha_actualizacion datetime not null default current_timestamp
         on update current_timestamp,
@@ -47,6 +48,9 @@ create table usuarios (
         on delete restrict
         on update cascade
 ) engine = InnoDB;
+
+USE aulago;
+
 
 
 -- 3. CATEGORIAS
@@ -71,8 +75,8 @@ create table cursos (
     descripcion text not null,
     imagen varchar(255),
     precio decimal(10,2) not null default 0.00,
-    moneda char(3) not null default 'USD',
-    estado enum(
+	moneda char(3) not null default 'MXN',   
+	estado enum(
         'borrador',
         'publicado',
         'desactivado'
@@ -289,3 +293,10 @@ create table mensajes (
 show tables;
 
 select * from roles;
+
+
+USE aulago;
+
+ALTER TABLE usuarios
+    ADD COLUMN bloqueo_admin TINYINT(1) NOT NULL DEFAULT 0
+    AFTER bloqueado;

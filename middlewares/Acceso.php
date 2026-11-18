@@ -25,8 +25,12 @@ class Acceso
             (int) $_SESSION['usuario_id'] //consulta el id de sesion
         );
 
-        if ($usuario === null || (int) $usuario['bloqueado'] === 1) {
-            unset(
+        if (
+            $usuario === null
+            || (int) $usuario['bloqueado'] === 1
+            || (int) $usuario['bloqueo_admin'] === 1
+        ) {
+                        unset(
                 $_SESSION['usuario_id'],
                 $_SESSION['usuario_rol'],
                 $_SESSION['usuario_nombre'],
