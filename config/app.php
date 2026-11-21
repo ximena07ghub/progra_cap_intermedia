@@ -157,7 +157,9 @@ function course_image_url(array $course): string
     $image = ltrim((string) ($course['image'] ?? ''), '/');
 
     if ($image === '') {
-        return asset('images/placeholder-course.jpg');
+        return 'data:image/svg+xml;charset=UTF-8,' . rawurlencode(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750"><rect width="1200" height="750" fill="#1b171c"/><text x="600" y="375" text-anchor="middle" dominant-baseline="middle" fill="#9ca3af" font-family="Arial" font-size="42">AulaGo</text></svg>'
+        );
     }
 
     if (str_starts_with($image, 'uploads/')) {
