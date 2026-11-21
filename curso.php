@@ -49,6 +49,13 @@ if (!is_authenticated()) {
 }
 
 $lessons = public_course_lessons((int) $course['databaseId']);
+$studentLessons = [];
+$studentMessage = $_SESSION['estudiante_curso_mensaje'] ?? null;
+unset($_SESSION['estudiante_curso_mensaje']);
+
+if (is_authenticated() && user_role() === 'estudiante' && student_owns_course($course['slug'])) {
+    $studentLessons = student_course_lessons((int) $course['databaseId']);
+}
 
 require PROJECT_ROOT . '/includes/layout/head.php';
 ?>
@@ -56,6 +63,44 @@ require PROJECT_ROOT . '/includes/layout/head.php';
   <?php require PROJECT_ROOT . '/includes/layout/public-header.php'; ?>
 
   <main class="flex-1">
+    <?php if ($studentLessons !== []): ?>
+      <section class="border-b border-aula-green/20 bg-aula-green-dark/20">
+        <div class="mx-auto max-w-aula px-6 py-8 lg:px-8">
+          <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Tu aprendizaje</p>
+          <h2 class="mt-2 font-editorial text-3xl font-semibold">Continúa y marca cada lección al terminarla.</h2>
+          <?php if ($studentMessage): ?><p class="mt-4 text-sm text-aula-green"><?= e($studentMessage) ?></p><?php endif; ?>
+          <div class="mt-6 space-y-3">
+            <?php $nivelActual = null; ?>
+            <?php foreach ($studentLessons as $leccion): ?>
+              <?php if ($nivelActual !== $leccion['id_nivel']): $nivelActual = $leccion['id_nivel']; ?>
+                <h3 class="pt-4 text-xs font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Nivel <?= e($leccion['orden_nivel']) ?> · <?= e($leccion['nivel']) ?></h3>
+              <?php endif; ?>
+              <article class="border border-white/10 bg-aula-bg/60 p-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[10px] uppercase text-white/30">Lección <?= e($leccion['orden']) ?></p>
+                    <h4 class="mt-1 text-lg font-semibold"><?= e($leccion['titulo']) ?></h4>
+                    <?php if (!empty($leccion['contenido'])): ?><div class="mt-3 whitespace-pre-line text-sm leading-6 text-white/50"><?= e($leccion['contenido']) ?></div><?php endif; ?>
+                    <?php if (!empty($leccion['url_video'])): ?><a href="<?= e($leccion['url_video']) ?>" target="_blank" rel="noopener noreferrer" class="mt-3 inline-block text-xs font-bold text-[#9fcbd5]">Abrir video →</a><?php endif; ?>
+                  </div>
+                  <form action="<?= e(url('actions/progreso-curso.php')) ?>" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="id_curso" value="<?= e($course['databaseId']) ?>">
+                    <input type="hidden" name="id_leccion" value="<?= e($leccion['id_leccion']) ?>">
+                    <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
+                    <input type="hidden" name="completada" value="<?= (int) $leccion['completada'] === 1 ? '0' : '1' ?>">
+                    <button type="submit" class="border px-4 py-2 text-xs font-bold <?= (int) $leccion['completada'] === 1 ? 'border-aula-green/40 text-aula-green' : 'border-white/15 text-white/60' ?>">
+                      <?= (int) $leccion['completada'] === 1 ? '✓ Completada' : 'Marcar completada' ?>
+                    </button>
+                  </form>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </section>
+    <?php endif; ?>
+
     <section class="border-b border-white/10">
       <div class="mx-auto grid max-w-aula gap-10 px-6 py-14 lg:grid-cols-[.88fr_1.12fr] lg:px-8 lg:py-20">
         <div>
