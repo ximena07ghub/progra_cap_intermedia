@@ -32,7 +32,11 @@ $workspaceItems = $workspaceItems ?? [];
 
     <div class="hidden border-t border-white/10 p-4 lg:block">
       <div class="mb-3 flex items-center gap-3 px-2 py-2">
-        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-aula-green-dark text-[11px] font-extrabold text-aula-green"><?= e(user_initials()) ?></span>
+        <?php if (user_avatar_url() !== ''): ?>
+          <img src="<?= e(user_avatar_url()) ?>" alt="Foto de perfil" class="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover">
+        <?php else: ?>
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-aula-green-dark text-[11px] font-extrabold text-aula-green"><?= e(user_initials()) ?></span>
+        <?php endif; ?>
         <div class="min-w-0"><strong class="block truncate text-xs text-white/80"><?= e(user_name()) ?></strong><span class="mt-0.5 block truncate text-[10px] text-white/30"><?= e(user_email()) ?></span></div>
       </div>
       <a href="<?= e(url('actions/logout.php')) ?>" class="flex items-center justify-between border border-white/10 px-3 py-2.5 text-xs font-bold text-white/45 transition hover:border-aula-orange/30 hover:text-aula-orange-soft">Cerrar sesión <span>↗</span></a>
