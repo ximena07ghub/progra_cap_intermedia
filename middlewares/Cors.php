@@ -27,7 +27,7 @@ class Cors
             header('Access-Control-Allow-Credentials: true');
         }
 
-        header('Access-Control-Allow-Methods: GET, PATCH, OPTIONS');
+        header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
 
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
