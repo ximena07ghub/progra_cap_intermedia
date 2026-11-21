@@ -393,6 +393,44 @@ class InstructorCursoController
         ];
     }
 
+    public function eliminarNivel(
+        int $idInstructor,
+        int $idCurso,
+        int $idNivel
+    ): array {
+        $eliminado = $this->modelo->eliminarNivel(
+            $idNivel,
+            $idCurso,
+            $idInstructor
+        );
+
+        return [
+            'exito' => $eliminado,
+            'mensaje' => $eliminado
+                ? 'Nivel eliminado correctamente.'
+                : 'No fue posible eliminar el nivel.'
+        ];
+    }
+
+    public function eliminarLeccion(
+        int $idInstructor,
+        int $idCurso,
+        int $idLeccion
+    ): array {
+        $eliminada = $this->modelo->eliminarLeccion(
+            $idLeccion,
+            $idCurso,
+            $idInstructor
+        );
+
+        return [
+            'exito' => $eliminada,
+            'mensaje' => $eliminada
+                ? 'Lección eliminada correctamente.'
+                : 'No fue posible eliminar la lección.'
+        ];
+    }
+
     public function eliminar(
         int $idInstructor,
         int $idCurso
