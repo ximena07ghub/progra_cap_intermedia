@@ -34,28 +34,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
     </section>
 
     <section class="mx-auto max-w-aula px-6 py-10 lg:px-8 lg:py-12">
-      <form class="grid gap-4 rounded-aula-lg border border-white/10 bg-aula-surface/60 p-4 md:grid-cols-[1.4fr_.8fr_auto] md:items-end md:p-5" data-filter-form>
-        <label class="grid gap-2">
-          <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Buscar curso</span>
-          <input
-            data-filter-query
-            value="<?= e($_GET['q'] ?? '') ?>"
-            type="search"
-            placeholder="Diseño, hábitos, software, dibujo…"
-            class="rounded-aula border border-white/10 bg-aula-bg/70 px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange/60"
-          >
-        </label>
-
-        <label class="grid gap-2">
-          <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Nivel</span>
-          <select data-filter-level class="rounded-aula border border-white/10 bg-aula-bg/70 px-4 py-3 text-sm text-white outline-none focus:border-aula-orange/60">
-            <option value="">Todos los niveles</option>
-            <?php foreach (['Inicial', 'Intermedio', 'Avanzado'] as $level): ?>
-              <option value="<?= e($level) ?>" <?= (($_GET['nivel'] ?? '') === $level) ? 'selected' : '' ?>><?= e($level) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </label>
-
+      <form class="grid gap-4 rounded-aula-lg border border-white/10 bg-aula-surface/60 p-4 md:grid-cols-[1fr_auto] md:items-end md:p-5" data-filter-form>\n
         <button type="button" data-filter-clear class="min-h-[46px] rounded-aula border border-aula-orange/30 bg-aula-orange/10 px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-orange-soft transition hover:bg-aula-orange hover:text-aula-bg">
           Limpiar
         </button>
