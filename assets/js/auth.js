@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
         valid = false
       }
 
+      const birthDate = registerForm.elements.fecha_nacimiento
+      if (birthDate?.value) {
+        const selected = new Date(`${birthDate.value}T00:00:00`)
+        const today = new Date()
+        const limit = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
+
+        if (Number.isNaN(selected.getTime()) || selected > limit) {
+          setError('fecha_nacimiento', 'Debes tener al menos 18 años para registrarte.')
+          valid = false
+        }
+      }
+
       const role = registerForm.querySelector('input[name="rol"]:checked')?.value
       if (!allowedRoles.includes(role)) {
         setError('rol', 'Selecciona Estudiante o Instructor.')
