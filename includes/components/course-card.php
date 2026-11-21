@@ -12,7 +12,7 @@ $courseHref = url('curso.php?slug=' . rawurlencode((string) $course['slug']));
   <a href="<?= e($courseHref) ?>" class="block h-full">
     <div class="relative aspect-[16/10] overflow-hidden bg-aula-green-dark">
       <img
-        src="<?= e(asset('images/' . $course['image'])) ?>"
+        src="<?= e(course_image_url($course)) ?>"
         alt="<?= e($course['title']) ?>"
         class="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-95"
       >
