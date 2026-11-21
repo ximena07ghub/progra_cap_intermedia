@@ -11,6 +11,9 @@ $pageDescription = 'Crea tu cuenta de estudiante o instructor en AulaGo.';
 $pageScripts = ['auth.js'];
 $error = trim((string) ($_GET['error'] ?? ''));
 $redirect = trim((string) ($_GET['redirect'] ?? ''));
+$fechaMaximaRegistro = (new DateTimeImmutable('today'))
+    ->modify('-18 years')
+    ->format('Y-m-d');
 
 require PROJECT_ROOT . '/includes/layout/head.php';
 ?>
@@ -39,7 +42,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           <div class="grid gap-5 sm:grid-cols-2">
             <label class="grid gap-2"><span class="text-xs font-bold text-white/70">Nombre completo</span><input type="text" name="nombre" placeholder="Tu nombre completo" autocomplete="name" required class="min-h-12 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-brand-orange"><small class="min-h-4 text-[11px] text-brand-coral" data-error-for="nombre"></small></label>
             <label class="grid gap-2"><span class="text-xs font-bold text-white/70">Correo electrónico</span><input type="email" name="email" placeholder="nombre@correo.com" autocomplete="email" required class="min-h-12 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-brand-orange"><small class="min-h-4 text-[11px] text-brand-coral" data-error-for="email"></small></label>
-            <label class="grid gap-2"><span class="text-xs font-bold text-white/70">Fecha de nacimiento</span><input type="date" name="fecha_nacimiento" required class="min-h-12 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-brand-orange"><small class="min-h-4 text-[11px] text-brand-coral" data-error-for="fecha_nacimiento"></small></label>
+            <label class="grid gap-2"><span class="text-xs font-bold text-white/70">Fecha de nacimiento</span><input type="date" name="fecha_nacimiento" max="<?= e($fechaMaximaRegistro) ?>" required class="min-h-12 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-brand-orange"><small class="min-h-4 text-[11px] text-brand-coral" data-error-for="fecha_nacimiento"></small></label>
             <label class="grid gap-2"><span class="text-xs font-bold text-white/70">Género</span><select name="genero" required class="min-h-12 rounded-xl border border-white/15 bg-aula-surface px-4 text-sm text-white outline-none transition focus:border-brand-orange"><option value="">Selecciona</option><option value="mujer">Mujer</option><option value="hombre">Hombre</option><option value="otro">Otro</option><option value="prefiero_no_decir">Prefiero no decirlo</option></select><small class="min-h-4 text-[11px] text-brand-coral" data-error-for="genero"></small></label>
           </div>
         </section>
