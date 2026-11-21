@@ -57,6 +57,9 @@ try {
 } catch (Throwable $error) {
     error_log($error->getMessage());
 
-    http_response_code(500);
-    exit('No fue posible actualizar el usuario.');
+    $_SESSION['admin_usuarios_mensaje'] =
+        'No fue posible actualizar el usuario.';
+
+    header('Location: ' . url('admin/') . '#usuarios');
+    exit;
 }
