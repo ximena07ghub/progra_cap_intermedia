@@ -1,0 +1,3 @@
+Options -MultiViews
+
+ErrorDocument 404 /prograCapaInter/errors/404.php
