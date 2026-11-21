@@ -2,12 +2,13 @@
 require_once dirname(__DIR__) . '/config/app.php';
 require_once PROJECT_ROOT . '/models/conexion.php';
 require_once PROJECT_ROOT . '/models/EstudiantePortal.php';
+require_once PROJECT_ROOT . '/models/usuario.php';
 
 require_role('estudiante');
 
 $pageTitle = 'Mi espacio | AulaGo';
 $pageDescription = 'Workspace del estudiante de AulaGo.';
-$pageScripts = ['workspace.js', 'perfil.js'];
+$pageScripts = ['workspace.js'];
 $bodyClass = 'min-h-screen bg-aula-bg font-sans text-aula-cream antialiased lg:overflow-hidden';
 
 $enrolled = enrolled_courses();
@@ -15,6 +16,18 @@ $allCourses = courses();
 $portalConfig = require PROJECT_ROOT . '/config/database.local.php';
 $portalConexion = new Conexion($portalConfig);
 $portalModel = new EstudiantePortal($portalConexion->obtenerConexion());
+$usuarioModel = new Usuario($portalConexion->obtenerConexion());
+$perfilUsuario = $usuarioModel->buscarPorId((int) ($_SESSION['usuario_id'] ?? 0));
+
+if ($perfilUsuario !== null) {
+    $_SESSION['usuario_nombre'] = $perfilUsuario['nombre'];
+    $_SESSION['usuario_correo'] = $perfilUsuario['email'];
+    $_SESSION['usuario_avatar'] = $perfilUsuario['avatar'] ?? '';
+}
+
+$perfilMensaje = $_SESSION['perfil_mensaje'] ?? null;
+$perfilMensajeTipo = $_SESSION['perfil_mensaje_tipo'] ?? null;
+unset($_SESSION['perfil_mensaje'], $_SESSION['perfil_mensaje_tipo']);
 
 $kardex = $portalModel->listarKardex((int) ($_SESSION['usuario_id'] ?? 0));
 $certificados = $portalModel->listarCertificados((int) ($_SESSION['usuario_id'] ?? 0));
@@ -521,26 +534,57 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
       <section data-workspace-panel="cuenta" data-title="Mi cuenta" data-eyebrow="Preferencias y perfil" hidden>
         <div class="grid gap-6 xl:grid-cols-[.75fr_1.25fr]">
-          <aside class="border border-white/10 bg-white/[0.02] p-6"><span class="grid h-20 w-20 place-items-center rounded-full bg-aula-green-dark text-xl font-extrabold text-aula-green"><?= e(user_initials()) ?></span><h2 class="mt-5 font-editorial text-3xl font-semibold"><?= e(user_name()) ?></h2><p class="mt-2 text-sm text-white/35"><?= e(user_email()) ?></p><p class="mt-6 border-t border-white/10 pt-5 text-xs leading-6 text-white/35">El perfil se guardará en MySQL cuando conectemos usuarios. El workspace ya está preparado para consumir esos datos desde PHP.</p></aside>
-          <form id="form-perfil" data-api="<?= e(url('api/perfil.php')) ?>" class="border border-white/10 p-6">
+          <aside class="border border-white/10 bg-white/[0.02] p-6">
+            <?php if (user_avatar_url() !== ''): ?>
+              <img src="<?= e(user_avatar_url()) ?>" alt="Foto de perfil de <?= e(user_name()) ?>" class="h-24 w-24 rounded-full border border-white/10 object-cover">
+            <?php else: ?>
+              <span class="grid h-24 w-24 place-items-center rounded-full bg-aula-green-dark text-xl font-extrabold text-aula-green"><?= e(user_initials()) ?></span>
+            <?php endif; ?>
+            <h2 class="mt-5 font-editorial text-3xl font-semibold"><?= e(user_name()) ?></h2>
+            <p class="mt-2 text-sm text-white/35"><?= e(user_email()) ?></p>
+            <p class="mt-6 border-t border-white/10 pt-5 text-xs leading-6 text-white/35">Tu información se guarda en tu cuenta de AulaGo y la fotografía se utiliza en tu perfil.</p>
+          </aside>
+
+          <form action="<?= e(url('actions/perfil.php')) ?>" method="post" enctype="multipart/form-data" class="border border-white/10 p-6">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <h2 class="font-editorial text-2xl font-semibold">Datos de perfil</h2>
+
+            <?php if ($perfilMensaje): ?>
+              <p class="mt-5 border px-4 py-3 text-sm <?= $perfilMensajeTipo === 'exito' ? 'border-aula-green/25 bg-aula-green/10 text-aula-green' : 'border-red-400/25 bg-red-400/10 text-red-200' ?>"><?= e($perfilMensaje) ?></p>
+            <?php endif; ?>
+
             <div class="mt-6 grid gap-5 sm:grid-cols-2">
               <label class="grid gap-2">
                 <span class="text-xs font-bold text-white/55">Nombre</span>
-                <input type="text" name="nombre" required maxlength="150" value="<?= e(user_name()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                <input type="text" name="nombre" required maxlength="150" value="<?= e($perfilUsuario['nombre'] ?? user_name()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
               </label>
               <label class="grid gap-2">
                 <span class="text-xs font-bold text-white/55">Correo</span>
-                <input type="email" name="email" required maxlength="255" value="<?= e(user_email()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                <input type="email" name="email" required maxlength="255" value="<?= e($perfilUsuario['email'] ?? user_email()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+              </label>
+              <label class="grid gap-2">
+                <span class="text-xs font-bold text-white/55">Fecha de nacimiento</span>
+                <input type="date" name="fecha_nacimiento" value="<?= e($perfilUsuario['fecha_nacimiento'] ?? '') ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+              </label>
+              <label class="grid gap-2">
+                <span class="text-xs font-bold text-white/55">Género</span>
+                <?php $generoActual = (string) ($perfilUsuario['genero'] ?? ''); ?>
+                <select name="genero" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                  <option value="">Sin especificar</option>
+                  <option value="mujer" <?= $generoActual === 'mujer' ? 'selected' : '' ?>>Mujer</option>
+                  <option value="hombre" <?= $generoActual === 'hombre' ? 'selected' : '' ?>>Hombre</option>
+                  <option value="otro" <?= $generoActual === 'otro' ? 'selected' : '' ?>>Otro</option>
+                  <option value="prefiero_no_decir" <?= $generoActual === 'prefiero_no_decir' ? 'selected' : '' ?>>Prefiero no decirlo</option>
+                </select>
               </label>
               <label class="grid gap-2 sm:col-span-2">
-                <span class="text-xs font-bold text-white/55">Objetivo de aprendizaje</span>
-                <textarea disabled class="min-h-28 border border-white/10 bg-aula-bg p-3 text-sm text-white outline-none focus:border-aula-orange">Aprender con constancia sin saturarme.</textarea>
-                <small class="text-xs text-white/35">Disponible próximamente. Por ahora se guardan nombre y correo.</small>
+                <span class="text-xs font-bold text-white/55">Foto de perfil</span>
+                <input type="file" name="avatar" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="min-h-11 border border-white/10 bg-aula-bg px-3 py-2 text-sm text-white file:mr-4 file:border-0 file:bg-aula-green-dark file:px-3 file:py-1 file:text-xs file:font-bold file:text-aula-green">
+                <small class="text-xs text-white/30">JPG o PNG, máximo 3 MB. Déjalo vacío para conservar tu foto actual.</small>
               </label>
             </div>
-            <p class="mt-4 text-sm text-white/70" data-perfil-mensaje role="status"></p>
-            <button type="submit" disabled class="mt-6 min-h-10 bg-aula-orange px-5 text-xs font-extrabold text-aula-bg">Guardar cambios</button>
+
+            <button type="submit" class="mt-6 min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Guardar cambios</button>
           </form>
         </div>
       </section>
@@ -549,7 +593,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
   <aside class="workspace-context student-progress-panel hidden overflow-hidden bg-[#151116] p-5 lg:block">
     <div class="flex items-center justify-between"><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">Tu progreso</p><span class="text-aula-orange-soft">●</span></div>
-    <div class="student-progress-profile mt-6 flex items-center gap-4"><span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark text-lg font-extrabold text-aula-green"><?= e(user_initials()) ?></span><div><strong class="block text-sm text-white/85"><?= e(user_name()) ?></strong><span class="mt-1 block text-xs text-white/30">Estudiante · AulaGo</span></div></div>
+    <div class="student-progress-profile mt-6 flex items-center gap-4"><?php if (user_avatar_url() !== ''): ?><img src="<?= e(user_avatar_url()) ?>" alt="Foto de perfil" class="h-16 w-16 rounded-full border border-white/10 object-cover"><?php else: ?><span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark text-lg font-extrabold text-aula-green"><?= e(user_initials()) ?></span><?php endif; ?><div><strong class="block text-sm text-white/85"><?= e(user_name()) ?></strong><span class="mt-1 block text-xs text-white/30">Estudiante · AulaGo</span></div></div>
 
     <div class="student-progress-stats mt-8 grid grid-cols-3 border-y border-white/10 py-5 text-center"><div><strong class="block text-xl text-aula-orange-soft"><?= e($averageProgress) ?>%</strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">promedio</span></div><div class="border-x border-white/10"><strong class="block text-xl text-aula-green"><?= e($activeCount) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">en curso</span></div><div><strong class="block text-xl text-[#9fcbd5]"><?= e($completedCount) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">completados</span></div></div>
 
