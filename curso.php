@@ -143,7 +143,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         </div>
       </section>
 
-      <section class="mx-auto max-w-aula px-6 py-10 lg:px-8 lg:py-14">
+      <section class="mx-auto max-w-aula px-6 py-8 lg:px-8 lg:py-10">
         <div class="mb-7">
           <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Contenido del curso</p>
           <h2 class="mt-2 font-editorial text-4xl text-aula-cream">Continúa desde donde te quedaste.</h2>
@@ -152,7 +152,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         <?php if ($studentLessons === []): ?>
           <div class="border border-dashed border-white/10 p-8 text-sm text-white/35">El instructor todavía no ha agregado lecciones a este curso.</div>
         <?php else: ?>
-          <div class="grid gap-7 lg:grid-cols-[.72fr_1.28fr]">
+          <div class="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
             <aside class="border border-white/10 bg-aula-surface/40">
               <?php $currentLevel = null; ?>
               <?php foreach ($studentLessons as $item): ?>
@@ -172,16 +172,25 @@ require PROJECT_ROOT . '/includes/layout/head.php';
             </aside>
 
             <?php if ($selectedLesson): ?>
-              <article class="border border-white/10 bg-aula-surface/30 p-6 sm:p-8">
+              <article class="border border-white/10 bg-aula-surface/30 p-5 sm:p-7">
                 <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Nivel <?= e($selectedLesson['orden_nivel']) ?> · <?= e($selectedLesson['nivel']) ?></span>
                 <p class="mt-4 text-xs text-white/30">Lección <?= e($selectedLessonIndex + 1) ?> de <?= e(count($studentLessons)) ?></p>
                 <h2 class="mt-2 font-editorial text-4xl font-semibold text-aula-cream"><?= e($selectedLesson['titulo']) ?></h2>
 
-                <?php if (!empty($selectedLesson['url_video'])): ?>
-                  <div class="mt-6 border border-white/10 bg-aula-bg p-6 text-center">
-                    <span class="block text-[10px] uppercase tracking-[0.12em] text-white/25">Recurso de video</span>
-                    <a href="<?= e($selectedLesson['url_video']) ?>" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex min-h-11 items-center justify-center border border-aula-orange/30 bg-aula-orange/10 px-5 text-xs font-bold text-aula-orange-soft">Abrir video ↗</a>
+                <?php $lessonEmbed = youtube_embed_url($selectedLesson['url_video'] ?? null); ?>
+                <?php if ($lessonEmbed): ?>
+                  <div class="mt-6 aspect-video overflow-hidden border border-white/10 bg-black">
+                    <iframe
+                      src="<?= e($lessonEmbed) ?>"
+                      title="<?= e($selectedLesson['titulo']) ?>"
+                      class="h-full w-full"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    ></iframe>
                   </div>
+                <?php elseif (!empty($selectedLesson['url_video'])): ?>
+                  <a href="<?= e($selectedLesson['url_video']) ?>" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex min-h-11 items-center justify-center border border-aula-orange/30 bg-aula-orange/10 px-5 text-xs font-bold text-aula-orange-soft">Abrir recurso externo ↗</a>
                 <?php endif; ?>
 
                 <div class="mt-7">
@@ -194,6 +203,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                   <input type="hidden" name="id_curso" value="<?= e($course['databaseId']) ?>">
                   <input type="hidden" name="id_leccion" value="<?= e($selectedLesson['id_leccion']) ?>">
                   <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
+                  <input type="hidden" name="id_leccion_actual" value="<?= e($selectedLesson['id_leccion']) ?>">
                   <input type="hidden" name="completada" value="<?= (int) $selectedLesson['completada'] === 1 ? '0' : '1' ?>">
                   <button type="submit" class="w-full border px-5 py-3 text-xs font-extrabold <?= (int) $selectedLesson['completada'] === 1 ? 'border-aula-green/40 bg-aula-green/10 text-aula-green' : 'border-aula-orange/35 bg-aula-orange/10 text-aula-orange-soft' ?>">
                     <?= (int) $selectedLesson['completada'] === 1 ? '✓ Lección completada · marcar como pendiente' : '✓ Marcar esta lección como completada' ?>
