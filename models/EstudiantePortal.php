@@ -45,6 +45,7 @@ class EstudiantePortal
                     ce.codigo,
                     ce.fecha_emision,
                     i.fecha_finalizacion,
+                    cu.id_curso,
                     cu.titulo AS curso,
                     cu.slug,
                     ca.nombre AS categoria,
