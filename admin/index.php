@@ -307,41 +307,6 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
                     </section>
 
-                    <section class="border border-white/10 p-5">
-
-                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9fcbd5]">
-                            Actividad
-                        </p>
-
-                        <h2 class="mt-2 font-editorial text-2xl font-semibold">
-                            Estado de AulaGo
-                        </h2>
-
-                        <div class="mt-5 space-y-4 text-sm">
-
-                            <div class="flex justify-between border-b border-white/10 pb-3">
-                                <span class="text-white/40">Usuarios</span>
-                                <strong><?= e($metricas['usuarios']) ?></strong>
-                            </div>
-
-                            <div class="flex justify-between border-b border-white/10 pb-3">
-                                <span class="text-white/40">Cursos</span>
-                                <strong><?= e($metricas['cursos']) ?></strong>
-                            </div>
-
-                            <div class="flex justify-between border-b border-white/10 pb-3">
-                                <span class="text-white/40">Inscripciones</span>
-                                <strong><?= e($metricas['inscripciones']) ?></strong>
-                            </div>
-
-                            <div class="flex justify-between">
-                                <span class="text-white/40">Reseñas</span>
-                                <strong><?= e($metricas['resenas']) ?></strong>
-                            </div>
-
-                        </div>
-
-                    </section>
 
                 </div>
 
