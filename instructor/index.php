@@ -1338,8 +1338,6 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
     <!-- PANEL DERECHO -->
 
-    <?php endforeach; ?>
-
     <aside class="workspace-context hidden bg-[#151116] p-5 lg:block">
 
         <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">
