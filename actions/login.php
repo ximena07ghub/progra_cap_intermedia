@@ -59,6 +59,9 @@ try {
         $_SESSION['usuario_correo'] =
             $usuario['email'];
 
+        $_SESSION['usuario_avatar'] =
+            $usuario['avatar'] ?? '';
+
         header('Location: ' . role_home_url());
         exit;
     }
