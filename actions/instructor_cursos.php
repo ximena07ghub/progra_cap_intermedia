@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/config/app.php';
+require_once dirname(__DIR__)
+    . '/config/app.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -11,44 +12,76 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_role('instructor');
 
-if (!verify_csrf($_POST['csrf_token'] ?? null)) {
+if (
+    !verify_csrf(
+        $_POST['csrf_token'] ?? null
+    )
+) {
     http_response_code(403);
     exit('Solicitud inválida.');
 }
 
-require_once PROJECT_ROOT . '/models/conexion.php';
-require_once PROJECT_ROOT . '/models/InstructorCurso.php';
+require_once PROJECT_ROOT
+    . '/models/conexion.php';
+
+require_once PROJECT_ROOT
+    . '/models/InstructorCurso.php';
+
 require_once PROJECT_ROOT
     . '/controllers/InstructorCursoController.php';
 
 $idInstructor =
     (int) ($_SESSION['usuario_id'] ?? 0);
 
-$accion = is_string($_POST['accion'] ?? null)
-    ? $_POST['accion']
-    : '';
+$accion =
+    is_string($_POST['accion'] ?? null)
+        ? $_POST['accion']
+        : '';
 
 try {
-    $configuracion = require PROJECT_ROOT
+    $configuracion =
+        require PROJECT_ROOT
         . '/config/database.local.php';
 
-    $conexion = new Conexion($configuracion);
+    $conexion =
+        new Conexion($configuracion);
 
-    $modelo = new InstructorCurso(
-        $conexion->obtenerConexion()
-    );
-
-    $controlador =
-        new InstructorCursoController($modelo);
-
-    if ($accion === 'crear') {
-        $resultado = $controlador->crear(
-            $idInstructor,
-            $_POST,
-            $_FILES['imagen'] ?? []
+    $modelo =
+        new InstructorCurso(
+            $conexion->obtenerConexion()
         );
 
-        $destino = '#cursos';
+    $controlador =
+        new InstructorCursoController(
+            $modelo
+        );
+
+    if ($accion === 'crear_categoria') {
+        $resultado =
+            $controlador->crearCategoria(
+                $_POST
+            );
+
+        $destino = '#crear';
+
+    } elseif ($accion === 'crear') {
+        $resultado =
+            $controlador->crear(
+                $idInstructor,
+                $_POST,
+                $_FILES['imagen'] ?? []
+            );
+
+        if (
+            $resultado['exito']
+            && isset($resultado['id_curso'])
+        ) {
+            $destino =
+                '#contenido-'
+                . $resultado['id_curso'];
+        } else {
+            $destino = '#crear';
+        }
 
     } else {
         $idCurso = filter_var(
@@ -66,13 +99,16 @@ try {
             exit('Curso inválido.');
         }
 
+        $idCurso = (int) $idCurso;
+
         if ($accion === 'actualizar') {
-            $resultado = $controlador->actualizar(
-                $idInstructor,
-                (int) $idCurso,
-                $_POST,
-                $_FILES['imagen'] ?? []
-            );
+            $resultado =
+                $controlador->actualizar(
+                    $idInstructor,
+                    $idCurso,
+                    $_POST,
+                    $_FILES['imagen'] ?? []
+                );
 
             $destino =
                 '#editar-' . $idCurso;
@@ -81,7 +117,7 @@ try {
             $resultado =
                 $controlador->cambiarEstado(
                     $idInstructor,
-                    (int) $idCurso,
+                    $idCurso,
                     'publicado'
                 );
 
@@ -91,7 +127,7 @@ try {
             $resultado =
                 $controlador->cambiarEstado(
                     $idInstructor,
-                    (int) $idCurso,
+                    $idCurso,
                     'desactivado'
                 );
 
@@ -101,7 +137,7 @@ try {
             $resultado =
                 $controlador->cambiarEstado(
                     $idInstructor,
-                    (int) $idCurso,
+                    $idCurso,
                     'borrador'
                 );
 
@@ -111,7 +147,7 @@ try {
             $resultado =
                 $controlador->crearNivel(
                     $idInstructor,
-                    (int) $idCurso,
+                    $idCurso,
                     $_POST
                 );
 
@@ -122,7 +158,18 @@ try {
             $resultado =
                 $controlador->crearLeccion(
                     $idInstructor,
-                    (int) $idCurso,
+                    $idCurso,
+                    $_POST
+                );
+
+            $destino =
+                '#contenido-' . $idCurso;
+
+        } elseif ($accion === 'guardar_contenido') {
+            $resultado =
+                $controlador->guardarContenido(
+                    $idInstructor,
+                    $idCurso,
                     $_POST
                 );
 
@@ -149,7 +196,7 @@ try {
             $eliminado =
                 $modelo->eliminarNivel(
                     (int) $idNivel,
-                    (int) $idCurso,
+                    $idCurso,
                     $idInstructor
                 );
 
@@ -183,7 +230,7 @@ try {
             $eliminada =
                 $modelo->eliminarLeccion(
                     (int) $idLeccion,
-                    (int) $idCurso,
+                    $idCurso,
                     $idInstructor
                 );
 
@@ -198,10 +245,11 @@ try {
                 '#contenido-' . $idCurso;
 
         } elseif ($accion === 'eliminar') {
-            $resultado = $controlador->eliminar(
-                $idInstructor,
-                (int) $idCurso
-            );
+            $resultado =
+                $controlador->eliminar(
+                    $idInstructor,
+                    $idCurso
+                );
 
             $destino = '#cursos';
 
@@ -226,7 +274,9 @@ try {
     error_log($error->getMessage());
 
     $_SESSION['instructor_cursos_mensaje'] =
-        'No fue posible completar la operación.';
+        $error instanceof RuntimeException
+            ? $error->getMessage()
+            : 'No fue posible completar la operación.';
 
     header(
         'Location: '

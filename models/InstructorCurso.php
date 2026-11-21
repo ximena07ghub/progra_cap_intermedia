@@ -108,7 +108,9 @@ class InstructorCurso
         $sql = '
             SELECT
                 id_categoria,
-                nombre
+                nombre,
+                slug,
+                descripcion
             FROM categorias
             WHERE activo = 1
             ORDER BY nombre ASC
@@ -119,11 +121,17 @@ class InstructorCurso
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function existeSlug(string $slug): bool
-    {
+    public function buscarCategoriaPorSlug(
+        string $slug
+    ): ?array {
         $sql = '
-            SELECT id_curso
-            FROM cursos
+            SELECT
+                id_categoria,
+                nombre,
+                slug,
+                descripcion,
+                activo
+            FROM categorias
             WHERE slug = :slug
             LIMIT 1
         ';
@@ -134,7 +142,42 @@ class InstructorCurso
             'slug' => $slug
         ]);
 
-        return $consulta->fetch() !== false;
+        $categoria = $consulta->fetch(PDO::FETCH_ASSOC);
+
+        return $categoria ?: null;
+    }
+
+    public function crearCategoria(
+        string $nombre,
+        string $slug,
+        string $descripcion
+    ): int {
+        $sql = '
+            INSERT INTO categorias (
+                nombre,
+                slug,
+                descripcion,
+                activo
+            )
+            VALUES (
+                :nombre,
+                :slug,
+                :descripcion,
+                1
+            )
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'nombre' => $nombre,
+            'slug' => $slug,
+            'descripcion' => $descripcion !== ''
+                ? $descripcion
+                : null
+        ]);
+
+        return (int) $this->conexion->lastInsertId();
     }
 
     public function categoriaActivaExiste(
@@ -152,6 +195,24 @@ class InstructorCurso
 
         $consulta->execute([
             'id_categoria' => $idCategoria
+        ]);
+
+        return $consulta->fetch() !== false;
+    }
+
+    public function existeSlug(string $slug): bool
+    {
+        $sql = '
+            SELECT id_curso
+            FROM cursos
+            WHERE slug = :slug
+            LIMIT 1
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'slug' => $slug
         ]);
 
         return $consulta->fetch() !== false;
@@ -241,7 +302,7 @@ class InstructorCurso
             'id_instructor' => $idInstructor
         ]);
 
-        return $consulta->rowCount() >= 0;
+        return true;
     }
 
     public function cambiarEstado(
@@ -264,17 +325,19 @@ class InstructorCurso
             'id_instructor' => $idInstructor
         ]);
 
-        return $consulta->rowCount() >= 0;
+        return true;
     }
 
     public function listarNiveles(
         int $idCurso,
         int $idInstructor
     ): array {
-        if ($this->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
+        if (
+            $this->buscarPropio(
+                $idCurso,
+                $idInstructor
+            ) === null
+        ) {
             return [];
         }
 
@@ -343,10 +406,12 @@ class InstructorCurso
         string $titulo,
         string $descripcion
     ): bool {
-        if ($this->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
+        if (
+            $this->buscarPropio(
+                $idCurso,
+                $idInstructor
+            ) === null
+        ) {
             return false;
         }
 
@@ -363,7 +428,8 @@ class InstructorCurso
             'id_curso' => $idCurso
         ]);
 
-        $orden = (int) $consultaOrden->fetchColumn();
+        $orden =
+            (int) $consultaOrden->fetchColumn();
 
         $sql = '
             INSERT INTO niveles (
@@ -400,30 +466,13 @@ class InstructorCurso
         string $contenido,
         string $urlVideo
     ): bool {
-        if ($this->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
-            return false;
-        }
-
-        $sqlNivel = '
-            SELECT id_nivel
-            FROM niveles
-            WHERE id_nivel = :id_nivel
-              AND id_curso = :id_curso
-            LIMIT 1
-        ';
-
-        $consultaNivel =
-            $this->conexion->prepare($sqlNivel);
-
-        $consultaNivel->execute([
-            'id_nivel' => $idNivel,
-            'id_curso' => $idCurso
-        ]);
-
-        if ($consultaNivel->fetch() === false) {
+        if (
+            !$this->nivelPerteneceCurso(
+                $idNivel,
+                $idCurso,
+                $idInstructor
+            )
+        ) {
             return false;
         }
 
@@ -440,7 +489,8 @@ class InstructorCurso
             'id_nivel' => $idNivel
         ]);
 
-        $orden = (int) $consultaOrden->fetchColumn();
+        $orden =
+            (int) $consultaOrden->fetchColumn();
 
         $sql = '
             INSERT INTO lecciones (
@@ -466,7 +516,9 @@ class InstructorCurso
         return $consulta->execute([
             'id_nivel' => $idNivel,
             'titulo' => $titulo,
-            'contenido' => $contenido,
+            'contenido' => $contenido !== ''
+                ? $contenido
+                : null,
             'url_video' => $urlVideo !== ''
                 ? $urlVideo
                 : null,
@@ -474,57 +526,276 @@ class InstructorCurso
         ]);
     }
 
-    public function eliminarLeccion(
-        int $idLeccion,
+    public function guardarContenido(
         int $idCurso,
-        int $idInstructor
+        int $idInstructor,
+        array $niveles,
+        array $lecciones
     ): bool {
-        if ($this->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
+        if (
+            $this->buscarPropio(
+                $idCurso,
+                $idInstructor
+            ) === null
+        ) {
             return false;
         }
 
         $this->conexion->beginTransaction();
 
         try {
-            $sqlProgreso = '
-                DELETE p
-                FROM progreso_lecciones AS p
-                INNER JOIN lecciones AS l
-                    ON l.id_leccion = p.id_leccion
-                INNER JOIN niveles AS n
-                    ON n.id_nivel = l.id_nivel
-                WHERE p.id_leccion = :id_leccion
-                  AND n.id_curso = :id_curso
-            ';
+            foreach ($niveles as $idNivel => $datosNivel) {
+                $idNivel = (int) $idNivel;
 
-            $consulta =
-                $this->conexion->prepare($sqlProgreso);
+                if (
+                    !$this->nivelPerteneceCurso(
+                        $idNivel,
+                        $idCurso,
+                        $idInstructor
+                    )
+                ) {
+                    throw new RuntimeException(
+                        'Uno de los niveles no pertenece al curso.'
+                    );
+                }
 
-            $consulta->execute([
-                'id_leccion' => $idLeccion,
-                'id_curso' => $idCurso
-            ]);
+                $titulo = trim(
+                    (string) (
+                        $datosNivel['titulo']
+                        ?? ''
+                    )
+                );
 
+                $descripcion = trim(
+                    (string) (
+                        $datosNivel['descripcion']
+                        ?? ''
+                    )
+                );
+
+                if (
+                    $titulo === ''
+                    || strlen($titulo) > 150
+                ) {
+                    throw new RuntimeException(
+                        'Uno de los niveles tiene un título inválido.'
+                    );
+                }
+
+                $sqlNivel = '
+                    UPDATE niveles
+                    SET
+                        titulo = :titulo,
+                        descripcion = :descripcion
+                    WHERE id_nivel = :id_nivel
+                      AND id_curso = :id_curso
+                ';
+
+                $consulta =
+                    $this->conexion->prepare($sqlNivel);
+
+                $consulta->execute([
+                    'titulo' => $titulo,
+                    'descripcion' => $descripcion !== ''
+                        ? $descripcion
+                        : null,
+                    'id_nivel' => $idNivel,
+                    'id_curso' => $idCurso
+                ]);
+            }
+
+            foreach ($lecciones as $idLeccion => $datosLeccion) {
+                $idLeccion = (int) $idLeccion;
+
+                if (
+                    !$this->leccionPerteneceCurso(
+                        $idLeccion,
+                        $idCurso,
+                        $idInstructor
+                    )
+                ) {
+                    throw new RuntimeException(
+                        'Una de las lecciones no pertenece al curso.'
+                    );
+                }
+
+                $titulo = trim(
+                    (string) (
+                        $datosLeccion['titulo']
+                        ?? ''
+                    )
+                );
+
+                $contenido = trim(
+                    (string) (
+                        $datosLeccion['contenido']
+                        ?? ''
+                    )
+                );
+
+                $urlVideo = trim(
+                    (string) (
+                        $datosLeccion['url_video']
+                        ?? ''
+                    )
+                );
+
+                if (
+                    $titulo === ''
+                    || strlen($titulo) > 200
+                ) {
+                    throw new RuntimeException(
+                        'Una de las lecciones tiene un título inválido.'
+                    );
+                }
+
+                if (
+                    $urlVideo !== ''
+                    && !filter_var(
+                        $urlVideo,
+                        FILTER_VALIDATE_URL
+                    )
+                ) {
+                    throw new RuntimeException(
+                        'Una de las URL de video no es válida.'
+                    );
+                }
+
+                $sqlLeccion = '
+                    UPDATE lecciones
+                    SET
+                        titulo = :titulo,
+                        contenido = :contenido,
+                        url_video = :url_video
+                    WHERE id_leccion = :id_leccion
+                ';
+
+                $consulta =
+                    $this->conexion->prepare($sqlLeccion);
+
+                $consulta->execute([
+                    'titulo' => $titulo,
+                    'contenido' => $contenido !== ''
+                        ? $contenido
+                        : null,
+                    'url_video' => $urlVideo !== ''
+                        ? $urlVideo
+                        : null,
+                    'id_leccion' => $idLeccion
+                ]);
+            }
+
+            $this->conexion->commit();
+
+            return true;
+
+        } catch (Throwable $error) {
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+
+            throw $error;
+        }
+    }
+
+    private function nivelPerteneceCurso(
+        int $idNivel,
+        int $idCurso,
+        int $idInstructor
+    ): bool {
+        $sql = '
+            SELECT n.id_nivel
+            FROM niveles AS n
+            INNER JOIN cursos AS cu
+                ON cu.id_curso = n.id_curso
+            WHERE n.id_nivel = :id_nivel
+              AND n.id_curso = :id_curso
+              AND cu.id_instructor = :id_instructor
+            LIMIT 1
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'id_nivel' => $idNivel,
+            'id_curso' => $idCurso,
+            'id_instructor' => $idInstructor
+        ]);
+
+        return $consulta->fetch() !== false;
+    }
+
+    private function leccionPerteneceCurso(
+        int $idLeccion,
+        int $idCurso,
+        int $idInstructor
+    ): bool {
+        $sql = '
+            SELECT l.id_leccion
+            FROM lecciones AS l
+            INNER JOIN niveles AS n
+                ON n.id_nivel = l.id_nivel
+            INNER JOIN cursos AS cu
+                ON cu.id_curso = n.id_curso
+            WHERE l.id_leccion = :id_leccion
+              AND n.id_curso = :id_curso
+              AND cu.id_instructor = :id_instructor
+            LIMIT 1
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'id_leccion' => $idLeccion,
+            'id_curso' => $idCurso,
+            'id_instructor' => $idInstructor
+        ]);
+
+        return $consulta->fetch() !== false;
+    }
+
+    public function eliminarLeccion(
+        int $idLeccion,
+        int $idCurso,
+        int $idInstructor
+    ): bool {
+        if (
+            !$this->leccionPerteneceCurso(
+                $idLeccion,
+                $idCurso,
+                $idInstructor
+            )
+        ) {
+            return false;
+        }
+
+        $this->conexion->beginTransaction();
+
+        try {
             $sql = '
-                DELETE l
-                FROM lecciones AS l
-                INNER JOIN niveles AS n
-                    ON n.id_nivel = l.id_nivel
-                WHERE l.id_leccion = :id_leccion
-                  AND n.id_curso = :id_curso
+                DELETE FROM progreso_lecciones
+                WHERE id_leccion = :id_leccion
             ';
 
             $consulta = $this->conexion->prepare($sql);
 
             $consulta->execute([
-                'id_leccion' => $idLeccion,
-                'id_curso' => $idCurso
+                'id_leccion' => $idLeccion
             ]);
 
-            $eliminada = $consulta->rowCount() === 1;
+            $sql = '
+                DELETE FROM lecciones
+                WHERE id_leccion = :id_leccion
+            ';
+
+            $consulta = $this->conexion->prepare($sql);
+
+            $consulta->execute([
+                'id_leccion' => $idLeccion
+            ]);
+
+            $eliminada =
+                $consulta->rowCount() === 1;
 
             $this->conexion->commit();
 
@@ -544,67 +815,59 @@ class InstructorCurso
         int $idCurso,
         int $idInstructor
     ): bool {
-        if ($this->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
+        if (
+            !$this->nivelPerteneceCurso(
+                $idNivel,
+                $idCurso,
+                $idInstructor
+            )
+        ) {
             return false;
         }
 
         $this->conexion->beginTransaction();
 
         try {
-            $sqlProgreso = '
+            $sql = '
                 DELETE p
                 FROM progreso_lecciones AS p
                 INNER JOIN lecciones AS l
                     ON l.id_leccion = p.id_leccion
-                INNER JOIN niveles AS n
-                    ON n.id_nivel = l.id_nivel
-                WHERE n.id_nivel = :id_nivel
-                  AND n.id_curso = :id_curso
+                WHERE l.id_nivel = :id_nivel
             ';
 
-            $consulta =
-                $this->conexion->prepare($sqlProgreso);
+            $consulta = $this->conexion->prepare($sql);
 
             $consulta->execute([
-                'id_nivel' => $idNivel,
-                'id_curso' => $idCurso
+                'id_nivel' => $idNivel
             ]);
 
-            $sqlLecciones = '
-                DELETE l
-                FROM lecciones AS l
-                INNER JOIN niveles AS n
-                    ON n.id_nivel = l.id_nivel
-                WHERE n.id_nivel = :id_nivel
-                  AND n.id_curso = :id_curso
+            $sql = '
+                DELETE FROM lecciones
+                WHERE id_nivel = :id_nivel
             ';
 
-            $consulta =
-                $this->conexion->prepare($sqlLecciones);
+            $consulta = $this->conexion->prepare($sql);
 
             $consulta->execute([
-                'id_nivel' => $idNivel,
-                'id_curso' => $idCurso
+                'id_nivel' => $idNivel
             ]);
 
-            $sqlNivel = '
+            $sql = '
                 DELETE FROM niveles
                 WHERE id_nivel = :id_nivel
                   AND id_curso = :id_curso
             ';
 
-            $consulta =
-                $this->conexion->prepare($sqlNivel);
+            $consulta = $this->conexion->prepare($sql);
 
             $consulta->execute([
                 'id_nivel' => $idNivel,
                 'id_curso' => $idCurso
             ]);
 
-            $eliminado = $consulta->rowCount() === 1;
+            $eliminado =
+                $consulta->rowCount() === 1;
 
             $this->conexion->commit();
 
@@ -706,14 +969,13 @@ class InstructorCurso
                 ]);
             }
 
-            $sqlCurso = '
+            $sql = '
                 DELETE FROM cursos
                 WHERE id_curso = :id_curso
                   AND id_instructor = :id_instructor
             ';
 
-            $consulta =
-                $this->conexion->prepare($sqlCurso);
+            $consulta = $this->conexion->prepare($sql);
 
             $consulta->execute([
                 'id_curso' => $idCurso,
@@ -765,7 +1027,7 @@ class InstructorCurso
 
         $metricas = $consulta->fetch(PDO::FETCH_ASSOC);
 
-        $sqlIngresos = '
+        $sql = '
             SELECT COALESCE(SUM(p.monto), 0)
             FROM pagos AS p
             INNER JOIN cursos AS cu
@@ -774,19 +1036,22 @@ class InstructorCurso
               AND p.estado = \'completado\'
         ';
 
-        $consulta =
-            $this->conexion->prepare($sqlIngresos);
+        $consulta = $this->conexion->prepare($sql);
 
         $consulta->execute([
             'id_instructor' => $idInstructor
         ]);
 
         return [
-            'cursos' => (int) ($metricas['cursos'] ?? 0),
+            'cursos' =>
+                (int) ($metricas['cursos'] ?? 0),
+
             'estudiantes' =>
                 (int) ($metricas['estudiantes'] ?? 0),
+
             'conversaciones' =>
                 (int) ($metricas['conversaciones'] ?? 0),
+
             'ingresos' =>
                 (float) $consulta->fetchColumn()
         ];

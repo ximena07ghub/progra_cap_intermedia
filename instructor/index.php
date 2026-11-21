@@ -465,159 +465,274 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
             </section>
 
-            <!-- CREAR CURSO -->
+<!-- CREAR CURSO -->
 
-            <section
-                data-workspace-panel="crear"
-                data-title="Crear curso"
-                data-eyebrow="Nuevo contenido"
-                hidden
+<section
+    data-workspace-panel="crear"
+    data-title="Crear curso"
+    data-eyebrow="Nuevo contenido"
+    hidden
+>
+
+    <div class="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
+
+        <form
+            action="<?= e(url('actions/instructor_cursos.php')) ?>"
+            method="post"
+            enctype="multipart/form-data"
+            class="space-y-6"
+        >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= e(csrf_token()) ?>"
             >
 
-                <?php if ($categorias === []): ?>
+            <input
+                type="hidden"
+                name="accion"
+                value="crear"
+            >
 
-                    <div class="border border-aula-yellow/20 p-5 text-sm text-aula-yellow">
-                        No existen categorías activas. Un administrador debe crear una antes de publicar cursos.
-                    </div>
+            <section class="border border-white/10 p-6">
 
-                <?php else: ?>
+                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">
+                    Información principal
+                </p>
 
-                    <form
-                        action="<?= e(url('actions/instructor_cursos.php')) ?>"
-                        method="post"
-                        enctype="multipart/form-data"
-                        class="space-y-6"
-                    >
+                <h2 class="mt-2 font-editorial text-2xl font-semibold">
+                    Datos del curso
+                </h2>
+
+                <div class="mt-5 grid gap-5 md:grid-cols-2">
+
+                    <label class="grid gap-2 md:col-span-2">
+
+                        <span class="text-xs font-bold text-white/55">
+                            Título
+                        </span>
 
                         <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="<?= e(csrf_token()) ?>"
+                            name="titulo"
+                            maxlength="200"
+                            required
+                            class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                            placeholder="Ej. Fotografía para principiantes"
                         >
 
-                        <section class="border border-white/10 p-6">
+                    </label>
 
-                            <h2 class="font-editorial text-2xl font-semibold">
-                                Información del curso
-                            </h2>
+                    <label class="grid gap-2">
 
-                            <div class="mt-5 grid gap-5 md:grid-cols-2">
+                        <span class="text-xs font-bold text-white/55">
+                            Categoría
+                        </span>
 
-                                <label class="grid gap-2 md:col-span-2">
-                                    <span class="text-xs font-bold text-white/55">
-                                        Título
-                                    </span>
+                        <select
+                            name="id_categoria"
+                            required
+                            class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                        >
 
-                                    <input
-                                        name="titulo"
-                                        maxlength="200"
-                                        required
-                                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                    >
-                                </label>
+                            <option value="">
+                                Selecciona una categoría
+                            </option>
 
-                                <label class="grid gap-2">
-                                    <span class="text-xs font-bold text-white/55">
-                                        Categoría
-                                    </span>
+                            <?php foreach ($categorias as $categoria): ?>
 
-                                    <select
-                                        name="id_categoria"
-                                        required
-                                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                    >
+                                <option
+                                    value="<?= e($categoria['id_categoria']) ?>"
+                                >
+                                    <?= e($categoria['nombre']) ?>
+                                </option>
 
-                                        <?php foreach ($categorias as $categoria): ?>
+                            <?php endforeach; ?>
 
-                                            <option value="<?= e($categoria['id_categoria']) ?>">
-                                                <?= e($categoria['nombre']) ?>
-                                            </option>
+                        </select>
 
-                                        <?php endforeach; ?>
+                    </label>
 
-                                    </select>
-                                </label>
+                    <label class="grid gap-2">
 
-                                <label class="grid gap-2">
-                                    <span class="text-xs font-bold text-white/55">
-                                        Precio MXN
-                                    </span>
+                        <span class="text-xs font-bold text-white/55">
+                            Precio MXN
+                        </span>
 
-                                    <input
-                                        type="number"
-                                        name="precio"
-                                        min="0"
-                                        step="0.01"
-                                        value="0"
-                                        required
-                                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                    >
-                                </label>
+                        <input
+                            type="number"
+                            name="precio"
+                            min="0"
+                            step="0.01"
+                            value="0"
+                            required
+                            class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                        >
 
-                                <label class="grid gap-2 md:col-span-2">
-                                    <span class="text-xs font-bold text-white/55">
-                                        Portada
-                                    </span>
+                    </label>
 
-                                    <input
-                                        type="file"
-                                        name="imagen"
-                                        accept=".jpg,.jpeg,.png,.webp"
-                                        class="border border-white/10 p-3 text-sm"
-                                    >
+                    <label class="grid gap-2 md:col-span-2">
 
-                                    <small class="text-white/30">
-                                        JPG, PNG o WebP. Máximo 5 MB.
-                                    </small>
-                                </label>
+                        <span class="text-xs font-bold text-white/55">
+                            Portada
+                        </span>
 
-                                <label class="grid gap-2 md:col-span-2">
-                                    <span class="text-xs font-bold text-white/55">
-                                        Descripción
-                                    </span>
+                        <input
+                            type="file"
+                            name="imagen"
+                            accept=".jpg,.jpeg,.png,.webp"
+                            class="border border-white/10 p-3 text-sm"
+                        >
 
-                                    <textarea
-                                        name="descripcion"
-                                        required
-                                        class="min-h-36 border border-white/10 bg-aula-bg p-3"
-                                    ></textarea>
-                                </label>
+                        <small class="text-white/30">
+                            JPG, PNG o WebP. Máximo 5 MB.
+                        </small>
 
-                            </div>
+                    </label>
 
-                        </section>
+                    <label class="grid gap-2 md:col-span-2">
 
-                        <div class="flex justify-end gap-3">
+                        <span class="text-xs font-bold text-white/55">
+                            Descripción
+                        </span>
 
-                            <button
-                                name="estado"
-                                value="borrador"
-                                class="border border-white/10 px-4 py-3 text-xs font-bold"
-                            >
-                                Guardar borrador
-                            </button>
+                        <textarea
+                            name="descripcion"
+                            required
+                            class="min-h-36 border border-white/10 bg-aula-bg p-3"
+                            placeholder="Explica qué aprenderá el estudiante."
+                        ></textarea>
 
-                            <button
-                                name="estado"
-                                value="publicado"
-                                class="bg-aula-orange px-5 py-3 text-xs font-extrabold text-aula-bg"
-                            >
-                                Crear y publicar
-                            </button>
+                    </label>
 
-                            <input
-                                type="hidden"
-                                name="accion"
-                                value="crear"
-                            >
-
-                        </div>
-
-                    </form>
-
-                <?php endif; ?>
+                </div>
 
             </section>
+
+            <div class="flex flex-wrap justify-end gap-3">
+
+                <button
+                    type="submit"
+                    name="estado"
+                    value="borrador"
+                    class="border border-white/10 px-4 py-3 text-xs font-bold"
+                >
+                    Crear como borrador
+                </button>
+
+                <button
+                    type="submit"
+                    name="estado"
+                    value="publicado"
+                    class="bg-aula-orange px-5 py-3 text-xs font-extrabold text-aula-bg"
+                >
+                    Crear y publicar
+                </button>
+
+            </div>
+
+        </form>
+
+        <aside class="border border-white/10 p-6">
+
+            <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-orange-soft">
+                Categorías
+            </p>
+
+            <h2 class="mt-2 font-editorial text-2xl font-semibold">
+                ¿No existe la categoría?
+            </h2>
+
+            <p class="mt-3 text-sm leading-6 text-white/40">
+                Puedes crearla aquí. La categoría será global y podrá utilizarse en otros cursos de AulaGo.
+            </p>
+
+            <form
+                action="<?= e(url('actions/instructor_cursos.php')) ?>"
+                method="post"
+                class="mt-6 space-y-4"
+            >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="<?= e(csrf_token()) ?>"
+                >
+
+                <input
+                    type="hidden"
+                    name="accion"
+                    value="crear_categoria"
+                >
+
+                <label class="grid gap-2">
+
+                    <span class="text-xs font-bold text-white/55">
+                        Nombre
+                    </span>
+
+                    <input
+                        name="nombre"
+                        maxlength="100"
+                        required
+                        placeholder="Ej. Fotografía"
+                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                    >
+
+                </label>
+
+                <label class="grid gap-2">
+
+                    <span class="text-xs font-bold text-white/55">
+                        Descripción
+                    </span>
+
+                    <textarea
+                        name="descripcion"
+                        class="min-h-24 border border-white/10 bg-aula-bg p-3"
+                        placeholder="Descripción opcional"
+                    ></textarea>
+
+                </label>
+
+                <button
+                    type="submit"
+                    class="w-full border border-aula-green/30 px-4 py-3 text-xs font-bold text-aula-green"
+                >
+                    + Crear categoría
+                </button>
+
+            </form>
+
+            <?php if ($categorias !== []): ?>
+
+                <div class="mt-7 border-t border-white/10 pt-5">
+
+                    <span class="text-[10px] font-bold uppercase text-white/30">
+                        Disponibles
+                    </span>
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+
+                        <?php foreach ($categorias as $categoria): ?>
+
+                            <span class="border border-white/10 px-3 py-2 text-xs text-white/50">
+                                <?= e($categoria['nombre']) ?>
+                            </span>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+                </div>
+
+            <?php endif; ?>
+
+        </aside>
+
+    </div>
+
+</section>
 
             <!-- EDITORES DE CURSO -->
 
@@ -735,179 +850,530 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
                 </section>
 
-                <!-- CONTENIDO -->
+<!-- CONTENIDO -->
 
-                <section
-                    data-workspace-panel="contenido-<?= e($curso['id_curso']) ?>"
-                    data-title="Contenido"
-                    data-eyebrow="<?= e($curso['titulo']) ?>"
-                    hidden
+<section
+    data-workspace-panel="contenido-<?= e($curso['id_curso']) ?>"
+    data-title="Contenido"
+    data-eyebrow="Estructura del curso"
+    hidden
+>
+
+    <div class="mb-6 border border-white/10 p-5">
+
+        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">
+            Curso
+        </p>
+
+        <h2 class="mt-2 font-editorial text-3xl font-semibold">
+            <?= e($curso['titulo']) ?>
+        </h2>
+
+        <p class="mt-2 text-sm text-white/35">
+            Organiza el contenido en niveles y lecciones.
+        </p>
+
+    </div>
+
+    <form
+        action="<?= e(url('actions/instructor_cursos.php')) ?>"
+        method="post"
+        class="border border-white/10 p-5"
+    >
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="<?= e(csrf_token()) ?>"
+        >
+
+        <input
+            type="hidden"
+            name="accion"
+            value="crear_nivel"
+        >
+
+        <input
+            type="hidden"
+            name="id_curso"
+            value="<?= e($curso['id_curso']) ?>"
+        >
+
+        <p class="text-[10px] font-bold uppercase text-aula-orange-soft">
+            Estructura
+        </p>
+
+        <h3 class="mt-2 font-editorial text-2xl">
+            Agregar nivel
+        </h3>
+
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+
+            <label class="grid gap-2">
+
+                <span class="text-xs text-white/40">
+                    Título del nivel
+                </span>
+
+                <input
+                    name="titulo"
+                    maxlength="150"
+                    required
+                    placeholder="Ej. Fundamentos"
+                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
                 >
+
+            </label>
+
+            <label class="grid gap-2">
+
+                <span class="text-xs text-white/40">
+                    Descripción
+                </span>
+
+                <input
+                    name="descripcion"
+                    placeholder="Qué contiene este nivel"
+                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                >
+
+            </label>
+
+        </div>
+
+        <button
+            type="submit"
+            class="mt-4 text-xs font-bold text-aula-green"
+        >
+            + Agregar nivel
+        </button>
+
+    </form>
+
+    <?php if (
+        $contenidos[
+            (int) $curso['id_curso']
+        ] === []
+    ): ?>
+
+        <div class="mt-6 border border-dashed border-white/10 p-8 text-center">
+
+            <p class="text-sm text-white/35">
+                Este curso todavía no tiene niveles.
+            </p>
+
+            <p class="mt-2 text-xs text-white/25">
+                Agrega el primer nivel para comenzar a organizar las lecciones.
+            </p>
+
+        </div>
+
+    <?php else: ?>
+
+        <form
+            action="<?= e(url('actions/instructor_cursos.php')) ?>"
+            method="post"
+            class="mt-6"
+        >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= e(csrf_token()) ?>"
+            >
+
+            <input
+                type="hidden"
+                name="accion"
+                value="guardar_contenido"
+            >
+
+            <input
+                type="hidden"
+                name="id_curso"
+                value="<?= e($curso['id_curso']) ?>"
+            >
+
+            <div class="space-y-6">
+
+                <?php foreach (
+                    $contenidos[
+                        (int) $curso['id_curso']
+                    ] as $nivel
+                ): ?>
+
+                    <article class="border border-white/10">
+
+                        <header class="border-b border-white/10 p-5">
+
+                            <div class="flex items-start justify-between gap-4">
+
+                                <div>
+
+                                    <span class="text-xs font-bold text-aula-orange">
+                                        Nivel <?= e($nivel['orden']) ?>
+                                    </span>
+
+                                    <p class="mt-1 text-xs text-white/30">
+                                        Puedes modificar la información y guardar todos los cambios al final.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="mt-5 grid gap-3">
+
+                                <label class="grid gap-2">
+
+                                    <span class="text-xs font-bold text-white/45">
+                                        Título del nivel
+                                    </span>
+
+                                    <input
+                                        name="niveles[<?= e($nivel['id_nivel']) ?>][titulo]"
+                                        value="<?= e($nivel['titulo']) ?>"
+                                        maxlength="150"
+                                        required
+                                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                                    >
+
+                                </label>
+
+                                <label class="grid gap-2">
+
+                                    <span class="text-xs font-bold text-white/45">
+                                        Descripción
+                                    </span>
+
+                                    <textarea
+                                        name="niveles[<?= e($nivel['id_nivel']) ?>][descripcion]"
+                                        class="min-h-20 border border-white/10 bg-aula-bg p-3"
+                                    ><?= e($nivel['descripcion'] ?? '') ?></textarea>
+
+                                </label>
+
+                            </div>
+
+                        </header>
+
+                        <div class="divide-y divide-white/10">
+
+                            <?php if ($nivel['lecciones'] === []): ?>
+
+                                <p class="p-5 text-sm text-white/30">
+                                    Este nivel todavía no tiene lecciones.
+                                </p>
+
+                            <?php endif; ?>
+
+                            <?php foreach (
+                                $nivel['lecciones']
+                                as $leccion
+                            ): ?>
+
+                                <section class="p-5">
+
+                                    <div class="flex items-center justify-between gap-4">
+
+                                        <span class="text-[10px] font-bold uppercase text-aula-green">
+                                            Lección <?= e($leccion['orden']) ?>
+                                        </span>
+
+                                    </div>
+
+                                    <div class="mt-4 grid gap-3">
+
+                                        <label class="grid gap-2">
+
+                                            <span class="text-xs text-white/40">
+                                                Título
+                                            </span>
+
+                                            <input
+                                                name="lecciones[<?= e($leccion['id_leccion']) ?>][titulo]"
+                                                value="<?= e($leccion['titulo']) ?>"
+                                                maxlength="200"
+                                                required
+                                                class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                                            >
+
+                                        </label>
+
+                                        <label class="grid gap-2">
+
+                                            <span class="text-xs text-white/40">
+                                                Contenido
+                                            </span>
+
+                                            <textarea
+                                                name="lecciones[<?= e($leccion['id_leccion']) ?>][contenido]"
+                                                class="min-h-28 border border-white/10 bg-aula-bg p-3"
+                                            ><?= e($leccion['contenido'] ?? '') ?></textarea>
+
+                                        </label>
+
+                                        <label class="grid gap-2">
+
+                                            <span class="text-xs text-white/40">
+                                                URL del video
+                                            </span>
+
+                                            <input
+                                                type="url"
+                                                name="lecciones[<?= e($leccion['id_leccion']) ?>][url_video]"
+                                                value="<?= e($leccion['url_video'] ?? '') ?>"
+                                                placeholder="https://..."
+                                                class="min-h-11 border border-white/10 bg-aula-bg px-3"
+                                            >
+
+                                        </label>
+
+                                    </div>
+
+                                </section>
+
+                            <?php endforeach; ?>
+
+                        </div>
+
+                    </article>
+
+                <?php endforeach; ?>
+
+            </div>
+
+            <div class="sticky bottom-0 mt-6 border border-aula-green/20 bg-aula-bg/95 p-4">
+
+                <div class="flex flex-wrap items-center justify-between gap-4">
+
+                    <p class="text-xs text-white/35">
+                        Guarda las modificaciones realizadas en niveles y lecciones.
+                    </p>
+
+                    <button
+                        type="submit"
+                        class="bg-aula-green px-6 py-3 text-xs font-extrabold text-aula-bg"
+                    >
+                        Guardar cambios del contenido
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+        <div class="mt-6 space-y-4">
+
+            <?php foreach (
+                $contenidos[
+                    (int) $curso['id_curso']
+                ] as $nivel
+            ): ?>
+
+                <section class="border border-white/10 p-5">
+
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+
+                        <div>
+
+                            <span class="text-[10px] font-bold uppercase text-white/30">
+                                Nivel <?= e($nivel['orden']) ?>
+                            </span>
+
+                            <strong class="mt-1 block">
+                                <?= e($nivel['titulo']) ?>
+                            </strong>
+
+                        </div>
+
+                        <form
+                            action="<?= e(url('actions/instructor_cursos.php')) ?>"
+                            method="post"
+                            onsubmit="return confirm('Se eliminarán este nivel, sus lecciones y el progreso relacionado. ¿Continuar?');"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="<?= e(csrf_token()) ?>"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="accion"
+                                value="eliminar_nivel"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="id_curso"
+                                value="<?= e($curso['id_curso']) ?>"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="id_nivel"
+                                value="<?= e($nivel['id_nivel']) ?>"
+                            >
+
+                            <button
+                                type="submit"
+                                class="text-xs font-bold text-red-300"
+                            >
+                                Eliminar nivel
+                            </button>
+
+                        </form>
+
+                    </div>
 
                     <form
                         action="<?= e(url('actions/instructor_cursos.php')) ?>"
                         method="post"
-                        class="border border-white/10 p-5"
+                        class="mt-5 border-t border-white/10 pt-5"
                     >
 
-                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                        <input type="hidden" name="accion" value="crear_nivel">
-                        <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            value="<?= e(csrf_token()) ?>"
+                        >
 
-                        <h2 class="font-editorial text-2xl">
-                            Nuevo nivel
-                        </h2>
+                        <input
+                            type="hidden"
+                            name="accion"
+                            value="crear_leccion"
+                        >
 
-                        <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        <input
+                            type="hidden"
+                            name="id_curso"
+                            value="<?= e($curso['id_curso']) ?>"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="id_nivel"
+                            value="<?= e($nivel['id_nivel']) ?>"
+                        >
+
+                        <p class="text-xs font-bold text-aula-green">
+                            Agregar nueva lección
+                        </p>
+
+                        <div class="mt-3 grid gap-3">
 
                             <input
                                 name="titulo"
-                                maxlength="150"
+                                maxlength="200"
                                 required
-                                placeholder="Título del nivel"
+                                placeholder="Título de la lección"
                                 class="min-h-11 border border-white/10 bg-aula-bg px-3"
                             >
 
+                            <textarea
+                                name="contenido"
+                                placeholder="Contenido de la lección"
+                                class="min-h-28 border border-white/10 bg-aula-bg p-3"
+                            ></textarea>
+
                             <input
-                                name="descripcion"
-                                placeholder="Descripción"
+                                type="url"
+                                name="url_video"
+                                placeholder="URL del video (opcional)"
                                 class="min-h-11 border border-white/10 bg-aula-bg px-3"
                             >
 
                         </div>
 
-                        <button class="mt-4 text-xs font-bold text-aula-green">
-                            + Agregar nivel
+                        <button
+                            type="submit"
+                            class="mt-4 text-xs font-bold text-aula-green"
+                        >
+                            + Agregar lección
                         </button>
 
                     </form>
 
-                    <div class="mt-6 space-y-6">
+                    <?php if ($nivel['lecciones'] !== []): ?>
 
-                        <?php foreach ($contenidos[(int) $curso['id_curso']] as $nivel): ?>
+                        <div class="mt-5 border-t border-white/10 pt-4">
 
-                            <article class="border border-white/10">
+                            <span class="text-[10px] font-bold uppercase text-white/30">
+                                Eliminar lecciones
+                            </span>
 
-                                <header class="flex items-center justify-between border-b border-white/10 p-5">
+                            <div class="mt-3 space-y-2">
 
-                                    <div>
-                                        <span class="text-xs text-aula-orange">
-                                            Nivel <?= e($nivel['orden']) ?>
-                                        </span>
-
-                                        <h3 class="mt-1 font-editorial text-xl">
-                                            <?= e($nivel['titulo']) ?>
-                                        </h3>
-                                    </div>
+                                <?php foreach (
+                                    $nivel['lecciones']
+                                    as $leccion
+                                ): ?>
 
                                     <form
                                         action="<?= e(url('actions/instructor_cursos.php')) ?>"
                                         method="post"
-                                        onsubmit="return confirm('Se eliminarán también las lecciones y su progreso relacionado. ¿Continuar?');"
+                                        class="flex items-center justify-between gap-4 border border-white/10 p-3"
+                                        onsubmit="return confirm('¿Eliminar esta lección y su progreso relacionado?');"
                                     >
-                                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                                        <input type="hidden" name="accion" value="eliminar_nivel">
-                                        <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
-                                        <input type="hidden" name="id_nivel" value="<?= e($nivel['id_nivel']) ?>">
 
-                                        <button class="text-xs text-red-300">
-                                            Eliminar nivel
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="<?= e(csrf_token()) ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="accion"
+                                            value="eliminar_leccion"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="id_curso"
+                                            value="<?= e($curso['id_curso']) ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="id_leccion"
+                                            value="<?= e($leccion['id_leccion']) ?>"
+                                        >
+
+                                        <span class="text-xs text-white/55">
+                                            <?= e($leccion['orden']) ?>.
+                                            <?= e($leccion['titulo']) ?>
+                                        </span>
+
+                                        <button
+                                            type="submit"
+                                            class="text-xs text-red-300"
+                                        >
+                                            Eliminar
                                         </button>
+
                                     </form>
 
-                                </header>
+                                <?php endforeach; ?>
 
-                                <div class="divide-y divide-white/10">
+                            </div>
 
-                                    <?php foreach ($nivel['lecciones'] as $leccion): ?>
+                        </div>
 
-                                        <div class="flex items-start justify-between gap-4 p-4">
-
-                                            <div>
-                                                <strong class="text-sm">
-                                                    <?= e($leccion['orden']) ?>.
-                                                    <?= e($leccion['titulo']) ?>
-                                                </strong>
-
-                                                <?php if (!empty($leccion['url_video'])): ?>
-                                                    <span class="mt-1 block text-xs text-[#9fcbd5]">
-                                                        Video asociado
-                                                    </span>
-                                                <?php endif; ?>
-                                            </div>
-
-                                            <form
-                                                action="<?= e(url('actions/instructor_cursos.php')) ?>"
-                                                method="post"
-                                                onsubmit="return confirm('¿Eliminar esta lección y su progreso relacionado?');"
-                                            >
-                                                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                                                <input type="hidden" name="accion" value="eliminar_leccion">
-                                                <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
-                                                <input type="hidden" name="id_leccion" value="<?= e($leccion['id_leccion']) ?>">
-
-                                                <button class="text-xs text-red-300">
-                                                    Eliminar
-                                                </button>
-                                            </form>
-
-                                        </div>
-
-                                    <?php endforeach; ?>
-
-                                </div>
-
-                                <form
-                                    action="<?= e(url('actions/instructor_cursos.php')) ?>"
-                                    method="post"
-                                    class="border-t border-white/10 p-5"
-                                >
-
-                                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                                    <input type="hidden" name="accion" value="crear_leccion">
-                                    <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
-                                    <input type="hidden" name="id_nivel" value="<?= e($nivel['id_nivel']) ?>">
-
-                                    <div class="grid gap-3">
-
-                                        <input
-                                            name="titulo"
-                                            maxlength="200"
-                                            required
-                                            placeholder="Título de la lección"
-                                            class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                        >
-
-                                        <textarea
-                                            name="contenido"
-                                            placeholder="Contenido de la lección"
-                                            class="min-h-28 border border-white/10 bg-aula-bg p-3"
-                                        ></textarea>
-
-                                        <input
-                                            type="url"
-                                            name="url_video"
-                                            placeholder="URL de video (opcional)"
-                                            class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                        >
-
-                                    </div>
-
-                                    <button class="mt-4 text-xs font-bold text-aula-green">
-                                        + Agregar lección
-                                    </button>
-
-                                </form>
-
-                            </article>
-
-                        <?php endforeach; ?>
-
-                    </div>
+                    <?php endif; ?>
 
                 </section>
 
             <?php endforeach; ?>
+
+        </div>
+
+    <?php endif; ?>
+
+</section>
 
             <!-- ESTUDIANTES -->
 
@@ -1096,6 +1562,8 @@ require PROJECT_ROOT . '/includes/layout/head.php';
     </section>
 
     <!-- PANEL DERECHO -->
+
+    <?php endforeach; ?>
 
     <aside class="workspace-context hidden bg-[#151116] p-5 lg:block">
 

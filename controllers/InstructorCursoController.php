@@ -12,6 +12,64 @@ class InstructorCursoController
         $this->modelo = $modelo;
     }
 
+    public function crearCategoria(
+        array $datos
+    ): array {
+        $nombre = trim(
+            (string) ($datos['nombre'] ?? '')
+        );
+
+        $descripcion = trim(
+            (string) ($datos['descripcion'] ?? '')
+        );
+
+        if (
+            $nombre === ''
+            || strlen($nombre) > 100
+        ) {
+            return [
+                'exito' => false,
+                'mensaje' =>
+                    'Escribe un nombre válido para la categoría.'
+            ];
+        }
+
+        $slug = $this->crearSlug($nombre);
+
+        if ($slug === '') {
+            return [
+                'exito' => false,
+                'mensaje' =>
+                    'No fue posible generar la categoría.'
+            ];
+        }
+
+        $existente =
+            $this->modelo->buscarCategoriaPorSlug(
+                $slug
+            );
+
+        if ($existente !== null) {
+            return [
+                'exito' => false,
+                'mensaje' =>
+                    'Esa categoría ya existe.'
+            ];
+        }
+
+        $this->modelo->crearCategoria(
+            $nombre,
+            $slug,
+            $descripcion
+        );
+
+        return [
+            'exito' => true,
+            'mensaje' =>
+                'Categoría creada correctamente.'
+        ];
+    }
+
     public function crear(
         int $idInstructor,
         array $datos,
@@ -25,12 +83,14 @@ class InstructorCursoController
         }
 
         $titulo = $validacion['titulo'];
+
         $slug = $this->crearSlug($titulo);
 
         if ($slug === '') {
             return [
                 'exito' => false,
-                'mensaje' => 'No fue posible generar el identificador del curso.'
+                'mensaje' =>
+                    'No fue posible generar el identificador del curso.'
             ];
         }
 
@@ -38,11 +98,14 @@ class InstructorCursoController
         $contador = 2;
 
         while ($this->modelo->existeSlug($slug)) {
-            $slug = $slugBase . '-' . $contador;
+            $slug =
+                $slugBase . '-' . $contador;
+
             $contador++;
         }
 
-        $imagen = $this->guardarImagen($archivo);
+        $imagen =
+            $this->guardarImagen($archivo);
 
         $estado =
             ($datos['estado'] ?? '') === 'publicado'
@@ -63,9 +126,8 @@ class InstructorCursoController
         return [
             'exito' => true,
             'id_curso' => $idCurso,
-            'mensaje' => $estado === 'publicado'
-                ? 'Curso creado y publicado correctamente.'
-                : 'Curso guardado como borrador.'
+            'mensaje' =>
+                'Curso creado correctamente. Ahora puedes agregar niveles y lecciones.'
         ];
     }
 
@@ -83,7 +145,8 @@ class InstructorCursoController
         if ($curso === null) {
             return [
                 'exito' => false,
-                'mensaje' => 'El curso no existe o no te pertenece.'
+                'mensaje' =>
+                    'El curso no existe o no te pertenece.'
             ];
         }
 
@@ -98,7 +161,8 @@ class InstructorCursoController
 
         if (
             isset($archivo['error'])
-            && $archivo['error'] !== UPLOAD_ERR_NO_FILE
+            && $archivo['error']
+                !== UPLOAD_ERR_NO_FILE
         ) {
             $nuevaImagen =
                 $this->guardarImagen($archivo);
@@ -120,13 +184,16 @@ class InstructorCursoController
             $validacion['id_categoria'],
             $validacion['titulo'],
             $validacion['descripcion'],
-            is_string($imagen) ? $imagen : null,
+            is_string($imagen)
+                ? $imagen
+                : null,
             $validacion['precio']
         );
 
         return [
             'exito' => true,
-            'mensaje' => 'Curso actualizado correctamente.'
+            'mensaje' =>
+                'Curso actualizado correctamente.'
         ];
     }
 
@@ -135,24 +202,33 @@ class InstructorCursoController
         int $idCurso,
         string $estado
     ): array {
-        if (!in_array(
-            $estado,
-            ['borrador', 'publicado', 'desactivado'],
-            true
-        )) {
+        if (
+            !in_array(
+                $estado,
+                [
+                    'borrador',
+                    'publicado',
+                    'desactivado'
+                ],
+                true
+            )
+        ) {
             return [
                 'exito' => false,
                 'mensaje' => 'Estado inválido.'
             ];
         }
 
-        if ($this->modelo->buscarPropio(
-            $idCurso,
-            $idInstructor
-        ) === null) {
+        if (
+            $this->modelo->buscarPropio(
+                $idCurso,
+                $idInstructor
+            ) === null
+        ) {
             return [
                 'exito' => false,
-                'mensaje' => 'El curso no existe o no te pertenece.'
+                'mensaje' =>
+                    'El curso no existe o no te pertenece.'
             ];
         }
 
@@ -164,7 +240,8 @@ class InstructorCursoController
 
         return [
             'exito' => true,
-            'mensaje' => 'Estado del curso actualizado.'
+            'mensaje' =>
+                'Estado del curso actualizado.'
         ];
     }
 
@@ -181,10 +258,14 @@ class InstructorCursoController
             (string) ($datos['descripcion'] ?? '')
         );
 
-        if ($titulo === '' || strlen($titulo) > 150) {
+        if (
+            $titulo === ''
+            || strlen($titulo) > 150
+        ) {
             return [
                 'exito' => false,
-                'mensaje' => 'Escribe un título válido para el nivel.'
+                'mensaje' =>
+                    'Escribe un título válido para el nivel.'
             ];
         }
 
@@ -198,7 +279,7 @@ class InstructorCursoController
         return [
             'exito' => $creado,
             'mensaje' => $creado
-                ? 'Nivel creado correctamente.'
+                ? 'Nivel agregado. Puedes editarlo y guardar los cambios.'
                 : 'No fue posible crear el nivel.'
         ];
     }
@@ -237,10 +318,14 @@ class InstructorCursoController
             ];
         }
 
-        if ($titulo === '' || strlen($titulo) > 200) {
+        if (
+            $titulo === ''
+            || strlen($titulo) > 200
+        ) {
             return [
                 'exito' => false,
-                'mensaje' => 'Escribe un título válido para la lección.'
+                'mensaje' =>
+                    'Escribe un título válido para la lección.'
             ];
         }
 
@@ -253,7 +338,8 @@ class InstructorCursoController
         ) {
             return [
                 'exito' => false,
-                'mensaje' => 'La URL del video no es válida.'
+                'mensaje' =>
+                    'La URL del video no es válida.'
             ];
         }
 
@@ -269,8 +355,41 @@ class InstructorCursoController
         return [
             'exito' => $creada,
             'mensaje' => $creada
-                ? 'Lección creada correctamente.'
+                ? 'Lección agregada correctamente.'
                 : 'No fue posible crear la lección.'
+        ];
+    }
+
+    public function guardarContenido(
+        int $idInstructor,
+        int $idCurso,
+        array $datos
+    ): array {
+        $niveles =
+            isset($datos['niveles'])
+            && is_array($datos['niveles'])
+                ? $datos['niveles']
+                : [];
+
+        $lecciones =
+            isset($datos['lecciones'])
+            && is_array($datos['lecciones'])
+                ? $datos['lecciones']
+                : [];
+
+        $guardado =
+            $this->modelo->guardarContenido(
+                $idCurso,
+                $idInstructor,
+                $niveles,
+                $lecciones
+            );
+
+        return [
+            'exito' => $guardado,
+            'mensaje' => $guardado
+                ? 'Contenido del curso guardado correctamente.'
+                : 'No fue posible guardar el contenido.'
         ];
     }
 
@@ -278,15 +397,17 @@ class InstructorCursoController
         int $idInstructor,
         int $idCurso
     ): array {
-        $imagen = $this->modelo->eliminarCurso(
-            $idCurso,
-            $idInstructor
-        );
+        $imagen =
+            $this->modelo->eliminarCurso(
+                $idCurso,
+                $idInstructor
+            );
 
         if ($imagen === null) {
             return [
                 'exito' => false,
-                'mensaje' => 'El curso no existe o no te pertenece.'
+                'mensaje' =>
+                    'El curso no existe o no te pertenece.'
             ];
         }
 
@@ -294,7 +415,8 @@ class InstructorCursoController
 
         return [
             'exito' => true,
-            'mensaje' => 'Curso e información relacionada eliminados correctamente.'
+            'mensaje' =>
+                'Curso e información relacionada eliminados correctamente.'
         ];
     }
 
@@ -323,33 +445,42 @@ class InstructorCursoController
             (string) ($datos['precio'] ?? '')
         );
 
-        if ($titulo === '' || strlen($titulo) > 200) {
+        if (
+            $titulo === ''
+            || strlen($titulo) > 200
+        ) {
             return [
                 'exito' => false,
-                'mensaje' => 'Escribe un título válido.'
+                'mensaje' =>
+                    'Escribe un título válido.'
             ];
         }
 
         if ($descripcion === '') {
             return [
                 'exito' => false,
-                'mensaje' => 'La descripción es obligatoria.'
+                'mensaje' =>
+                    'La descripción es obligatoria.'
             ];
         }
 
         if ($idCategoria === false) {
             return [
                 'exito' => false,
-                'mensaje' => 'Selecciona una categoría.'
+                'mensaje' =>
+                    'Selecciona una categoría.'
             ];
         }
 
-        if (!$this->modelo->categoriaActivaExiste(
-            (int) $idCategoria
-        )) {
+        if (
+            !$this->modelo->categoriaActivaExiste(
+                (int) $idCategoria
+            )
+        ) {
             return [
                 'exito' => false,
-                'mensaje' => 'La categoría seleccionada no está disponible.'
+                'mensaje' =>
+                    'La categoría seleccionada no está disponible.'
             ];
         }
 
@@ -360,7 +491,8 @@ class InstructorCursoController
         ) {
             return [
                 'exito' => false,
-                'mensaje' => 'Escribe un precio válido.'
+                'mensaje' =>
+                    'Escribe un precio válido.'
             ];
         }
 
@@ -368,7 +500,8 @@ class InstructorCursoController
             'exito' => true,
             'titulo' => $titulo,
             'descripcion' => $descripcion,
-            'id_categoria' => (int) $idCategoria,
+            'id_categoria' =>
+                (int) $idCategoria,
             'precio' => round(
                 (float) $precioTexto,
                 2
@@ -381,33 +514,46 @@ class InstructorCursoController
     ): ?string {
         if (
             !isset($archivo['error'])
-            || $archivo['error'] === UPLOAD_ERR_NO_FILE
+            || $archivo['error']
+                === UPLOAD_ERR_NO_FILE
         ) {
             return null;
         }
 
-        if ($archivo['error'] !== UPLOAD_ERR_OK) {
+        if (
+            $archivo['error']
+            !== UPLOAD_ERR_OK
+        ) {
             throw new RuntimeException(
                 'No fue posible subir la portada.'
             );
         }
 
         if (
-            !isset($archivo['tmp_name'], $archivo['size'])
-            || !is_uploaded_file($archivo['tmp_name'])
+            !isset(
+                $archivo['tmp_name'],
+                $archivo['size']
+            )
+            || !is_uploaded_file(
+                $archivo['tmp_name']
+            )
         ) {
             throw new RuntimeException(
                 'El archivo recibido no es válido.'
             );
         }
 
-        if ((int) $archivo['size'] > 5 * 1024 * 1024) {
+        if (
+            (int) $archivo['size']
+            > 5 * 1024 * 1024
+        ) {
             throw new RuntimeException(
                 'La portada no puede superar 5 MB.'
             );
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $finfo =
+            new finfo(FILEINFO_MIME_TYPE);
 
         $mime = $finfo->file(
             $archivo['tmp_name']
@@ -426,7 +572,8 @@ class InstructorCursoController
         }
 
         $directorio =
-            PROJECT_ROOT . '/assets/uploads/cursos';
+            PROJECT_ROOT
+            . '/assets/uploads/cursos';
 
         if (
             !is_dir($directorio)
@@ -447,12 +594,16 @@ class InstructorCursoController
             . $tipos[$mime];
 
         $destino =
-            $directorio . '/' . $nombre;
+            $directorio
+            . '/'
+            . $nombre;
 
-        if (!move_uploaded_file(
-            $archivo['tmp_name'],
-            $destino
-        )) {
+        if (
+            !move_uploaded_file(
+                $archivo['tmp_name'],
+                $destino
+            )
+        ) {
             throw new RuntimeException(
                 'No fue posible guardar la portada.'
             );
@@ -507,6 +658,9 @@ class InstructorCursoController
             $texto
         );
 
-        return trim((string) $texto, '-');
+        return trim(
+            (string) $texto,
+            '-'
+        );
     }
 }
