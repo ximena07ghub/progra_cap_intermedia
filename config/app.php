@@ -456,6 +456,18 @@ function user_email(): string
     return $_SESSION['usuario_correo'] ?? '';
 }
 
+function user_avatar(): string
+{
+    return trim((string) ($_SESSION['usuario_avatar'] ?? ''));
+}
+
+function user_avatar_url(): string
+{
+    $avatar = user_avatar();
+
+    return $avatar !== '' ? url($avatar) : '';
+}
+
 function user_initials(): string
 {
     $parts = preg_split('/\s+/u', trim(user_name())) ?: [];
