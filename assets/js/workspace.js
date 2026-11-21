@@ -152,27 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
       renderMessages(conversation)
     }
 
-    buttons.forEach((button) => button.addEventListener('click', () => selectConversation(button.dataset.conversationId)))
-
     const form = thread.querySelector('[data-message-form]')
-    form?.addEventListener('submit', (event) => {
-      event.preventDefault()
-      const input = form.querySelector('input')
-      const value = input?.value.trim()
-      const conversation = state.get(activeId)
-      if (!value || !conversation) return
+    const courseInput = form?.querySelector('[data-message-course-id]')
 
-      conversation.messages.push({
-        id: `local-${Date.now()}`,
-        from: 'me',
-        date: new Date().toISOString().slice(0, 10),
-        time: 'Ahora',
-        text: value,
-      })
-      input.value = ''
-      renderMessages(conversation)
+    const originalSelectConversation = selectConversation
+    const selectConversationWithCourse = (id) => {
+      originalSelectConversation(id)
+      const conversation = state.get(String(id))
+      if (courseInput && conversation?.courseId) {
+        courseInput.value = String(conversation.courseId)
+      }
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => selectConversationWithCourse(button.dataset.conversationId))
     })
 
-    if (activeId) selectConversation(activeId)
+    if (activeId) selectConversationWithCourse(activeId)
   })
 })
