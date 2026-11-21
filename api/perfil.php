@@ -47,14 +47,32 @@ try {
     );
 
     $acceso = new Acceso($modeloUsuario);
-    $usuario = $acceso->exigirRol('estudiante');
+
+    if (!is_authenticated() || !in_array(user_role(), ['estudiante', 'instructor'], true)) {
+        responder(403, [
+            'exito' => false,
+            'mensaje' => 'Acceso no autorizado.'
+        ]);
+    }
+
+    $usuario = $modeloUsuario->buscarPorId((int) ($_SESSION['usuario_id'] ?? 0));
+
+    if ($usuario === null || !in_array($usuario['rol'], ['estudiante', 'instructor'], true)) {
+        responder(401, [
+            'exito' => false,
+            'mensaje' => 'La sesión no es válida.'
+        ]);
+    }
 
     if ($metodo === 'GET') {
         responder(200, [
             'exito' => true,
             'perfil' => [
                 'nombre' => $usuario['nombre'],
-                'email' => $usuario['email']
+                'email' => $usuario['email'],
+                'genero' => $usuario['genero'],
+                'fecha_nacimiento' => $usuario['fecha_nacimiento'],
+                'avatar' => $usuario['avatar']
             ],
             'csrf_token' => csrf_token()
         ]);
@@ -87,7 +105,8 @@ try {
 
     $resultado = $controlador->actualizar(
         (int) $usuario['id_usuario'],
-        $datos
+        $datos,
+        null
     );
 
     if (!$resultado['exito']) {
@@ -96,6 +115,7 @@ try {
 
     $_SESSION['usuario_nombre'] = $resultado['nombre'];
     $_SESSION['usuario_correo'] = $resultado['email'];
+    $_SESSION['usuario_avatar'] = $resultado['avatar'] ?? '';
 
     responder(200, $resultado);
 } catch (JsonException $error) {
