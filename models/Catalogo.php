@@ -125,7 +125,9 @@ class Catalogo
     {
         $sql = "
             SELECT
+                n.id_nivel,
                 n.titulo AS nivel,
+                n.descripcion AS descripcion_nivel,
                 n.orden AS orden_nivel,
                 l.id_leccion,
                 l.titulo,
@@ -188,6 +190,60 @@ class Catalogo
         }
 
         return $resenas;
+    }
+
+    public function listarResenasPublicas(int $limite = 6): array
+    {
+        $limite = max(1, min($limite, 12));
+
+        $sql = "
+            SELECT
+                r.calificacion,
+                r.comentario,
+                r.fecha_creacion,
+                u.nombre AS estudiante,
+                cu.titulo AS curso,
+                cu.slug AS curso_slug
+            FROM resenas AS r
+            INNER JOIN usuarios AS u
+                ON u.id_usuario = r.id_estudiante
+            INNER JOIN cursos AS cu
+                ON cu.id_curso = r.id_curso
+                AND cu.estado = 'publicado'
+            INNER JOIN categorias AS ca
+                ON ca.id_categoria = cu.id_categoria
+                AND ca.activo = 1
+            WHERE r.estado = 'visible'
+              AND r.comentario IS NOT NULL
+              AND TRIM(r.comentario) <> ''
+            ORDER BY r.fecha_creacion DESC
+            LIMIT " . $limite;
+
+        return $this->conexion->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function promedioResenasPublicas(): array
+    {
+        $sql = "
+            SELECT
+                COUNT(r.id_resena) AS total,
+                AVG(r.calificacion) AS promedio
+            FROM resenas AS r
+            INNER JOIN cursos AS cu
+                ON cu.id_curso = r.id_curso
+                AND cu.estado = 'publicado'
+            INNER JOIN categorias AS ca
+                ON ca.id_categoria = cu.id_categoria
+                AND ca.activo = 1
+            WHERE r.estado = 'visible'
+        ";
+
+        $fila = $this->conexion->query($sql)->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        return [
+            'total' => (int) ($fila['total'] ?? 0),
+            'promedio' => isset($fila['promedio']) ? round((float) $fila['promedio'], 1) : null,
+        ];
     }
 
     private function normalizarCurso(array $fila): array
