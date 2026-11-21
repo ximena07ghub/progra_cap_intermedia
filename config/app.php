@@ -179,64 +179,106 @@ function public_course_reviews(int $idCurso): array
     return public_catalog_model()->listarResenas($idCurso);
 }
 
-function base_enrolled_courses(): array
+function student_course_model(): EstudianteCurso
 {
-    return catalog()['enrolledCourses'] ?? [];
-}
+    static $modelo = null;
 
-function completed_purchases(): array
-{
-    $sessionPurchases = is_array($_SESSION['completed_purchases'] ?? null)
-        ? $_SESSION['completed_purchases']
-        : [];
-
-    $email = text_lower(trim(user_email()));
-    if ($email === '') {
-        return $sessionPurchases;
+    if ($modelo instanceof EstudianteCurso) {
+        return $modelo;
     }
 
-    $store = runtime_store();
-    $persisted = is_array($store['purchases'][$email] ?? null)
-        ? $store['purchases'][$email]
-        : [];
+    require_once PROJECT_ROOT . '/models/conexion.php';
+    require_once PROJECT_ROOT . '/models/EstudianteCurso.php';
 
-    return array_replace($persisted, $sessionPurchases);
+    $configuracion = require PROJECT_ROOT . '/config/database.local.php';
+    $conexion = new Conexion($configuracion);
+    $modelo = new EstudianteCurso($conexion->obtenerConexion());
+
+    return $modelo;
 }
 
 function student_owns_course(string $slug): bool
 {
-    foreach (base_enrolled_courses() as $course) {
-        if (($course['slug'] ?? '') === $slug) {
+    if (!is_authenticated() || user_role() !== 'estudiante') {
+        return false;
+    }
+
+    foreach (enrolled_courses() as $curso) {
+        if (($curso['slug'] ?? '') === $slug) {
             return true;
         }
     }
 
-    return isset(completed_purchases()[$slug]);
+    return false;
 }
 
 function enrolled_courses(): array
 {
-    $enrolled = base_enrolled_courses();
-    $ownedSlugs = array_column($enrolled, 'slug');
-
-    foreach (completed_purchases() as $slug => $purchase) {
-        if (in_array($slug, $ownedSlugs, true)) {
-            continue;
-        }
-
-        $course = course_by_slug($slug);
-        if (!$course) {
-            continue;
-        }
-
-        $course['progress'] = 0;
-        $course['nextLesson'] = 'Introducción y mapa del curso';
-        $course['purchasedAt'] = $purchase['date'] ?? date('Y-m-d');
-        $enrolled[] = $course;
-        $ownedSlugs[] = $slug;
+    if (!is_authenticated() || user_role() !== 'estudiante') {
+        return [];
     }
 
-    return $enrolled;
+    $filas = student_course_model()->listarCursos((int) ($_SESSION['usuario_id'] ?? 0));
+    $cursos = [];
+
+    foreach ($filas as $fila) {
+        $total = (int) $fila['total_lecciones'];
+        $completadas = (int) $fila['completadas'];
+        $progreso = $total > 0 ? (int) round(($completadas / $total) * 100) : 0;
+        $lecciones = student_course_model()->listarLecciones((int) $_SESSION['usuario_id'], (int) $fila['id_curso']);
+        $siguiente = 'Curso sin lecciones';
+
+        foreach ($lecciones as $leccion) {
+            if ((int) $leccion['completada'] !== 1) {
+                $siguiente = (string) $leccion['titulo'];
+                break;
+            }
+        }
+
+        if ($progreso === 100) {
+            $siguiente = 'Curso completado';
+        }
+
+        $cursos[] = [
+            'id' => (int) $fila['id_curso'],
+            'databaseId' => (int) $fila['id_curso'],
+            'slug' => (string) $fila['slug'],
+            'title' => (string) $fila['titulo'],
+            'description' => (string) $fila['descripcion'],
+            'image' => (string) ($fila['imagen'] ?? ''),
+            'price' => (float) $fila['precio'] <= 0 ? 'Gratis' : '$' . number_format((float) $fila['precio'], 2, '.', ',') . ' ' . $fila['moneda'],
+            'amount' => (float) $fila['precio'],
+            'currency' => (string) $fila['moneda'],
+            'category' => (string) $fila['categoria'],
+            'instructor' => (string) $fila['instructor'],
+            'level' => 'Curso inscrito',
+            'duration' => $total . ($total === 1 ? ' lección' : ' lecciones'),
+            'lessons' => $total,
+            'students' => 0,
+            'reviews' => 0,
+            'rating' => 0,
+            'accent' => (string) $fila['descripcion'],
+            'progress' => $progreso,
+            'completedLessons' => $completadas,
+            'nextLesson' => $siguiente,
+            'enrollmentStatus' => (string) $fila['estado'],
+            'purchasedAt' => (string) $fila['fecha_inscripcion'],
+        ];
+    }
+
+    return $cursos;
+}
+
+function student_course_lessons(int $idCurso): array
+{
+    if (!is_authenticated() || user_role() !== 'estudiante') {
+        return [];
+    }
+
+    return student_course_model()->listarLecciones(
+        (int) ($_SESSION['usuario_id'] ?? 0),
+        $idCurso
+    );
 }
 
 function course_by_slug(string $slug): ?array
