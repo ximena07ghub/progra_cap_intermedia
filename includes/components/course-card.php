@@ -41,9 +41,13 @@ $courseHref = url('curso.php?slug=' . rawurlencode((string) $course['slug']));
       </p>
 
       <div class="mt-5 flex items-center gap-2 text-xs">
-        <span class="font-extrabold text-aula-orange-soft"><?= e(number_format((float) ($course['rating'] ?? 0), 1)) ?></span>
-        <span class="tracking-[0.05em] text-aula-yellow" aria-hidden="true">★★★★★</span>
-        <span class="text-white/30"><?= e($course['reviews']) ?> reseñas</span>
+        <?php if ((int) ($course['reviews'] ?? 0) > 0): ?>
+          <span class="font-extrabold text-aula-orange-soft"><?= e(number_format((float) ($course['rating'] ?? 0), 1)) ?></span>
+          <span class="text-aula-yellow" aria-hidden="true">★</span>
+          <span class="text-white/30"><?= e($course['reviews']) ?> reseñas</span>
+        <?php else: ?>
+          <span class="font-semibold text-white/35">Sin reseñas todavía</span>
+        <?php endif; ?>
       </div>
 
       <div class="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-4 text-[11px] text-white/40">
