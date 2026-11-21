@@ -195,41 +195,115 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       <?php else: ?>
       <section class="mx-auto max-w-aula px-6 py-8 lg:px-8 lg:py-10">
         <div class="mb-7">
-          <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Contenido del curso</p>
+          <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Curso en progreso</p>
           <h2 class="mt-2 font-editorial text-4xl text-aula-cream">Continúa desde donde te quedaste.</h2>
         </div>
 
         <?php if ($studentLessons === []): ?>
           <div class="border border-dashed border-white/10 p-8 text-sm text-white/35">El instructor todavía no ha agregado lecciones a este curso.</div>
         <?php else: ?>
-          <div class="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
-            <aside class="border border-white/10 bg-aula-surface/40">
-              <?php $currentLevel = null; ?>
-              <?php foreach ($studentLessons as $item): ?>
-                <?php if ($currentLevel !== $item['id_nivel']): $currentLevel = $item['id_nivel']; ?>
-                  <div class="border-b border-white/10 bg-aula-green-dark/20 px-5 py-4">
-                    <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Nivel <?= e($item['orden_nivel']) ?></span>
-                    <h3 class="mt-1 text-sm font-bold"><?= e($item['nivel']) ?></h3>
-                    <?php if (!empty($item['descripcion_nivel'])): ?><p class="mt-1 text-xs leading-5 text-white/30"><?= e($item['descripcion_nivel']) ?></p><?php endif; ?>
+          <?php
+          $levels = [];
+          foreach ($studentLessons as $lessonItem) {
+              $levelId = (int) $lessonItem['id_nivel'];
+              if (!isset($levels[$levelId])) {
+                  $levels[$levelId] = [
+                      'id' => $levelId,
+                      'title' => (string) $lessonItem['nivel'],
+                      'description' => (string) ($lessonItem['descripcion_nivel'] ?? ''),
+                      'order' => (int) $lessonItem['orden_nivel'],
+                      'lessons' => [],
+                      'completed' => 0,
+                  ];
+              }
+              $levels[$levelId]['lessons'][] = $lessonItem;
+              if ((int) $lessonItem['completada'] === 1) {
+                  $levels[$levelId]['completed']++;
+              }
+          }
+
+          $selectedLevelId = (int) ($selectedLesson['id_nivel'] ?? 0);
+          $previousLesson = $selectedLessonIndex > 0 ? $studentLessons[$selectedLessonIndex - 1] : null;
+          $nextLesson = $selectedLessonIndex >= 0 && $selectedLessonIndex < count($studentLessons) - 1
+              ? $studentLessons[$selectedLessonIndex + 1]
+              : null;
+          ?>
+
+          <div class="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+            <aside class="space-y-4 lg:sticky lg:top-6">
+              <div class="border border-white/10 bg-aula-surface/50 p-5">
+                <div class="flex items-end justify-between gap-4">
+                  <div>
+                    <p class="text-sm font-bold text-aula-cream">Tu progreso</p>
+                    <p class="mt-2 text-sm text-white/45"><?= e($studentCompleted) ?> de <?= e(count($studentLessons)) ?> lecciones</p>
                   </div>
-                <?php endif; ?>
-                <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $item['id_leccion'])) ?>" class="grid grid-cols-[28px_1fr_auto] items-center gap-3 border-b border-white/10 px-5 py-4 transition <?= (int) ($selectedLesson['id_leccion'] ?? 0) === (int) $item['id_leccion'] ? 'bg-white/[0.045]' : 'hover:bg-white/[0.025]' ?>">
-                  <span class="grid h-6 w-6 place-items-center border text-[10px] <?= (int) $item['completada'] === 1 ? 'border-aula-green/50 bg-aula-green/10 text-aula-green' : 'border-white/15 text-white/30' ?>"><?= (int) $item['completada'] === 1 ? '✓' : e($item['orden']) ?></span>
-                  <span class="min-w-0"><strong class="block truncate text-xs"><?= e($item['titulo']) ?></strong><small class="mt-1 block text-[10px] text-white/25">Lección <?= e($item['orden']) ?></small></span>
-                  <span class="text-[9px] font-bold uppercase <?= (int) $item['completada'] === 1 ? 'text-aula-green' : 'text-white/25' ?>"><?= (int) $item['completada'] === 1 ? 'Completada' : 'Pendiente' ?></span>
-                </a>
-              <?php endforeach; ?>
+                  <strong class="font-editorial text-3xl text-aula-cream"><?= e($studentProgress) ?>%</strong>
+                </div>
+                <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div class="h-full rounded-full bg-aula-orange" style="width: <?= e($studentProgress) ?>%"></div>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <?php foreach ($levels as $level): ?>
+                  <?php $levelOpen = $level['id'] === $selectedLevelId; ?>
+                  <details class="group overflow-hidden border border-white/10 bg-aula-surface/35" <?= $levelOpen ? 'open' : '' ?>>
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
+                      <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Nivel <?= e($level['order']) ?></p>
+                        <h3 class="mt-1 truncate text-sm font-bold text-aula-cream"><?= e($level['title']) ?></h3>
+                        <?php if ($levelOpen && $level['description'] !== ''): ?>
+                          <p class="mt-1 line-clamp-2 text-[11px] leading-5 text-white/30"><?= e($level['description']) ?></p>
+                        <?php endif; ?>
+                      </div>
+                      <div class="flex shrink-0 items-center gap-3">
+                        <span class="text-xs text-white/45"><?= e($level['completed']) ?> / <?= e(count($level['lessons'])) ?></span>
+                        <span class="text-white/35 transition group-open:rotate-180">⌄</span>
+                      </div>
+                    </summary>
+
+                    <div class="border-t border-white/10">
+                      <?php foreach ($level['lessons'] as $lesson): ?>
+                        <?php
+                        $isSelected = (int) ($selectedLesson['id_leccion'] ?? 0) === (int) $lesson['id_leccion'];
+                        $isCompleted = (int) $lesson['completada'] === 1;
+                        ?>
+                        <a
+                          href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $lesson['id_leccion'])) ?>"
+                          class="grid grid-cols-[34px_1fr_auto] items-center gap-3 border-b border-white/[0.07] px-4 py-3 last:border-b-0 <?= $isSelected ? 'bg-aula-orange/10 ring-1 ring-inset ring-aula-orange/60' : 'hover:bg-white/[0.025]' ?>"
+                        >
+                          <span class="grid h-8 w-8 place-items-center rounded-full border text-[11px] font-bold <?= $isCompleted ? 'border-aula-green/40 bg-aula-green/15 text-aula-green' : ($isSelected ? 'border-aula-orange/60 text-aula-orange-soft' : 'border-white/15 text-white/35') ?>">
+                            <?= $isCompleted ? '✓' : e(str_pad((string) $lesson['orden'], 2, '0', STR_PAD_LEFT)) ?>
+                          </span>
+                          <span class="min-w-0">
+                            <strong class="block truncate text-xs text-aula-cream"><?= e($lesson['titulo']) ?></strong>
+                            <small class="mt-1 block text-[10px] <?= $isCompleted ? 'text-aula-green/70' : 'text-white/25' ?>"><?= $isCompleted ? 'Completada' : ($isSelected ? 'En curso' : 'Pendiente') ?></small>
+                          </span>
+                          <?php if ($isSelected): ?><span class="text-aula-orange-soft">›</span><?php endif; ?>
+                        </a>
+                      <?php endforeach; ?>
+                    </div>
+                  </details>
+                <?php endforeach; ?>
+              </div>
             </aside>
 
             <?php if ($selectedLesson): ?>
-              <article class="border border-white/10 bg-aula-surface/30 p-5 sm:p-7">
-                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Nivel <?= e($selectedLesson['orden_nivel']) ?> · <?= e($selectedLesson['nivel']) ?></span>
-                <p class="mt-4 text-xs text-white/30">Lección <?= e($selectedLessonIndex + 1) ?> de <?= e(count($studentLessons)) ?></p>
-                <h2 class="mt-2 font-editorial text-4xl font-semibold text-aula-cream"><?= e($selectedLesson['titulo']) ?></h2>
+              <article class="overflow-hidden border border-white/10 bg-aula-surface/35">
+                <header class="flex flex-wrap items-start justify-between gap-5 p-5 sm:p-7">
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-orange-soft">Nivel <?= e($selectedLesson['orden_nivel']) ?> · Lección <?= e($selectedLesson['orden']) ?></p>
+                    <h2 class="mt-2 font-editorial text-4xl font-semibold text-aula-cream sm:text-5xl"><?= e($selectedLesson['titulo']) ?></h2>
+                    <p class="mt-3 text-xs text-white/35">Lección <?= e($selectedLessonIndex + 1) ?> de <?= e(count($studentLessons)) ?> · <?= !empty($selectedLesson['url_video']) ? 'Video' : 'Contenido' ?></p>
+                  </div>
+                  <span class="border px-3 py-1.5 text-[10px] font-bold uppercase <?= (int) $selectedLesson['completada'] === 1 ? 'border-aula-green/30 bg-aula-green/10 text-aula-green' : 'border-aula-orange/30 bg-aula-orange/10 text-aula-orange-soft' ?>">
+                    <?= (int) $selectedLesson['completada'] === 1 ? 'Completada' : 'En curso' ?>
+                  </span>
+                </header>
 
                 <?php $lessonEmbed = youtube_embed_url($selectedLesson['url_video'] ?? null); ?>
                 <?php if ($lessonEmbed): ?>
-                  <div class="mt-6 aspect-video overflow-hidden border border-white/10 bg-black">
+                  <div class="mx-5 aspect-video overflow-hidden border border-white/10 bg-black sm:mx-7">
                     <iframe
                       src="<?= e($lessonEmbed) ?>"
                       title="<?= e($selectedLesson['titulo']) ?>"
@@ -240,39 +314,51 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                     ></iframe>
                   </div>
                 <?php elseif (!empty($selectedLesson['url_video'])): ?>
-                  <a href="<?= e($selectedLesson['url_video']) ?>" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex min-h-11 items-center justify-center border border-aula-orange/30 bg-aula-orange/10 px-5 text-xs font-bold text-aula-orange-soft">Abrir recurso externo ↗</a>
+                  <div class="mx-5 border border-white/10 bg-aula-bg/50 p-5 sm:mx-7">
+                    <p class="text-xs text-white/40">Este recurso no es una URL de YouTube compatible con el reproductor integrado.</p>
+                    <a href="<?= e($selectedLesson['url_video']) ?>" target="_blank" rel="noopener noreferrer" class="mt-3 inline-block text-xs font-bold text-aula-orange-soft">Abrir recurso externo ↗</a>
+                  </div>
                 <?php endif; ?>
 
-                <div class="mt-7">
-                  <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Contenido de la lección</p>
-                  <div class="mt-3 whitespace-pre-line text-sm leading-7 text-white/55"><?= e($selectedLesson['contenido'] ?: 'El instructor no agregó contenido escrito para esta lección.') ?></div>
+                <div class="p-5 sm:p-7">
+                  <div class="border-b border-white/10 pb-3">
+                    <span class="border-b-2 border-aula-orange pb-3 text-sm font-bold text-aula-cream">Descripción</span>
+                  </div>
+
+                  <div class="mt-5 whitespace-pre-line text-sm leading-7 text-white/55"><?= e($selectedLesson['contenido'] ?: 'El instructor no agregó contenido escrito para esta lección.') ?></div>
+
+                  <div class="mt-7 flex flex-wrap items-center justify-between gap-4 border border-white/10 bg-aula-bg/35 p-4">
+                    <span class="text-xs text-white/40"><?= e($studentCompleted) ?> lecciones completadas</span>
+
+                    <?php if ((int) $selectedLesson['completada'] === 1): ?>
+                      <span class="inline-flex min-h-11 items-center justify-center border border-aula-green/30 bg-aula-green/10 px-5 text-xs font-extrabold text-aula-green">✓ Lección completada</span>
+                    <?php else: ?>
+                      <form action="<?= e(url('actions/progreso-curso.php')) ?>" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="id_curso" value="<?= e($course['databaseId']) ?>">
+                        <input type="hidden" name="id_leccion" value="<?= e($selectedLesson['id_leccion']) ?>">
+                        <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
+                        <input type="hidden" name="id_leccion_actual" value="<?= e($selectedLesson['id_leccion']) ?>">
+                        <input type="hidden" name="completada" value="1">
+                        <button type="submit" class="min-h-11 bg-aula-orange px-5 text-xs font-extrabold text-aula-bg">Marcar como completada ✓</button>
+                      </form>
+                    <?php endif; ?>
+                  </div>
+
+                  <nav class="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-5">
+                    <?php if ($previousLesson): ?>
+                      <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $previousLesson['id_leccion'])) ?>" class="text-xs font-bold text-white/45 hover:text-aula-cream">← Lección anterior</a>
+                    <?php else: ?><span></span><?php endif; ?>
+
+                    <?php if ($nextLesson): ?>
+                      <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $nextLesson['id_leccion'])) ?>" class="border border-aula-orange/45 px-4 py-2.5 text-xs font-bold text-aula-orange-soft hover:bg-aula-orange/10">Siguiente lección →</a>
+                    <?php endif; ?>
+                  </nav>
                 </div>
-
-                <form action="<?= e(url('actions/progreso-curso.php')) ?>" method="post" class="mt-8">
-                  <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                  <input type="hidden" name="id_curso" value="<?= e($course['databaseId']) ?>">
-                  <input type="hidden" name="id_leccion" value="<?= e($selectedLesson['id_leccion']) ?>">
-                  <input type="hidden" name="slug" value="<?= e($course['slug']) ?>">
-                  <input type="hidden" name="id_leccion_actual" value="<?= e($selectedLesson['id_leccion']) ?>">
-                  <input type="hidden" name="completada" value="<?= (int) $selectedLesson['completada'] === 1 ? '0' : '1' ?>">
-                  <button type="submit" class="w-full border px-5 py-3 text-xs font-extrabold <?= (int) $selectedLesson['completada'] === 1 ? 'border-aula-green/40 bg-aula-green/10 text-aula-green' : 'border-aula-orange/35 bg-aula-orange/10 text-aula-orange-soft' ?>">
-                    <?= (int) $selectedLesson['completada'] === 1 ? '✓ Lección completada · marcar como pendiente' : '✓ Marcar esta lección como completada' ?>
-                  </button>
-                </form>
-
-                <nav class="mt-6 flex items-center justify-between gap-4 border-t border-white/10 pt-5">
-                  <?php if ($selectedLessonIndex > 0): $previous = $studentLessons[$selectedLessonIndex - 1]; ?>
-                    <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $previous['id_leccion'])) ?>" class="text-xs font-bold text-white/40 hover:text-white">← Lección anterior</a>
-                  <?php else: ?><span></span><?php endif; ?>
-                  <?php if ($selectedLessonIndex < count($studentLessons) - 1): $next = $studentLessons[$selectedLessonIndex + 1]; ?>
-                    <a href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $next['id_leccion'])) ?>" class="text-xs font-bold text-aula-orange-soft">Siguiente lección →</a>
-                  <?php endif; ?>
-                </nav>
               </article>
             <?php endif; ?>
           </div>
         <?php endif; ?>
-
       </section>
       <?php endif; ?>
 
