@@ -272,7 +272,12 @@ function course_price_info(array $course): array
             'currency' => $currency,
             'label' => $amount <= 0
                 ? 'Gratis'
-                : '
+                : '$' . number_format($amount, 2, '.', ',') . ' ' . $currency,
+        ];
+    }
+
+    $raw = trim((string) ($course['price'] ?? ''));
+
     if ($raw === '' || text_lower($raw) === 'gratis') {
         return [
             'free' => true,
@@ -283,12 +288,14 @@ function course_price_info(array $course): array
     }
 
     $amount = null;
+
     if (preg_match('/([0-9]+(?:[.,][0-9]{1,2})?)/', $raw, $match)) {
         $amount = (float) str_replace(',', '.', $match[1]);
     }
 
     $currency = 'USD';
-    if (preg_match('/\b([A-Z]{3})\b/', strtoupper($raw), $match)) {
+
+    if (preg_match('/\\b([A-Z]{3})\\b/', strtoupper($raw), $match)) {
         $currency = $match[1];
     }
 
