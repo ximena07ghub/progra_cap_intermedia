@@ -112,14 +112,44 @@ body {
  * En escritorio la columna de contexto queda fija y sin scroll.
  * Solamente el contenido central (y subáreas como mensajes/tablas) puede desplazarse.
  */
-@media (min-width: 1024px) {
+ @media (min-width: 1024px) {
+  [data-workspace] {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  [data-workspace] > section {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .workspace-sidebar {
+    height: 100vh;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
   .workspace-context {
     height: 100vh;
-    overflow: hidden !important;
+    min-height: 0;
+    overflow-y: auto !important;
   }
 
   .workspace-main {
+    min-height: 0;
+    overflow-y: auto;
     overscroll-behavior: contain;
+    padding-bottom: 3rem;
+  }
+
+  [data-workspace-panel] {
+    min-width: 0;
+  }
+
+  [data-workspace-panel="dashboard"] {
+    padding-bottom: 1rem;
   }
 
   [data-workspace-panel="mensajes"] {
@@ -207,6 +237,6 @@ body {
   }
 
   .admin-dashboard-metrics {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
