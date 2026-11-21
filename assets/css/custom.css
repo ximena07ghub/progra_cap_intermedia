@@ -134,8 +134,8 @@ body {
   .workspace-context {
     height: 100vh;
     min-height: 0;
-    overflow-y: auto !important;
-  }
+    overflow: hidden !important;
+}
 
   .workspace-main {
     min-height: 0;
