@@ -127,6 +127,28 @@ if ($isStudentClassroom) {
 
 require PROJECT_ROOT . '/includes/layout/head.php';
 ?>
+<style>
+  .aulago-classroom-shell{max-width:1320px;margin:0 auto;padding:28px 24px 42px}
+  .aulago-classroom-breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px;font-size:12px;color:rgba(245,240,232,.46)}
+  .aulago-classroom-breadcrumb strong{color:#f5f0e8}
+  .aulago-classroom-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
+  .aulago-classroom-sidebar{display:grid;gap:16px}
+  .aulago-classroom-progress,.aulago-classroom-level,.aulago-classroom-lesson{border:1px solid rgba(255,255,255,.11);border-radius:16px;background:rgba(25,22,27,.66);overflow:hidden}
+  .aulago-classroom-progress{padding:22px}
+  .aulago-classroom-level summary{padding:18px 20px}
+  .aulago-classroom-level-row{min-height:68px}
+  .aulago-classroom-level-row:last-child{border-bottom:0}
+  .aulago-classroom-level-row.is-current{margin:0 9px 9px;min-height:66px;border:1px solid rgba(232,137,80,.78);border-radius:12px;background:rgba(232,137,80,.11)}
+  .aulago-classroom-lesson{padding:22px}
+  .aulago-classroom-video{width:100%;aspect-ratio:16/9;margin-top:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);border-radius:13px;background:#000}
+  .aulago-classroom-video iframe{display:block;width:100%;height:100%}
+  .aulago-classroom-actions{border:1px solid rgba(255,255,255,.10);border-radius:12px}
+  @media(min-width:1024px){
+    .aulago-classroom-layout{grid-template-columns:minmax(300px,34%) minmax(0,66%);gap:28px}
+    .aulago-classroom-sidebar{position:sticky;top:92px}
+    .aulago-classroom-lesson{padding:24px}
+  }
+</style>
 <div class="flex min-h-screen flex-col bg-aula-bg text-aula-cream">
   <?php require PROJECT_ROOT . '/includes/layout/public-header.php'; ?>
 
@@ -193,11 +215,16 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         </div>
       </section>
       <?php else: ?>
-      <section class="mx-auto max-w-aula px-6 py-8 lg:px-8 lg:py-10">
-        <div class="mb-7">
-          <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Curso en progreso</p>
-          <h2 class="mt-2 font-editorial text-4xl text-aula-cream">Continúa desde donde te quedaste.</h2>
-        </div>
+      <section class="aulago-classroom-shell">
+        <nav class="aulago-classroom-breadcrumb" aria-label="Ruta del curso">
+          <a href="<?= e(url('estudiante/#cursos')) ?>" class="transition hover:text-aula-cream">← Mis cursos</a>
+          <span>/</span>
+          <span><?= e($course['title']) ?></span>
+          <?php if ($selectedLesson): ?>
+            <span>/</span>
+            <strong><?= e($selectedLesson['titulo']) ?></strong>
+          <?php endif; ?>
+        </nav>
 
         <?php if ($studentLessons === []): ?>
           <div class="border border-dashed border-white/10 p-8 text-sm text-white/35">El instructor todavía no ha agregado lecciones a este curso.</div>
@@ -229,9 +256,9 @@ require PROJECT_ROOT . '/includes/layout/head.php';
               : null;
           ?>
 
-          <div class="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-            <aside class="space-y-4 lg:sticky lg:top-6">
-              <div class="border border-white/10 bg-aula-surface/50 p-5">
+          <div class="aulago-classroom-layout">
+            <aside class="aulago-classroom-sidebar">
+              <div class="aulago-classroom-progress">
                 <div class="flex items-end justify-between gap-4">
                   <div>
                     <p class="text-sm font-bold text-aula-cream">Tu progreso</p>
@@ -247,7 +274,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
               <div class="space-y-3">
                 <?php foreach ($levels as $level): ?>
                   <?php $levelOpen = $level['id'] === $selectedLevelId; ?>
-                  <details class="group overflow-hidden border border-white/10 bg-aula-surface/35" <?= $levelOpen ? 'open' : '' ?>>
+                  <details class="aulago-classroom-level group" <?= $levelOpen ? 'open' : '' ?>>
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
                       <div class="min-w-0">
                         <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Nivel <?= e($level['order']) ?></p>
@@ -270,7 +297,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                         ?>
                         <a
                           href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']) . '&leccion=' . $lesson['id_leccion'])) ?>"
-                          class="grid grid-cols-[34px_1fr_auto] items-center gap-3 border-b border-white/[0.07] px-4 py-3 last:border-b-0 <?= $isSelected ? 'bg-aula-orange/10 ring-1 ring-inset ring-aula-orange/60' : 'hover:bg-white/[0.025]' ?>"
+                          class="aulago-classroom-level-row <?= $isSelected ? 'is-current' : '' ?> grid grid-cols-[34px_1fr_auto] items-center gap-3 border-b border-white/[0.07] px-4 py-3 <?= $isSelected ? '' : 'hover:bg-white/[0.025]' ?>"
                         >
                           <span class="grid h-8 w-8 place-items-center rounded-full border text-[11px] font-bold <?= $isCompleted ? 'border-aula-green/40 bg-aula-green/15 text-aula-green' : ($isSelected ? 'border-aula-orange/60 text-aula-orange-soft' : 'border-white/15 text-white/35') ?>">
                             <?= $isCompleted ? '✓' : e(str_pad((string) $lesson['orden'], 2, '0', STR_PAD_LEFT)) ?>
@@ -289,8 +316,8 @@ require PROJECT_ROOT . '/includes/layout/head.php';
             </aside>
 
             <?php if ($selectedLesson): ?>
-              <article class="overflow-hidden border border-white/10 bg-aula-surface/35">
-                <header class="flex flex-wrap items-start justify-between gap-5 p-5 sm:p-7">
+              <article class="aulago-classroom-lesson">
+                <header class="flex flex-wrap items-start justify-between gap-5">
                   <div>
                     <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-orange-soft">Nivel <?= e($selectedLesson['orden_nivel']) ?> · Lección <?= e($selectedLesson['orden']) ?></p>
                     <h2 class="mt-2 font-editorial text-4xl font-semibold text-aula-cream sm:text-5xl"><?= e($selectedLesson['titulo']) ?></h2>
@@ -303,7 +330,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
                 <?php $lessonEmbed = youtube_embed_url($selectedLesson['url_video'] ?? null); ?>
                 <?php if ($lessonEmbed): ?>
-                  <div class="mx-5 aspect-video overflow-hidden border border-white/10 bg-black sm:mx-7">
+                  <div class="aulago-classroom-video">
                     <iframe
                       src="<?= e($lessonEmbed) ?>"
                       title="<?= e($selectedLesson['titulo']) ?>"
@@ -320,14 +347,14 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                   </div>
                 <?php endif; ?>
 
-                <div class="p-5 sm:p-7">
+                <div class="pt-5">
                   <div class="border-b border-white/10 pb-3">
                     <span class="border-b-2 border-aula-orange pb-3 text-sm font-bold text-aula-cream">Descripción</span>
                   </div>
 
                   <div class="mt-5 whitespace-pre-line text-sm leading-7 text-white/55"><?= e($selectedLesson['contenido'] ?: 'El instructor no agregó contenido escrito para esta lección.') ?></div>
 
-                  <div class="mt-7 flex flex-wrap items-center justify-between gap-4 border border-white/10 bg-aula-bg/35 p-4">
+                  <div class="aulago-classroom-actions mt-7 flex flex-wrap items-center justify-between gap-4 bg-aula-bg/35 p-4">
                     <span class="text-xs text-white/40"><?= e($studentCompleted) ?> lecciones completadas</span>
 
                     <?php if ((int) $selectedLesson['completada'] === 1): ?>
