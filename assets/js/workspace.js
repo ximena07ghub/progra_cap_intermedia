@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameNode = thread.querySelector('[data-thread-name]')
     const courseNode = thread.querySelector('[data-thread-course]')
     const avatarNode = thread.querySelector('[data-thread-avatar]')
+    const avatarImageNode = thread.querySelector('[data-thread-avatar-image]')
 
     const formatDate = (date) => {
       if (!date) return ''
@@ -148,7 +149,20 @@ document.addEventListener('DOMContentLoaded', () => {
       buttons.forEach((button) => button.classList.toggle('is-selected', button.dataset.conversationId === activeId))
       if (nameNode) nameNode.textContent = conversation.participant || 'Conversación'
       if (courseNode) courseNode.textContent = conversation.course || ''
-      if (avatarNode) avatarNode.textContent = conversation.avatar || 'AG'
+      if (conversation.avatarUrl) {
+        if (avatarImageNode) {
+          avatarImageNode.src = conversation.avatarUrl
+          avatarImageNode.alt = `Foto de ${conversation.participant || 'perfil'}`
+          avatarImageNode.classList.remove('hidden')
+        }
+        avatarNode?.classList.add('hidden')
+      } else {
+        avatarImageNode?.classList.add('hidden')
+        if (avatarNode) {
+          avatarNode.textContent = conversation.avatar || 'AG'
+          avatarNode.classList.remove('hidden')
+        }
+      }
       renderMessages(conversation)
     }
 
