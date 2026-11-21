@@ -192,13 +192,19 @@ class Usuario
     public function actualizarDatos(
         int $idUsuario,
         string $nombre,
-        string $email
+        string $email,
+        ?string $genero,
+        ?string $fechaNacimiento,
+        ?string $avatar
     ): void {
         $sql = '
             update usuarios
             set
                 nombre = :nombre,
-                email = :email
+                email = :email,
+                genero = :genero,
+                fecha_nacimiento = :fecha_nacimiento,
+                avatar = :avatar
             where id_usuario = :id_usuario
         ';
 
@@ -207,6 +213,9 @@ class Usuario
         $consulta->execute([
             'nombre' => $nombre,
             'email' => $email,
+            'genero' => $genero,
+            'fecha_nacimiento' => $fechaNacimiento,
+            'avatar' => $avatar,
             'id_usuario' => $idUsuario
         ]);
     }
