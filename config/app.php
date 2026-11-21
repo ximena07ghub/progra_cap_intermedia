@@ -121,14 +121,60 @@ function save_runtime_store(array $store): void
     }
 }
 
+function public_catalog_model(): Catalogo
+{
+    static $modelo = null;
+
+    if ($modelo instanceof Catalogo) {
+        return $modelo;
+    }
+
+    require_once PROJECT_ROOT . '/models/conexion.php';
+    require_once PROJECT_ROOT . '/models/Catalogo.php';
+
+    $configuracion = require PROJECT_ROOT . '/config/database.local.php';
+    $conexion = new Conexion($configuracion);
+
+    $modelo = new Catalogo(
+        $conexion->obtenerConexion()
+    );
+
+    return $modelo;
+}
+
 function courses(): array
 {
-    return catalog()['courses'] ?? [];
+    return public_catalog_model()->listarCursosPublicados();
 }
 
 function categories(): array
 {
-    return catalog()['categories'] ?? [];
+    return public_catalog_model()->listarCategoriasActivas();
+}
+
+function course_image_url(array $course): string
+{
+    $image = ltrim((string) ($course['image'] ?? ''), '/');
+
+    if ($image === '') {
+        return asset('images/placeholder-course.jpg');
+    }
+
+    if (str_starts_with($image, 'uploads/')) {
+        return asset($image);
+    }
+
+    return asset('images/' . $image);
+}
+
+function public_course_lessons(int $idCurso): array
+{
+    return public_catalog_model()->listarLecciones($idCurso);
+}
+
+function public_course_reviews(int $idCurso): array
+{
+    return public_catalog_model()->listarResenas($idCurso);
 }
 
 function base_enrolled_courses(): array
@@ -193,12 +239,13 @@ function enrolled_courses(): array
 
 function course_by_slug(string $slug): ?array
 {
-    foreach (courses() as $course) {
-        if (($course['slug'] ?? '') === $slug) {
-            return $course;
-        }
+    $slug = trim($slug);
+
+    if ($slug === '') {
+        return null;
     }
-    return null;
+
+    return public_catalog_model()->buscarCursoPorSlug($slug);
 }
 
 function category_by_id(string $categoryId): ?array
