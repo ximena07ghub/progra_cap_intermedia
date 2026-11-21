@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/app.php';
 require_once PROJECT_ROOT . '/includes/PayPalClient.php';
+require_once PROJECT_ROOT . '/models/conexion.php';
+require_once PROJECT_ROOT . '/models/EstudianteCurso.php';
+require_once PROJECT_ROOT . '/controllers/EstudianteCursoController.php';
 
 require_role('estudiante');
 
@@ -48,13 +51,16 @@ try {
         throw new RuntimeException('La captura de PayPal no coincide con la orden esperada.');
     }
 
-    record_completed_purchase(
+    $config = require PROJECT_ROOT . '/config/database.local.php';
+    $conexion = new Conexion($config);
+    $modelo = new EstudianteCurso($conexion->obtenerConexion());
+    $controlador = new EstudianteCursoController($modelo);
+    $controlador->confirmarPago(
+        (int) $_SESSION['usuario_id'],
         $course,
-        'PayPal',
         $orderId,
-        $expectedAmount,
-        $expectedCurrency,
-        'COMPLETED'
+        (float) $expectedAmount,
+        $expectedCurrency
     );
 
     unset($_SESSION['paypal_pending_orders'][$orderId], $_SESSION['paypal_last_error']);
