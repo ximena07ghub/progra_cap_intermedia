@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 class AdminUsuario
@@ -10,36 +11,38 @@ class AdminUsuario
         $this->conexion = $conexion;
     }
 
-    // Obtener todos los usuarios para el panel administrativo.
     public function listar(): array
     {
-        $sql = <<<'SQL'
+        $sql = '
             SELECT
                 u.id_usuario,
                 u.nombre AS name,
                 u.email,
                 r.nombre AS role,
                 CASE
-                    WHEN u.bloqueo_admin = 1 THEN 'Bloqueado por administrador'
-                    WHEN u.bloqueado = 1 THEN 'Bloqueado por intentos'
-                    ELSE 'Activo'
-                END AS status,
-                0 AS reports
+                    WHEN u.bloqueo_admin = 1
+                        THEN \'Bloqueado por administrador\'
+                    WHEN u.bloqueado = 1
+                        THEN \'Bloqueado por intentos\'
+                    ELSE \'Activo\'
+                END AS status
             FROM usuarios AS u
             INNER JOIN roles AS r
                 ON u.id_rol = r.id_rol
-            ORDER BY u.fecha_registro DESC, u.id_usuario DESC
-        SQL;
+            ORDER BY
+                u.fecha_registro DESC,
+                u.id_usuario DESC
+        ';
 
         $consulta = $this->conexion->query($sql);
 
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Buscar una cuenta y conocer sus dos tipos de bloqueo.
-    public function buscarPorId(int $idUsuario): ?array
-    {
-        $sql = <<<'SQL'
+    public function buscarPorId(
+        int $idUsuario
+    ): ?array {
+        $sql = '
             SELECT
                 u.id_usuario,
                 u.nombre,
@@ -53,9 +56,10 @@ class AdminUsuario
                 ON u.id_rol = r.id_rol
             WHERE u.id_usuario = :id_usuario
             LIMIT 1
-        SQL;
+        ';
 
         $consulta = $this->conexion->prepare($sql);
+
         $consulta->execute([
             'id_usuario' => $idUsuario
         ]);
@@ -65,22 +69,26 @@ class AdminUsuario
         return $usuario ?: null;
     }
 
-    // Bloquear manualmente a un estudiante o instructor.
-    public function bloquear(int $idUsuario): bool
-    {
-        $sql = <<<'SQL'
+    public function bloquear(
+        int $idUsuario
+    ): bool {
+        $sql = '
             UPDATE usuarios
             SET bloqueo_admin = 1
             WHERE id_usuario = :id_usuario
               AND id_rol IN (
                   SELECT id_rol
                   FROM roles
-                  WHERE nombre IN ('estudiante', 'instructor')
+                  WHERE nombre IN (
+                      \'estudiante\',
+                      \'instructor\'
+                  )
               )
               AND bloqueo_admin = 0
-        SQL;
+        ';
 
         $consulta = $this->conexion->prepare($sql);
+
         $consulta->execute([
             'id_usuario' => $idUsuario
         ]);
@@ -88,10 +96,10 @@ class AdminUsuario
         return $consulta->rowCount() === 1;
     }
 
-    // Quitar ambos bloqueos y reiniciar los intentos fallidos.
-    public function desbloquear(int $idUsuario): bool
-    {
-        $sql = <<<'SQL'
+    public function desbloquear(
+        int $idUsuario
+    ): bool {
+        $sql = '
             UPDATE usuarios
             SET
                 bloqueo_admin = 0,
@@ -101,16 +109,20 @@ class AdminUsuario
               AND id_rol IN (
                   SELECT id_rol
                   FROM roles
-                  WHERE nombre IN ('estudiante', 'instructor')
+                  WHERE nombre IN (
+                      \'estudiante\',
+                      \'instructor\'
+                  )
               )
               AND (
                   bloqueo_admin = 1
                   OR bloqueado = 1
                   OR intentos_fallidos > 0
               )
-        SQL;
+        ';
 
         $consulta = $this->conexion->prepare($sql);
+
         $consulta->execute([
             'id_usuario' => $idUsuario
         ]);

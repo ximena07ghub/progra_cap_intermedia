@@ -1,5 +1,6 @@
-
 <?php
+
+declare(strict_types=1);
 
 if (PHP_SAPI !== 'cli') {
     exit('Acceso no permitido.');
@@ -16,12 +17,13 @@ function preguntar(string $mensaje): string
     $respuesta = fgets(STDIN);
 
     if ($respuesta === false) {
-        throw new RuntimeException('No se pudo leer el dato.');
+        throw new RuntimeException(
+            'No se pudo leer el dato.'
+        );
     }
 
     return trim($respuesta);
 }
-
 
 function preguntarContrasena(string $mensaje): string
 {
@@ -80,28 +82,31 @@ function preguntarContrasena(string $mensaje): string
     return rtrim($respuesta, "\r\n");
 }
 
-
 try {
     echo PHP_EOL;
-    echo '=== crear ADMIN ===' . PHP_EOL;
+    echo '=== Crear administrador ===' . PHP_EOL;
     echo PHP_EOL;
 
     $nombre = preguntar('Nombre completo: ');
-    $correo = strtolower(preguntar('Correo electrónico: '));
+    $correo = strtolower(
+        preguntar('Correo electrónico: ')
+    );
 
-    // 2. Validar nombre y correo.
     if ($nombre === '' || strlen($nombre) > 150) {
-        throw new RuntimeException('El nombre no es válido.');
+        throw new RuntimeException(
+            'El nombre no es válido.'
+        );
     }
 
     if (
         !filter_var($correo, FILTER_VALIDATE_EMAIL)
         || strlen($correo) > 255
     ) {
-        throw new RuntimeException('El correo no es válido.');
+        throw new RuntimeException(
+            'El correo no es válido.'
+        );
     }
 
-//cnexionmysql 
     $configuracion = require dirname(__DIR__)
         . '/config/database.local.php';
 
@@ -111,17 +116,15 @@ try {
     $modeloUsuario = new Usuario($pdo);
     $modeloRol = new Rol($pdo);
 
-//verificar la existencia del correo
     if ($modeloUsuario->buscarPorEmail($correo) !== null) {
         throw new RuntimeException(
             'Ya existe una cuenta con ese correo.'
         );
     }
 
-
-    //rol admini desde la tabla
-
-    $idRol = $modeloRol->buscarIdPorNombre('administrador');
+    $idRol = $modeloRol->buscarIdPorNombre(
+        'administrador'
+    );
 
     if ($idRol === null) {
         throw new RuntimeException(
@@ -129,10 +132,11 @@ try {
         );
     }
 
-    $contrasena = preguntarContrasena('Contraseña: ');
-    $contrasenaValida = strlen($contrasena) >= 8;
+    $contrasena = preguntarContrasena(
+        'Contraseña: '
+    );
 
-    if (!$contrasenaValida) {
+    if (strlen($contrasena) < 8) {
         throw new RuntimeException(
             'La contraseña debe tener al menos 8 caracteres.'
         );
@@ -155,36 +159,24 @@ try {
 
     unset($contrasena, $confirmacion);
 
-    $consulta = $pdo->prepare(
-        'INSERT INTO usuarios (
-            id_rol,
-            nombre,
-            email,
-            contrasena_hash
-        ) VALUES (
-            :id_rol,
-            :nombre,
-            :email,
-            :contrasena_hash
-        )'
+    $idAdministrador = $modeloUsuario->crearAdministrador(
+        $idRol,
+        $nombre,
+        $correo,
+        $hash
     );
-
-    $consulta->execute([
-        'id_rol' => $idRol,
-        'nombre' => $nombre,
-        'email' => $correo,
-        'contrasena_hash' => $hash
-    ]);
 
     echo PHP_EOL;
     echo 'Administrador creado correctamente.' . PHP_EOL;
-    echo 'ID: ' . $pdo->lastInsertId() . PHP_EOL;
+    echo 'ID: ' . $idAdministrador . PHP_EOL;
     echo 'Correo: ' . $correo . PHP_EOL;
-
 } catch (Throwable $error) {
     fwrite(
         STDERR,
-        PHP_EOL . 'Error: ' . $error->getMessage() . PHP_EOL
+        PHP_EOL
+        . 'Error: '
+        . $error->getMessage()
+        . PHP_EOL
     );
 
     exit(1);

@@ -90,6 +90,39 @@ class Usuario
         return (int) $this->conexion->lastInsertId();
     }
 
+    public function crearAdministrador(
+        int $idRol,
+        string $nombre,
+        string $email,
+        string $contrasenaHash
+    ): int {
+        $sql = '
+            insert into usuarios (
+                id_rol,
+                nombre,
+                email,
+                contrasena_hash
+            )
+            values (
+                :id_rol,
+                :nombre,
+                :email,
+                :contrasena_hash
+            )
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'id_rol' => $idRol,
+            'nombre' => $nombre,
+            'email' => $email,
+            'contrasena_hash' => $contrasenaHash
+        ]);
+
+        return (int) $this->conexion->lastInsertId();
+    }
+
     public function registrarFallo(int $idUsuario): void
     {
         $sql = '
@@ -102,11 +135,14 @@ class Usuario
                 intentos_fallidos = least(intentos_fallidos + 1, 3)
             where id_usuario = :id_usuario
         ';
-    
+
         $consulta = $this->conexion->prepare($sql);
-        $consulta->execute(['id_usuario' => $idUsuario]);
+
+        $consulta->execute([
+            'id_usuario' => $idUsuario
+        ]);
     }
-    
+
     public function reiniciarIntentos(int $idUsuario): void
     {
         $sql = '
@@ -114,63 +150,64 @@ class Usuario
             set intentos_fallidos = 0
             where id_usuario = :id_usuario
         ';
-    
+
         $consulta = $this->conexion->prepare($sql);
-        $consulta->execute(['id_usuario' => $idUsuario]);
+
+        $consulta->execute([
+            'id_usuario' => $idUsuario
+        ]);
     }
 
+    public function buscarPorId(int $idUsuario): ?array
+    {
+        $sql = '
+            select
+                usuarios.id_usuario,
+                usuarios.nombre,
+                usuarios.email,
+                usuarios.genero,
+                usuarios.fecha_nacimiento,
+                usuarios.avatar,
+                usuarios.bloqueado,
+                usuarios.bloqueo_admin,
+                roles.nombre as rol
+            from usuarios
+            inner join roles
+                on usuarios.id_rol = roles.id_rol
+            where usuarios.id_usuario = :id_usuario
+            limit 1
+        ';
 
-            public function buscarPorId(int $idUsuario): ?array
-            {
-                $sql = '
-                    select
-                        usuarios.id_usuario,
-                        usuarios.nombre,
-                        usuarios.email,
-                        usuarios.genero,
-                        usuarios.fecha_nacimiento,
-                        usuarios.avatar,
-                        usuarios.bloqueado,
-                        usuarios.bloqueo_admin,
-                        roles.nombre as rol
-                    from usuarios
-                    inner join roles
-                        on usuarios.id_rol = roles.id_rol
-                    where usuarios.id_usuario = :id_usuario
-                    limit 1
-                ';
-            
-                $consulta = $this->conexion->prepare($sql);
-            
-                $consulta->execute([
-                    'id_usuario' => $idUsuario
-                ]);
-            
-                $usuario = $consulta->fetch();
-            
-                return $usuario ?: null;
-            }
+        $consulta = $this->conexion->prepare($sql);
 
-        public function actualizarDatos(
-            int $idUsuario,
-            string $nombre,
-            string $email
-        ): void {
-            $sql = '
-                update usuarios
-                set
-                    nombre = :nombre,
-                    email = :email
-                where id_usuario = :id_usuario
-            ';
+        $consulta->execute([
+            'id_usuario' => $idUsuario
+        ]);
 
-            $consulta = $this->conexion->prepare($sql);
+        $usuario = $consulta->fetch();
 
-            $consulta->execute([
-                'nombre' => $nombre,
-                'email' => $email,
-                'id_usuario' => $idUsuario
-            ]);
-        }
+        return $usuario ?: null;
+    }
 
+    public function actualizarDatos(
+        int $idUsuario,
+        string $nombre,
+        string $email
+    ): void {
+        $sql = '
+            update usuarios
+            set
+                nombre = :nombre,
+                email = :email
+            where id_usuario = :id_usuario
+        ';
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $consulta->execute([
+            'nombre' => $nombre,
+            'email' => $email,
+            'id_usuario' => $idUsuario
+        ]);
+    }
 }

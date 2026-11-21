@@ -295,8 +295,3 @@ show tables;
 select * from roles;
 
 
-USE aulago;
-
-ALTER TABLE usuarios
-    ADD COLUMN bloqueo_admin TINYINT(1) NOT NULL DEFAULT 0
-    AFTER bloqueado;
