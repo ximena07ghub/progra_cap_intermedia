@@ -8,6 +8,7 @@ require_role('instructor');
 
 require_once PROJECT_ROOT . '/models/conexion.php';
 require_once PROJECT_ROOT . '/models/InstructorCurso.php';
+require_once PROJECT_ROOT . '/models/InstructorMensaje.php';
 
 $idInstructor =
     (int) ($_SESSION['usuario_id'] ?? 0);
@@ -17,6 +18,12 @@ $mensaje =
     ?? null;
 
 unset($_SESSION['instructor_cursos_mensaje']);
+
+$mensajeConversacion =
+    $_SESSION['instructor_mensaje']
+    ?? null;
+
+unset($_SESSION['instructor_mensaje']);
 
 try {
     $configuracion = require PROJECT_ROOT
@@ -45,6 +52,41 @@ try {
 
     $resenas =
         $modelo->listarResenas($idInstructor);
+
+    $modeloMensajes = new InstructorMensaje(
+        $conexion->obtenerConexion()
+    );
+
+    $rawConversaciones =
+        $modeloMensajes->listarConversaciones(
+            $idInstructor
+        );
+
+    $conversacionesInstructor = [];
+
+    foreach ($rawConversaciones as $conversacion) {
+        $partes = preg_split(
+            '/\s+/u',
+            trim((string) $conversacion['estudiante'])
+        ) ?: [];
+
+        $avatar = '';
+
+        foreach (array_slice($partes, 0, 2) as $parte) {
+            if ($parte !== '') {
+                $avatar .= text_first_upper($parte);
+            }
+        }
+
+        $conversacionesInstructor[] = [
+            'id' => (int) $conversacion['id_conversacion'],
+            'courseId' => (int) $conversacion['id_conversacion'],
+            'participant' => (string) $conversacion['estudiante'],
+            'avatar' => $avatar !== '' ? $avatar : 'AG',
+            'course' => (string) $conversacion['curso'],
+            'messages' => $conversacion['mensajes'],
+        ];
+    }
 
     $contenidos = [];
 
@@ -96,6 +138,11 @@ $workspaceItems = [
         'id' => 'crear',
         'label' => 'Crear curso',
         'icon' => '+'
+    ],
+    [
+        'id' => 'mensajes',
+        'label' => 'Mensajes',
+        'icon' => '✉'
     ],
     [
         'id' => 'estudiantes',
@@ -946,6 +993,109 @@ require PROJECT_ROOT . '/includes/layout/head.php';
     <?php endif; ?>
 </section>
 <?php endforeach; ?>
+
+            <!-- MENSAJES -->
+
+            <section
+                data-workspace-panel="mensajes"
+                data-title="Mensajes"
+                data-eyebrow="Conversaciones con estudiantes"
+                hidden
+                data-messages-panel
+            >
+                <?php if ($mensajeConversacion): ?>
+                    <div class="mb-5 border border-aula-green/25 bg-aula-green/10 px-4 py-3 text-sm text-aula-green">
+                        <?= e($mensajeConversacion) ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($conversacionesInstructor === []): ?>
+                    <div class="border border-dashed border-white/10 p-8 text-center">
+                        <p class="text-sm text-white/40">
+                            Todavía no tienes conversaciones.
+                        </p>
+                        <p class="mt-2 text-xs text-white/25">
+                            Cuando un estudiante inscrito te escriba, la conversación aparecerá aquí.
+                        </p>
+                    </div>
+                <?php else: ?>
+                    <div class="workspace-message-shell grid min-h-0 border border-white/10 lg:grid-cols-[270px_minmax(0,1fr)]">
+                        <aside class="conversation-list min-h-0 border-b border-white/10 bg-white/[0.015] lg:border-b-0 lg:border-r">
+                            <div class="border-b border-white/10 p-4">
+                                <p class="text-xs font-bold uppercase tracking-[0.12em] text-white/35">
+                                    Conversaciones
+                                </p>
+                                <span class="mt-1 block text-[10px] text-white/25">
+                                    Estudiantes de tus cursos
+                                </span>
+                            </div>
+
+                            <div class="conversation-list-scroll lg:overflow-y-auto">
+                                <?php foreach ($conversacionesInstructor as $indice => $conversacion): ?>
+                                    <?php $ultimoMensaje = $conversacion['messages'][count($conversacion['messages']) - 1] ?? null; ?>
+                                    <button
+                                        type="button"
+                                        class="<?= $indice === 0 ? 'is-selected ' : '' ?>conversation-button flex w-full items-center gap-3 border-b border-white/10 p-4 text-left transition hover:bg-white/[0.025]"
+                                        data-conversation-button
+                                        data-conversation-id="<?= e($conversacion['id']) ?>"
+                                    >
+                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green">
+                                            <?= e($conversacion['avatar']) ?>
+                                        </span>
+                                        <span class="min-w-0">
+                                            <span class="flex items-center justify-between gap-2">
+                                                <strong class="truncate text-sm"><?= e($conversacion['participant']) ?></strong>
+                                                <small class="shrink-0 text-[9px] text-white/25"><?= e($ultimoMensaje['time'] ?? '') ?></small>
+                                            </span>
+                                            <span class="mt-1 block truncate text-xs text-white/35"><?= e($ultimoMensaje['text'] ?? $conversacion['course']) ?></span>
+                                            <span class="mt-1 block truncate text-[10px] text-aula-green/70"><?= e($conversacion['course']) ?></span>
+                                        </span>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        </aside>
+
+                        <?php $conversacionActiva = $conversacionesInstructor[0]; ?>
+
+                        <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
+                            <header class="flex items-center gap-3 border-b border-white/10 p-4 sm:p-5">
+                                <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar>
+                                    <?= e($conversacionActiva['avatar']) ?>
+                                </span>
+                                <div class="min-w-0">
+                                    <strong class="block truncate text-sm" data-thread-name><?= e($conversacionActiva['participant']) ?></strong>
+                                    <span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($conversacionActiva['course']) ?></span>
+                                </div>
+                            </header>
+
+                            <div class="message-stream min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5" data-message-stream></div>
+
+                            <form
+                                action="<?= e(url('actions/instructor_mensaje.php')) ?>"
+                                method="post"
+                                class="grid gap-3 border-t border-white/10 p-4 sm:grid-cols-[1fr_auto] sm:p-5"
+                                data-message-form
+                            >
+                                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                                <input type="hidden" name="id_conversacion" value="<?= e($conversacionActiva['id']) ?>" data-message-course-id>
+                                <input
+                                    name="contenido"
+                                    maxlength="2000"
+                                    required
+                                    class="min-h-11 min-w-0 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange"
+                                    placeholder="Escribe una respuesta"
+                                >
+                                <button type="submit" class="min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">
+                                    Enviar
+                                </button>
+                            </form>
+                        </section>
+                    </div>
+
+                    <script type="application/json" data-conversation-data><?= json_encode($conversacionesInstructor, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
+                <?php endif; ?>
+
+            </section>
 
             <!-- ESTUDIANTES -->
 
