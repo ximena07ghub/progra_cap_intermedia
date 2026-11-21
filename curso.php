@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/app.php';
 
 $slug = trim((string) ($_GET['slug'] ?? ''));
-$course = course_by_slug($slug) ?? (courses()[0] ?? null);
+$course = course_by_slug($slug);
 
 if (!$course) {
     http_response_code(404);
@@ -11,7 +11,7 @@ if (!$course) {
 
 $pageTitle = $course['title'] . ' | AulaGo';
 $pageDescription = $course['description'];
-$reviews = portal_data()['courseReviews'][$course['slug']] ?? [];
+$reviews = public_course_reviews((int) $course['databaseId']);
 $averageRating = '—';
 if ($reviews) {
     $sum = array_sum(array_map(fn(array $review): int => (int) $review['rating'], $reviews));
@@ -48,12 +48,7 @@ if (!is_authenticated()) {
     $purchaseLabel = 'Volver a mi espacio';
 }
 
-$lessons = [
-    ['Introducción y mapa del curso', 'Conoce el objetivo de la ruta y cómo aprovechar cada módulo.', '10 min'],
-    ['Conceptos esenciales', 'Construye una base clara antes de pasar a la práctica.', '18 min'],
-    ['Práctica guiada', 'Aplica lo aprendido mediante una actividad acompañada paso a paso.', '24 min'],
-    ['Proyecto y próximos pasos', 'Integra los conceptos y define cómo continuar aprendiendo.', '28 min'],
-];
+$lessons = public_course_lessons((int) $course['databaseId']);
 
 require PROJECT_ROOT . '/includes/layout/head.php';
 ?>
@@ -65,7 +60,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       <div class="mx-auto grid max-w-aula gap-10 px-6 py-14 lg:grid-cols-[.88fr_1.12fr] lg:px-8 lg:py-20">
         <div>
           <div class="relative overflow-hidden border border-white/10 bg-aula-green-dark shadow-aula">
-            <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="<?= e($course['title']) ?>" class="aspect-[4/3] h-full w-full object-cover opacity-80">
+            <img src="<?= e(course_image_url($course)) ?>" alt="<?= e($course['title']) ?>" class="aspect-[4/3] h-full w-full object-cover opacity-80">
             <div class="absolute inset-0 bg-gradient-to-t from-aula-bg/70 via-transparent to-transparent"></div>
             <span class="absolute left-5 top-5 bg-aula-bg/75 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-aula-green backdrop-blur">
               <?= e($course['category']) ?>
@@ -113,8 +108,8 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
           <div class="mt-8">
             <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-aula-green">Sobre este curso</p>
-            <h2 class="mt-3 font-editorial text-3xl text-aula-cream sm:text-4xl">Una ruta práctica para profundizar en <?= e(text_lower($course['accent'])) ?>.</h2>
-            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/45">Combina explicaciones claras, actividades breves y práctica guiada. Esta estructura queda lista para recibir módulos y lecciones desde MySQL.</p>
+            <h2 class="mt-3 font-editorial text-3xl text-aula-cream sm:text-4xl">Una ruta organizada para avanzar por niveles y lecciones.</h2>
+            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/45">El contenido que ves aquí corresponde a los niveles y lecciones que el instructor ha publicado en AulaGo.</p>
           </div>
         </div>
       </div>
@@ -125,17 +120,27 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         <div>
           <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-aula-green">Contenido</p>
           <h2 class="mt-3 font-editorial text-4xl text-aula-cream sm:text-5xl">Lo que encontrarás dentro.</h2>
-          <p class="mt-4 max-w-sm text-sm leading-7 text-white/40">La interfaz ya está preparada para sustituir este contenido de muestra por módulos y lecciones de base de datos.</p>
+          <p class="mt-4 max-w-sm text-sm leading-7 text-white/40">Este contenido se obtiene directamente de la estructura creada por el instructor.</p>
         </div>
 
         <div class="border-t border-white/10">
-          <?php foreach ($lessons as $index => $lesson): ?>
-            <article class="grid grid-cols-[42px_1fr_auto] gap-4 border-b border-white/10 py-5 sm:items-center">
-              <span class="text-[11px] text-aula-orange"><?= e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
-              <div><h3 class="text-sm font-bold text-aula-cream"><?= e($lesson[0]) ?></h3><p class="mt-1 text-xs leading-5 text-white/40"><?= e($lesson[1]) ?></p></div>
-              <span class="text-[10px] font-bold text-white/30"><?= e($lesson[2]) ?></span>
-            </article>
-          <?php endforeach; ?>
+          <?php if ($lessons): ?>
+            <?php foreach ($lessons as $index => $lesson): ?>
+              <article class="grid grid-cols-[42px_1fr_auto] gap-4 border-b border-white/10 py-5 sm:items-center">
+                <span class="text-[11px] text-aula-orange"><?= e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-[0.1em] text-aula-green"><?= e($lesson['nivel']) ?></span>
+                  <h3 class="mt-1 text-sm font-bold text-aula-cream"><?= e($lesson['titulo']) ?></h3>
+                  <?php if (!empty($lesson['contenido'])): ?>
+                    <p class="mt-1 text-xs leading-5 text-white/40"><?= e($lesson['contenido']) ?></p>
+                  <?php endif; ?>
+                </div>
+                <span class="text-[10px] font-bold text-white/30"><?= !empty($lesson['url_video']) ? 'Video' : 'Lección' ?></span>
+              </article>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p class="border-b border-white/10 py-8 text-sm text-white/35">El instructor todavía no ha publicado lecciones para este curso.</p>
+          <?php endif; ?>
         </div>
       </div>
     </section>
