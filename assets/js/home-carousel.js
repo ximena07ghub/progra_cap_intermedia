@@ -4,6 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const originalSlides = Array.from(root.querySelectorAll('.home-courses-swiper .swiper-slide'))
   const totalSlides = originalSlides.length
+
+  if (totalSlides > 1 && totalSlides < 6) {
+    const wrapper = root.querySelector('.home-courses-swiper .swiper-wrapper')
+    const copiesNeeded = Math.max(0, 6 - totalSlides)
+
+    for (let index = 0; index < copiesNeeded; index += 1) {
+      const clone = originalSlides[index % totalSlides].cloneNode(true)
+      clone.dataset.carouselClone = 'true'
+      wrapper?.appendChild(clone)
+    }
+  }
+
   const counter = root.querySelector('[data-carousel-counter]')
   const detail = (key) => root.querySelector(`[data-course-detail="${key}"]`)
 
@@ -31,14 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (href) href.setAttribute('href', data.courseHref || '#')
 
     if (counter) {
-      counter.textContent = `${String(swiper.realIndex + 1).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`
+      const originalIndex = Number(slide.dataset.courseIndex ?? swiper.realIndex) % totalSlides
+      counter.textContent = `${String(originalIndex + 1).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`
     }
   }
 
   const swiper = new Swiper(root.querySelector('.home-courses-swiper'), {
     centeredSlides: true,
-    loop: false,
-    rewind: true,
+    loop: totalSlides > 1,
+    loopAdditionalSlides: Math.max(totalSlides, 3),
     slideToClickedSlide: true,
     grabCursor: true,
     initialSlide: 1,
