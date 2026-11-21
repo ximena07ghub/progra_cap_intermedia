@@ -154,35 +154,11 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
   <main class="flex-1">
     <?php if ($isStudentClassroom): ?>
-      <section class="border-b border-white/10">
-        <div class="mx-auto max-w-aula px-6 py-8 lg:px-8">
-          <a href="<?= e(url('estudiante/#cursos')) ?>" class="text-xs font-bold uppercase tracking-[0.08em] text-white/40 hover:text-aula-orange-soft">← Mis cursos</a>
-
-          <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_.62fr] lg:items-stretch">
-            <div class="grid gap-5 border border-white/10 bg-aula-surface/60 p-5 sm:grid-cols-[180px_1fr]">
-              <img src="<?= e(course_image_url($course)) ?>" alt="<?= e($course['title']) ?>" class="aspect-[4/3] h-full min-h-36 w-full object-cover opacity-85">
-              <div class="self-center">
-                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green"><?= e($course['category']) ?></span>
-                <h1 class="mt-2 font-editorial text-4xl font-semibold leading-none text-aula-cream"><?= e($course['title']) ?></h1>
-                <p class="mt-3 line-clamp-2 text-sm leading-6 text-white/40"><?= e($course['description']) ?></p>
-                <p class="mt-4 text-xs text-white/35">Instructor · <strong class="text-aula-cream"><?= e($course['instructor']) ?></strong></p>
-              </div>
-            </div>
-
-            <div class="border border-aula-green/20 bg-aula-green-dark/25 p-6">
-              <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Tu progreso</span>
-              <div class="mt-5 flex items-end justify-between gap-4">
-                <strong class="font-editorial text-5xl text-aula-cream"><?= e($studentProgress) ?>%</strong>
-                <span class="pb-1 text-xs text-white/40"><?= e($studentCompleted) ?> de <?= e(count($studentLessons)) ?> lecciones</span>
-              </div>
-              <div class="mt-4 h-2 overflow-hidden bg-white/10"><div class="h-full bg-aula-green" style="width: <?= e($studentProgress) ?>%"></div></div>
-              <p class="mt-4 text-xs leading-5 <?= $studentProgress === 100 ? 'text-aula-green' : 'text-white/35' ?>"><?= $studentProgress === 100 ? 'Curso completado. Todas las lecciones están terminadas.' : 'Continúa desde la siguiente lección pendiente.' ?></p>
-            </div>
-          </div>
-
-          <?php if ($studentMessage): ?><p class="mt-4 border border-aula-green/20 bg-aula-green/5 px-4 py-3 text-sm text-aula-green"><?= e($studentMessage) ?></p><?php endif; ?>
+      <?php if ($studentMessage): ?>
+        <div class="mx-auto max-w-aula px-6 pt-5 lg:px-8">
+          <p class="border border-aula-green/20 bg-aula-green/5 px-4 py-3 text-sm text-aula-green"><?= e($studentMessage) ?></p>
         </div>
-      </section>
+      <?php endif; ?>
 
       <?php if ($studentProgress === 100): ?>
       <section class="mx-auto max-w-aula px-6 py-10 lg:px-8 lg:py-14">
