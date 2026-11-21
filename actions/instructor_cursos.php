@@ -101,7 +101,56 @@ try {
 
         $idCurso = (int) $idCurso;
 
-        if ($accion === 'actualizar') {
+        $accionSecundaria =
+            is_string($_POST['accion_secundaria'] ?? null)
+                ? $_POST['accion_secundaria']
+                : '';
+
+        if (
+            $accion === 'guardar_contenido'
+            && str_starts_with($accionSecundaria, 'eliminar_nivel:')
+        ) {
+            $idNivel = filter_var(
+                substr($accionSecundaria, strlen('eliminar_nivel:')),
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
+
+            if ($idNivel === false) {
+                throw new RuntimeException('Nivel inválido.');
+            }
+
+            $resultado = $controlador->eliminarNivel(
+                $idInstructor,
+                $idCurso,
+                (int) $idNivel
+            );
+
+            $destino = '#contenido-' . $idCurso;
+
+        } elseif (
+            $accion === 'guardar_contenido'
+            && str_starts_with($accionSecundaria, 'eliminar_leccion:')
+        ) {
+            $idLeccion = filter_var(
+                substr($accionSecundaria, strlen('eliminar_leccion:')),
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
+
+            if ($idLeccion === false) {
+                throw new RuntimeException('Lección inválida.');
+            }
+
+            $resultado = $controlador->eliminarLeccion(
+                $idInstructor,
+                $idCurso,
+                (int) $idLeccion
+            );
+
+            $destino = '#contenido-' . $idCurso;
+
+        } elseif ($accion === 'actualizar') {
             $resultado =
                 $controlador->actualizar(
                     $idInstructor,
@@ -193,19 +242,12 @@ try {
                 );
             }
 
-            $eliminado =
-                $modelo->eliminarNivel(
-                    (int) $idNivel,
+            $resultado =
+                $controlador->eliminarNivel(
+                    $idInstructor,
                     $idCurso,
-                    $idInstructor
+                    (int) $idNivel
                 );
-
-            $resultado = [
-                'exito' => $eliminado,
-                'mensaje' => $eliminado
-                    ? 'Nivel eliminado correctamente.'
-                    : 'No fue posible eliminar el nivel.'
-            ];
 
             $destino =
                 '#contenido-' . $idCurso;
@@ -227,19 +269,12 @@ try {
                 );
             }
 
-            $eliminada =
-                $modelo->eliminarLeccion(
-                    (int) $idLeccion,
+            $resultado =
+                $controlador->eliminarLeccion(
+                    $idInstructor,
                     $idCurso,
-                    $idInstructor
+                    (int) $idLeccion
                 );
-
-            $resultado = [
-                'exito' => $eliminada,
-                'mensaje' => $eliminada
-                    ? 'Lección eliminada correctamente.'
-                    : 'No fue posible eliminar la lección.'
-            ];
 
             $destino =
                 '#contenido-' . $idCurso;
