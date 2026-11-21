@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 300" role="img" aria-labelledby="title desc">
+<title id="title">Cable desconectado</title>
+<desc id="desc">Ilustración lineal de dos conectores separados.</desc>
+<g fill="none" stroke="#f5f0e8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+<path d="M0 172 C120 142 205 143 318 157"/>
+<path d="M0 191 C120 161 205 162 318 176"/>
+<path d="M782 157 C895 143 980 142 1100 172"/>
+<path d="M782 176 C895 162 980 161 1100 191"/>
+<path d="M318 145 h35 v43 h-35 z"/>
+<path d="M353 124 h76 c18 0 32 14 32 32v21c0 18-14 32-32 32h-76z"/>
+<path d="M377 145v42M397 145v42M417 145v42"/>
+<path d="M461 143h30v47h-30"/>
+<path d="M782 145h-35v43h35z"/>
+<path d="M747 124h-76c-18 0-32 14-32 32v21c0 18 14 32 32 32h76z"/>
+<path d="M639 143h-30v47h30"/>
+<path d="M609 151h-31M609 182h-31"/>
+<path d="M578 151v31"/>
+<path d="M522 78v-34M522 254v-34M476 93l-23-25M568 93l23-25M476 235l-23 25M568 235l23 25"/>
+</g>
+</svg>
