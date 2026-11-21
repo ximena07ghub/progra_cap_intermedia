@@ -1,5 +1,8 @@
 <?php
 require_once dirname(__DIR__) . '/config/app.php';
+require_once PROJECT_ROOT . '/models/conexion.php';
+require_once PROJECT_ROOT . '/models/EstudiantePortal.php';
+
 require_role('estudiante');
 
 $pageTitle = 'Mi espacio | AulaGo';
@@ -9,9 +12,38 @@ $bodyClass = 'min-h-screen bg-aula-bg font-sans text-aula-cream antialiased lg:o
 
 $enrolled = enrolled_courses();
 $allCourses = courses();
-$portal = portal_data();
-$kardex = $portal['kardexRecords'] ?? [];
-$conversations = $portal['conversations'] ?? [];
+$portalConfig = require PROJECT_ROOT . '/config/database.local.php';
+$portalConexion = new Conexion($portalConfig);
+$portalModel = new EstudiantePortal($portalConexion->obtenerConexion());
+
+$kardex = $portalModel->listarKardex((int) ($_SESSION['usuario_id'] ?? 0));
+$certificados = $portalModel->listarCertificados((int) ($_SESSION['usuario_id'] ?? 0));
+$reviewCourses = $portalModel->cursosParaResena((int) ($_SESSION['usuario_id'] ?? 0));
+$messageCourses = $portalModel->cursosParaMensajes((int) ($_SESSION['usuario_id'] ?? 0));
+$rawConversations = $portalModel->listarConversaciones((int) ($_SESSION['usuario_id'] ?? 0));
+$conversations = [];
+
+foreach ($rawConversations as $conversation) {
+    $parts = preg_split('/\s+/u', trim((string) $conversation['instructor'])) ?: [];
+    $avatar = '';
+    foreach (array_slice($parts, 0, 2) as $part) {
+        if ($part !== '') {
+            $avatar .= text_first_upper($part);
+        }
+    }
+
+    $conversations[] = [
+        'id' => (int) $conversation['id_conversacion'],
+        'courseId' => (int) $conversation['id_curso'],
+        'participant' => (string) $conversation['instructor'],
+        'avatar' => $avatar !== '' ? $avatar : 'AG',
+        'course' => (string) $conversation['curso'],
+        'messages' => $conversation['mensajes'],
+    ];
+}
+
+$portalMessage = $_SESSION['estudiante_portal_mensaje'] ?? null;
+unset($_SESSION['estudiante_portal_mensaje']);
 $recommended = array_slice(array_values(array_filter($allCourses, fn(array $course): bool => !in_array($course['slug'], array_column($enrolled, 'slug'), true))), 0, 4);
 $averageProgress = $enrolled ? (int) round(array_sum(array_column($enrolled, 'progress')) / count($enrolled)) : 0;
 $studentSummary = student_course_model()->resumenEstudiante((int) ($_SESSION['usuario_id'] ?? 0));
@@ -32,6 +64,7 @@ $workspaceItems = [
     ['id' => 'mensajes', 'label' => 'Mensajes', 'icon' => '✉'],
     ['id' => 'kardex', 'label' => 'Kardex', 'icon' => '≡'],
     ['id' => 'certificados', 'label' => 'Certificados', 'icon' => '◇'],
+    ['id' => 'resenas', 'label' => 'Reseñas', 'icon' => '★'],
     ['id' => 'cuenta', 'label' => 'Mi cuenta', 'icon' => '○'],
 ];
 
@@ -353,48 +386,155 @@ require PROJECT_ROOT . '/includes/layout/head.php';
       </section>
 
       <section data-workspace-panel="mensajes" data-title="Mensajes" data-eyebrow="Conversaciones privadas" hidden data-messages-panel>
-        <div class="workspace-message-shell grid min-h-0 border border-white/10 lg:grid-cols-[270px_minmax(0,1fr)]">
-          <aside class="conversation-list min-h-0 border-b border-white/10 bg-white/[0.015] lg:border-b-0 lg:border-r">
-            <div class="border-b border-white/10 p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-white/35">Conversaciones</p><span class="mt-1 block text-[10px] text-white/25">Tus instructores y seguimiento de cursos</span></div>
-            <div class="conversation-list-scroll lg:overflow-y-auto">
-              <?php foreach ($conversations as $index => $conversation): ?>
-                <?php $lastMessage = $conversation['messages'][count($conversation['messages']) - 1] ?? null; ?>
-                <button type="button" class="<?= $index === 0 ? 'is-selected ' : '' ?>conversation-button flex w-full items-center gap-3 border-b border-white/10 p-4 text-left transition hover:bg-white/[0.025]" data-conversation-button data-conversation-id="<?= e($conversation['id']) ?>" data-participant="<?= e($conversation['participant']) ?>" data-course="<?= e($conversation['course']) ?>">
-                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green"><?= e($conversation['avatar']) ?></span>
-                  <span class="min-w-0"><span class="flex items-center justify-between gap-2"><strong class="truncate text-sm"><?= e($conversation['participant']) ?></strong><small class="shrink-0 text-[9px] text-white/25"><?= e($lastMessage['time'] ?? '') ?></small></span><span class="mt-1 block truncate text-xs text-white/35"><?= e($lastMessage['text'] ?? $conversation['course']) ?></span><span class="mt-1 block truncate text-[10px] text-aula-green/70"><?= e($conversation['course']) ?></span></span>
-                </button>
+        <?php if ($portalMessage): ?>
+          <div class="mb-5 border border-aula-green/20 bg-aula-green/10 px-4 py-3 text-sm text-aula-green"><?= e($portalMessage) ?></div>
+        <?php endif; ?>
+
+        <form action="<?= e(url('actions/estudiante_mensaje.php')) ?>" method="post" class="mb-6 grid gap-3 border border-white/10 bg-white/[0.015] p-5 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-end">
+          <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+          <label class="grid gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Curso</span>
+            <select name="id_curso" required class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white">
+              <option value="">Selecciona un curso</option>
+              <?php foreach ($messageCourses as $messageCourse): ?>
+                <option value="<?= e($messageCourse['id_curso']) ?>"><?= e($messageCourse['titulo']) ?> · <?= e($messageCourse['instructor']) ?></option>
               <?php endforeach; ?>
-            </div>
-          </aside>
-          <?php $activeConversation = $conversations[0] ?? null; ?>
-          <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
-            <header class="flex items-center gap-3 border-b border-white/10 p-4 sm:p-5"><span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($activeConversation['avatar'] ?? 'AG') ?></span><div class="min-w-0"><strong class="block truncate text-sm" data-thread-name><?= e($activeConversation['participant'] ?? 'Conversación') ?></strong><span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($activeConversation['course'] ?? '') ?></span></div></header>
-            <div class="message-stream min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5" data-message-stream>
-              <?php foreach (($activeConversation['messages'] ?? []) as $message): ?>
-                <article class="max-w-[82%] p-4 text-sm leading-6 <?= $message['from'] === 'me' ? 'ml-auto bg-aula-green-dark text-white' : 'bg-white/[0.05] text-white/75' ?>"><p><?= e($message['text']) ?></p><span class="mt-2 block text-[10px] uppercase tracking-[0.08em] text-white/35"><?= e(format_date_es($message['date'])) ?> · <?= e($message['time']) ?></span></article>
-              <?php endforeach; ?>
-            </div>
-            <form class="grid gap-3 border-t border-white/10 p-4 sm:grid-cols-[1fr_auto] sm:p-5" data-message-form><input class="min-h-11 min-w-0 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange" placeholder="Escribe un mensaje privado"><button type="submit" class="min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Enviar</button></form>
-          </section>
-        </div>
-        <script type="application/json" data-conversation-data><?= json_encode($conversations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
+            </select>
+          </label>
+          <label class="grid gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Nuevo mensaje</span>
+            <input name="contenido" maxlength="2000" required class="min-h-11 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange" placeholder="Escribe al instructor del curso">
+          </label>
+          <button type="submit" class="min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Enviar</button>
+        </form>
+
+        <?php if ($conversations === []): ?>
+          <div class="border border-dashed border-white/10 p-8 text-center">
+            <p class="text-sm text-white/40">Todavía no tienes conversaciones.</p>
+            <p class="mt-2 text-xs text-white/25">Selecciona uno de tus cursos arriba para escribirle a su instructor.</p>
+          </div>
+        <?php else: ?>
+          <div class="workspace-message-shell grid min-h-0 border border-white/10 lg:grid-cols-[270px_minmax(0,1fr)]">
+            <aside class="conversation-list min-h-0 border-b border-white/10 bg-white/[0.015] lg:border-b-0 lg:border-r">
+              <div class="border-b border-white/10 p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-white/35">Conversaciones</p><span class="mt-1 block text-[10px] text-white/25">Tus instructores y seguimiento de cursos</span></div>
+              <div class="conversation-list-scroll lg:overflow-y-auto">
+                <?php foreach ($conversations as $index => $conversation): ?>
+                  <?php $lastMessage = $conversation['messages'][count($conversation['messages']) - 1] ?? null; ?>
+                  <button type="button" class="<?= $index === 0 ? 'is-selected ' : '' ?>conversation-button flex w-full items-center gap-3 border-b border-white/10 p-4 text-left transition hover:bg-white/[0.025]" data-conversation-button data-conversation-id="<?= e($conversation['id']) ?>">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green"><?= e($conversation['avatar']) ?></span>
+                    <span class="min-w-0"><span class="flex items-center justify-between gap-2"><strong class="truncate text-sm"><?= e($conversation['participant']) ?></strong><small class="shrink-0 text-[9px] text-white/25"><?= e($lastMessage['time'] ?? '') ?></small></span><span class="mt-1 block truncate text-xs text-white/35"><?= e($lastMessage['text'] ?? $conversation['course']) ?></span><span class="mt-1 block truncate text-[10px] text-aula-green/70"><?= e($conversation['course']) ?></span></span>
+                  </button>
+                <?php endforeach; ?>
+              </div>
+            </aside>
+
+            <?php $activeConversation = $conversations[0]; ?>
+            <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
+              <header class="flex items-center gap-3 border-b border-white/10 p-4 sm:p-5">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($activeConversation['avatar']) ?></span>
+                <div class="min-w-0"><strong class="block truncate text-sm" data-thread-name><?= e($activeConversation['participant']) ?></strong><span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($activeConversation['course']) ?></span></div>
+              </header>
+
+              <div class="message-stream min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5" data-message-stream></div>
+
+              <form action="<?= e(url('actions/estudiante_mensaje.php')) ?>" method="post" class="grid gap-3 border-t border-white/10 p-4 sm:grid-cols-[1fr_auto] sm:p-5" data-message-form>
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="id_curso" value="<?= e($activeConversation['courseId']) ?>" data-message-course-id>
+                <input name="contenido" maxlength="2000" required class="min-h-11 min-w-0 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange" placeholder="Escribe un mensaje privado">
+                <button type="submit" class="min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Enviar</button>
+              </form>
+            </section>
+          </div>
+          <script type="application/json" data-conversation-data><?= json_encode($conversations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
+        <?php endif; ?>
       </section>
 
       <section data-workspace-panel="kardex" data-title="Kardex" data-eyebrow="Historial académico" hidden>
-        <div class="mb-6 max-w-2xl"><p class="text-sm leading-7 text-white/45">Cursos completados, calificación final y referencia de certificado en una sola vista.</p></div>
-        <div class="overflow-x-auto border border-white/10">
-          <table class="min-w-full border-collapse text-left text-sm"><thead class="bg-white/[0.025] text-[10px] uppercase tracking-[0.12em] text-white/35"><tr><th class="px-5 py-4">Curso</th><th class="px-5 py-4">Categoría</th><th class="px-5 py-4">Finalizado</th><th class="px-5 py-4">Calificación</th><th class="px-5 py-4">Certificado</th></tr></thead><tbody class="divide-y divide-white/10">
-            <?php foreach ($kardex as $record): ?><tr><td class="px-5 py-4"><strong class="block text-white/80"><?= e($record['course']) ?></strong><span class="mt-1 block text-xs text-white/30"><?= e($record['instructor']) ?></span></td><td class="px-5 py-4 text-white/45"><?= e($record['category']) ?></td><td class="px-5 py-4 text-white/45"><?= e(format_date_es($record['finishedAt'])) ?></td><td class="px-5 py-4 font-bold text-aula-green"><?= e($record['grade']) ?>/100</td><td class="px-5 py-4 text-xs text-aula-orange-soft"><?= e($record['certificateId']) ?></td></tr><?php endforeach; ?>
-          </tbody></table>
+        <div class="mb-6 max-w-2xl">
+          <p class="text-sm leading-7 text-white/45">Consulta tus cursos inscritos y completados con sus fechas y certificado cuando corresponda.</p>
         </div>
+
+        <?php if ($kardex === []): ?>
+          <div class="border border-dashed border-white/10 p-8 text-center text-sm text-white/35">Todavía no tienes cursos registrados en tu historial.</div>
+        <?php else: ?>
+          <div class="overflow-x-auto border border-white/10">
+            <table class="min-w-full border-collapse text-left text-sm">
+              <thead class="bg-white/[0.025] text-[10px] uppercase tracking-[0.12em] text-white/35">
+                <tr><th class="px-5 py-4">Curso</th><th class="px-5 py-4">Categoría</th><th class="px-5 py-4">Inscripción</th><th class="px-5 py-4">Estado</th><th class="px-5 py-4">Finalización</th><th class="px-5 py-4">Certificado</th></tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                <?php foreach ($kardex as $record): ?>
+                  <tr>
+                    <td class="px-5 py-4"><strong class="block text-white/80"><?= e($record['curso']) ?></strong><span class="mt-1 block text-xs text-white/30"><?= e($record['instructor']) ?></span></td>
+                    <td class="px-5 py-4 text-white/45"><?= e($record['categoria']) ?></td>
+                    <td class="px-5 py-4 text-white/45"><?= e(format_date_es((string) $record['fecha_inscripcion'])) ?></td>
+                    <td class="px-5 py-4"><span class="<?= $record['estado'] === 'completada' ? 'text-aula-green' : 'text-aula-orange-soft' ?>"><?= e(ucfirst((string) $record['estado'])) ?></span></td>
+                    <td class="px-5 py-4 text-white/45"><?= $record['fecha_finalizacion'] ? e(format_date_es((string) $record['fecha_finalizacion'])) : '—' ?></td>
+                    <td class="px-5 py-4 text-xs">
+                      <?php if (!empty($record['certificado'])): ?>
+                        <a href="<?= e(url('estudiante/certificado.php?codigo=' . rawurlencode((string) $record['certificado']))) ?>" class="font-bold text-aula-orange-soft">Ver certificado →</a>
+                      <?php else: ?><span class="text-white/25">Pendiente</span><?php endif; ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif; ?>
       </section>
 
       <section data-workspace-panel="certificados" data-title="Certificados" data-eyebrow="Logros completados" hidden>
-        <div class="grid gap-4 md:grid-cols-2">
-          <?php foreach ($kardex as $record): ?>
-            <article class="border border-white/10 bg-white/[0.015] p-5"><div class="flex items-start justify-between gap-4"><span class="text-2xl text-aula-yellow">◇</span><span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30"><?= e($record['certificateId']) ?></span></div><h2 class="mt-8 font-editorial text-2xl font-semibold"><?= e($record['course']) ?></h2><p class="mt-2 text-xs text-white/35"><?= e($record['instructor']) ?> · <?= e(format_date_es($record['finishedAt'])) ?></p><div class="mt-5 flex items-center justify-between border-t border-white/10 pt-4"><span class="text-xs text-aula-green">Calificación <?= e($record['grade']) ?>/100</span><button type="button" class="text-xs font-bold text-aula-orange-soft">Ver certificado →</button></div></article>
-          <?php endforeach; ?>
+        <div class="mb-6 max-w-2xl"><p class="text-sm leading-7 text-white/45">Tus certificados se generan automáticamente cuando completas todas las lecciones activas de un curso.</p></div>
+
+        <?php if ($certificados === []): ?>
+          <div class="border border-dashed border-white/10 p-8 text-center">
+            <p class="text-sm text-white/40">Todavía no tienes certificados.</p>
+            <p class="mt-2 text-xs text-white/25">Completa un curso al 100% para generar el primero.</p>
+          </div>
+        <?php else: ?>
+          <div class="grid gap-4 md:grid-cols-2">
+            <?php foreach ($certificados as $certificate): ?>
+              <article class="border border-white/10 bg-white/[0.015] p-5">
+                <div class="flex items-start justify-between gap-4"><span class="text-2xl text-aula-yellow">◇</span><span class="max-w-[70%] break-all text-right text-[9px] font-bold uppercase tracking-[0.1em] text-white/30"><?= e($certificate['codigo']) ?></span></div>
+                <h2 class="mt-8 font-editorial text-2xl font-semibold"><?= e($certificate['curso']) ?></h2>
+                <p class="mt-2 text-xs text-white/35"><?= e($certificate['instructor']) ?> · <?= e(format_date_es((string) $certificate['fecha_emision'])) ?></p>
+                <div class="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-4"><span class="text-xs text-aula-green">Curso completado</span><a href="<?= e(url('estudiante/certificado.php?codigo=' . rawurlencode((string) $certificate['codigo']))) ?>" class="text-xs font-bold text-aula-orange-soft">Ver certificado →</a></div>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </section>
+
+      <section data-workspace-panel="resenas" data-title="Reseñas" data-eyebrow="Tu opinión" hidden>
+        <div class="mb-6 max-w-2xl">
+          <p class="text-sm leading-7 text-white/45">Puedes calificar únicamente los cursos que ya completaste. Si vuelves a enviar una reseña, se actualizará la anterior.</p>
         </div>
+
+        <?php if ($portalMessage): ?>
+          <div class="mb-5 border border-aula-green/20 bg-aula-green/10 px-4 py-3 text-sm text-aula-green"><?= e($portalMessage) ?></div>
+        <?php endif; ?>
+
+        <?php if ($reviewCourses === []): ?>
+          <div class="border border-dashed border-white/10 p-8 text-center text-sm text-white/35">Completa un curso para poder dejar una reseña.</div>
+        <?php else: ?>
+          <div class="space-y-5">
+            <?php foreach ($reviewCourses as $reviewCourse): ?>
+              <form action="<?= e(url('actions/estudiante_resena.php')) ?>" method="post" class="border border-white/10 bg-white/[0.015] p-5">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="id_curso" value="<?= e($reviewCourse['id_curso']) ?>">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-green">Curso completado</p><h2 class="mt-2 font-editorial text-2xl font-semibold"><?= e($reviewCourse['curso']) ?></h2><p class="mt-1 text-xs text-white/30"><?= e($reviewCourse['instructor']) ?> · <?= e(format_date_es((string) $reviewCourse['fecha_finalizacion'])) ?></p></div>
+                  <?php if ($reviewCourse['calificacion'] !== null): ?><span class="text-xs font-bold text-aula-yellow">★ <?= e($reviewCourse['calificacion']) ?>/5</span><?php endif; ?>
+                </div>
+                <div class="mt-5 grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
+                  <label class="grid gap-2"><span class="text-xs text-white/40">Calificación</span><select name="calificacion" required class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white"><option value="">Selecciona</option><?php for ($rating = 5; $rating >= 1; $rating--): ?><option value="<?= $rating ?>" <?= (int) ($reviewCourse['calificacion'] ?? 0) === $rating ? 'selected' : '' ?>><?= $rating ?> / 5</option><?php endfor; ?></select></label>
+                  <label class="grid gap-2"><span class="text-xs text-white/40">Comentario</span><textarea name="comentario" maxlength="3000" class="min-h-24 border border-white/10 bg-aula-bg p-3 text-sm text-white" placeholder="Cuéntanos qué te pareció el curso"><?= e($reviewCourse['comentario'] ?? '') ?></textarea></label>
+                </div>
+                <button type="submit" class="mt-4 border border-aula-orange/35 bg-aula-orange/10 px-5 py-3 text-xs font-bold text-aula-orange-soft"><?= $reviewCourse['calificacion'] !== null ? 'Actualizar reseña' : 'Publicar reseña' ?></button>
+              </form>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
       </section>
 
       <section data-workspace-panel="cuenta" data-title="Mi cuenta" data-eyebrow="Preferencias y perfil" hidden>
