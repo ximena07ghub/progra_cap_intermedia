@@ -58,7 +58,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           <?php endif; ?>
 
           <article class="checkout-course-summary mt-8 border-y border-white/10 py-6">
-            <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="<?= e($course['title']) ?>" class="aspect-[4/3] h-full w-full object-cover opacity-80">
+            <img src="<?= e(course_image_url($course)) ?>" alt="<?= e($course['title']) ?>" class="aspect-[4/3] h-full w-full object-cover opacity-80">
             <div>
               <div class="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-[0.1em]"><span class="text-aula-green"><?= e($course['category']) ?></span><span class="text-white/25">·</span><span class="text-white/40"><?= e($course['level']) ?></span></div>
               <h2 class="mt-2 font-editorial text-3xl font-semibold"><?= e($course['title']) ?></h2>
