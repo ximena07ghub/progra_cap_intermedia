@@ -111,6 +111,9 @@ try {
             'courseId' => (int) $conversacion['id_conversacion'],
             'participant' => (string) $conversacion['estudiante'],
             'avatar' => $avatar !== '' ? $avatar : 'AG',
+            'avatarUrl' => !empty($conversacion['estudiante_avatar'])
+                ? url((string) $conversacion['estudiante_avatar'])
+                : '',
             'course' => (string) $conversacion['curso'],
             'messages' => $conversacion['mensajes'],
         ];
@@ -1067,9 +1070,11 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                                         data-conversation-button
                                         data-conversation-id="<?= e($conversacion['id']) ?>"
                                     >
-                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green">
-                                            <?= e($conversacion['avatar']) ?>
-                                        </span>
+                                        <?php if ($conversacion['avatarUrl'] !== ''): ?>
+                                            <img src="<?= e($conversacion['avatarUrl']) ?>" alt="Foto de <?= e($conversacion['participant']) ?>" class="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover">
+                                        <?php else: ?>
+                                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green"><?= e($conversacion['avatar']) ?></span>
+                                        <?php endif; ?>
                                         <span class="min-w-0">
                                             <span class="flex items-center justify-between gap-2">
                                                 <strong class="truncate text-sm"><?= e($conversacion['participant']) ?></strong>
@@ -1087,9 +1092,12 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
                         <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
                             <header class="flex items-center gap-3 border-b border-white/10 p-4 sm:p-5">
-                                <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar>
-                                    <?= e($conversacionActiva['avatar']) ?>
-                                </span>
+                                <?php if ($conversacionActiva['avatarUrl'] !== ''): ?>
+                                    <img src="<?= e($conversacionActiva['avatarUrl']) ?>" alt="Foto de perfil" class="h-10 w-10 rounded-full border border-white/10 object-cover" data-thread-avatar-image>
+                                    <span class="hidden" data-thread-avatar><?= e($conversacionActiva['avatar']) ?></span>
+                                <?php else: ?>
+                                    <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($conversacionActiva['avatar']) ?></span>
+                                <?php endif; ?>
                                 <div class="min-w-0">
                                     <strong class="block truncate text-sm" data-thread-name><?= e($conversacionActiva['participant']) ?></strong>
                                     <span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($conversacionActiva['course']) ?></span>
