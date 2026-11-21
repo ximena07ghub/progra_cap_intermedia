@@ -9,6 +9,7 @@ require_role('instructor');
 require_once PROJECT_ROOT . '/models/conexion.php';
 require_once PROJECT_ROOT . '/models/InstructorCurso.php';
 require_once PROJECT_ROOT . '/models/InstructorMensaje.php';
+require_once PROJECT_ROOT . '/models/usuario.php';
 
 $idInstructor =
     (int) ($_SESSION['usuario_id'] ?? 0);
@@ -25,6 +26,19 @@ $mensajeConversacion =
 
 unset($_SESSION['instructor_mensaje']);
 
+$perfilMensaje =
+    $_SESSION['perfil_mensaje']
+    ?? null;
+
+$perfilMensajeTipo =
+    $_SESSION['perfil_mensaje_tipo']
+    ?? null;
+
+unset(
+    $_SESSION['perfil_mensaje'],
+    $_SESSION['perfil_mensaje_tipo']
+);
+
 try {
     $configuracion = require PROJECT_ROOT
         . '/config/database.local.php';
@@ -34,6 +48,20 @@ try {
     $modelo = new InstructorCurso(
         $conexion->obtenerConexion()
     );
+
+    $usuarioModel = new Usuario(
+        $conexion->obtenerConexion()
+    );
+
+    $perfilUsuario = $usuarioModel->buscarPorId(
+        $idInstructor
+    );
+
+    if ($perfilUsuario !== null) {
+        $_SESSION['usuario_nombre'] = $perfilUsuario['nombre'];
+        $_SESSION['usuario_correo'] = $perfilUsuario['email'];
+        $_SESSION['usuario_avatar'] = $perfilUsuario['avatar'] ?? '';
+    }
 
     $cursos =
         $modelo->listarPorInstructor($idInstructor);
@@ -1256,27 +1284,62 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                 data-eyebrow="Perfil del instructor"
                 hidden
             >
+                <div class="grid gap-6 xl:grid-cols-[.75fr_1.25fr]">
+                    <aside class="border border-white/10 bg-white/[0.02] p-6">
+                        <?php if (user_avatar_url() !== ''): ?>
+                            <img src="<?= e(user_avatar_url()) ?>" alt="Foto de perfil de <?= e(user_name()) ?>" class="h-24 w-24 rounded-full border border-white/10 object-cover">
+                        <?php else: ?>
+                            <span class="grid h-24 w-24 place-items-center rounded-full bg-aula-green-dark text-xl font-bold text-aula-green"><?= e(user_initials()) ?></span>
+                        <?php endif; ?>
 
-                <div class="max-w-xl border border-white/10 p-6">
+                        <h2 class="mt-5 font-editorial text-3xl"><?= e(user_name()) ?></h2>
+                        <p class="mt-2 text-sm text-white/35"><?= e(user_email()) ?></p>
+                        <p class="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-aula-green">Instructor</p>
+                        <p class="mt-5 border-t border-white/10 pt-5 text-xs leading-6 text-white/35">Estos datos identifican tu perfil de instructor dentro de AulaGo.</p>
+                    </aside>
 
-                    <span class="grid h-20 w-20 place-items-center rounded-full bg-aula-green-dark text-xl font-bold text-aula-green">
-                        <?= e(user_initials()) ?>
-                    </span>
+                    <form action="<?= e(url('actions/perfil.php')) ?>" method="post" enctype="multipart/form-data" class="border border-white/10 p-6">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <h2 class="font-editorial text-2xl font-semibold">Datos de perfil</h2>
 
-                    <h2 class="mt-5 font-editorial text-3xl">
-                        <?= e(user_name()) ?>
-                    </h2>
+                        <?php if ($perfilMensaje): ?>
+                            <p class="mt-5 border px-4 py-3 text-sm <?= $perfilMensajeTipo === 'exito' ? 'border-aula-green/25 bg-aula-green/10 text-aula-green' : 'border-red-400/25 bg-red-400/10 text-red-200' ?>"><?= e($perfilMensaje) ?></p>
+                        <?php endif; ?>
 
-                    <p class="mt-2 text-sm text-white/35">
-                        <?= e(user_email()) ?>
-                    </p>
+                        <div class="mt-6 grid gap-5 sm:grid-cols-2">
+                            <label class="grid gap-2">
+                                <span class="text-xs font-bold text-white/55">Nombre</span>
+                                <input type="text" name="nombre" required maxlength="150" value="<?= e($perfilUsuario['nombre'] ?? user_name()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-bold text-white/55">Correo</span>
+                                <input type="email" name="email" required maxlength="255" value="<?= e($perfilUsuario['email'] ?? user_email()) ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-bold text-white/55">Fecha de nacimiento</span>
+                                <input type="date" name="fecha_nacimiento" value="<?= e($perfilUsuario['fecha_nacimiento'] ?? '') ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="text-xs font-bold text-white/55">Género</span>
+                                <?php $generoActual = (string) ($perfilUsuario['genero'] ?? ''); ?>
+                                <select name="genero" class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white outline-none focus:border-aula-orange">
+                                    <option value="">Sin especificar</option>
+                                    <option value="mujer" <?= $generoActual === 'mujer' ? 'selected' : '' ?>>Mujer</option>
+                                    <option value="hombre" <?= $generoActual === 'hombre' ? 'selected' : '' ?>>Hombre</option>
+                                    <option value="otro" <?= $generoActual === 'otro' ? 'selected' : '' ?>>Otro</option>
+                                    <option value="prefiero_no_decir" <?= $generoActual === 'prefiero_no_decir' ? 'selected' : '' ?>>Prefiero no decirlo</option>
+                                </select>
+                            </label>
+                            <label class="grid gap-2 sm:col-span-2">
+                                <span class="text-xs font-bold text-white/55">Foto de perfil</span>
+                                <input type="file" name="avatar" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="min-h-11 border border-white/10 bg-aula-bg px-3 py-2 text-sm text-white file:mr-4 file:border-0 file:bg-aula-green-dark file:px-3 file:py-1 file:text-xs file:font-bold file:text-aula-green">
+                                <small class="text-xs text-white/30">JPG o PNG, máximo 3 MB. Déjalo vacío para conservar tu foto actual.</small>
+                            </label>
+                        </div>
 
-                    <p class="mt-6 text-xs uppercase text-aula-green">
-                        Instructor
-                    </p>
-
+                        <button type="submit" class="mt-6 min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Guardar cambios</button>
+                    </form>
                 </div>
-
             </section>
 
         </main>
@@ -1293,9 +1356,13 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
         <div class="mt-6 flex items-center gap-4">
 
-            <span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark font-bold text-aula-green">
-                <?= e(user_initials()) ?>
-            </span>
+            <?php if (user_avatar_url() !== ''): ?>
+                <img src="<?= e(user_avatar_url()) ?>" alt="Foto de perfil" class="h-16 w-16 rounded-full border border-white/10 object-cover">
+            <?php else: ?>
+                <span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark font-bold text-aula-green">
+                    <?= e(user_initials()) ?>
+                </span>
+            <?php endif; ?>
 
             <div>
                 <strong>
