@@ -14,15 +14,17 @@ $kardex = $portal['kardexRecords'] ?? [];
 $conversations = $portal['conversations'] ?? [];
 $recommended = array_slice(array_values(array_filter($allCourses, fn(array $course): bool => !in_array($course['slug'], array_column($enrolled, 'slug'), true))), 0, 4);
 $averageProgress = $enrolled ? (int) round(array_sum(array_column($enrolled, 'progress')) / count($enrolled)) : 0;
-$completedCount = count($kardex);
+$studentSummary = student_course_model()->resumenEstudiante((int) ($_SESSION['usuario_id'] ?? 0));
+$completedCount = $studentSummary['cursos_completados'];
+$activeCount = $studentSummary['cursos_activos'];
+$totalLessons = $studentSummary['total_lecciones'];
+$completedLessons = $studentSummary['lecciones_completadas'];
 $currentCourse = $enrolled[0] ?? null;
 $paymentState = trim((string) ($_GET['payment'] ?? ''));
 $purchasedSlug = trim((string) ($_GET['course'] ?? ''));
 $dashboardLessons = $currentCourse
     ? array_slice(student_course_lessons((int) $currentCourse['databaseId']), 0, 4)
     : [];
-$weeklyActivity = [35, 62, 28, 76, 54, 88, 42];
-$weekLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 $workspaceRoleLabel = 'Espacio del estudiante';
 $workspaceItems = [
     ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => '⌂'],
@@ -427,14 +429,33 @@ require PROJECT_ROOT . '/includes/layout/head.php';
     <div class="flex items-center justify-between"><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">Tu progreso</p><span class="text-aula-orange-soft">●</span></div>
     <div class="student-progress-profile mt-6 flex items-center gap-4"><span class="grid h-16 w-16 place-items-center rounded-full bg-aula-green-dark text-lg font-extrabold text-aula-green"><?= e(user_initials()) ?></span><div><strong class="block text-sm text-white/85"><?= e(user_name()) ?></strong><span class="mt-1 block text-xs text-white/30">Estudiante · AulaGo</span></div></div>
 
-    <div class="student-progress-stats mt-8 grid grid-cols-3 border-y border-white/10 py-5 text-center"><div><strong class="block text-xl text-aula-orange-soft"><?= e($averageProgress) ?>%</strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">promedio</span></div><div class="border-x border-white/10"><strong class="block text-xl text-aula-green"><?= e(count($enrolled)) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">en curso</span></div><div><strong class="block text-xl text-[#9fcbd5]"><?= e($completedCount) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">completados</span></div></div>
+    <div class="student-progress-stats mt-8 grid grid-cols-3 border-y border-white/10 py-5 text-center"><div><strong class="block text-xl text-aula-orange-soft"><?= e($averageProgress) ?>%</strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">promedio</span></div><div class="border-x border-white/10"><strong class="block text-xl text-aula-green"><?= e($activeCount) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">en curso</span></div><div><strong class="block text-xl text-[#9fcbd5]"><?= e($completedCount) ?></strong><span class="mt-1 block text-[9px] uppercase tracking-[0.1em] text-white/30">completados</span></div></div>
 
-    <section class="student-progress-activity mt-8"><div class="flex items-end justify-between"><div><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Actividad</p><strong class="mt-1 block text-2xl">7.4 h</strong></div><span class="text-[10px] text-aula-green">+12% esta semana</span></div><div class="student-progress-chart mt-5 flex h-28 items-end gap-2 border-b border-white/10 pb-2"><?php foreach ($weeklyActivity as $index => $height): ?><div class="flex flex-1 flex-col items-center gap-2"><span class="w-full bg-aula-green/60" style="height: <?= e($height) ?>%"></span><small class="text-[9px] text-white/25"><?= e($weekLabels[$index]) ?></small></div><?php endforeach; ?></div></section>
+    <section class="student-progress-activity mt-6 border-b border-white/10 pb-5">
+      <div class="flex items-end justify-between gap-4">
+        <div><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Lecciones</p><strong class="mt-1 block text-2xl"><?= e($completedLessons) ?> / <?= e($totalLessons) ?></strong></div>
+        <span class="text-right text-[10px] leading-4 text-white/30"><?= e(max(0, $totalLessons - $completedLessons)) ?> pendientes</span>
+      </div>
+      <div class="mt-4 h-1.5 overflow-hidden bg-white/[0.06]"><span class="block h-full bg-aula-green" style="width: <?= e($totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0) ?>%"></span></div>
+    </section>
 
     <?php $current = $currentCourse; ?>
     <?php if ($current): ?><section class="student-current-course mt-8 border border-white/10 bg-aula-bg/35 p-4"><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-aula-orange-soft">Curso actual</p><h2 class="mt-3 font-editorial text-xl font-semibold leading-tight"><?= e($current['title']) ?></h2><p class="mt-2 text-xs leading-5 text-white/35"><?= e($current['nextLesson']) ?></p><div class="student-current-progress mt-4 h-1.5 overflow-hidden rounded-full bg-white/[0.06]"><span class="block h-full rounded-full bg-aula-orange" style="width: <?= e($current['progress']) ?>%"></span></div><div class="mt-3 flex justify-between text-[10px]"><span class="text-white/30">Progreso</span><strong class="text-aula-orange-soft"><?= e($current['progress']) ?>%</strong></div></section><?php endif; ?>
 
-    <section class="student-next-achievement mt-8 border-t border-white/10 pt-6"><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Próximo logro</p><p class="mt-3 text-sm leading-6 text-white/55">Completa 2 lecciones más de <strong class="text-white/80">Neuro-Hábitos</strong> para llegar al 75%.</p></section>
+    <section class="student-next-achievement mt-6 border-t border-white/10 pt-5">
+      <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Siguiente paso</p>
+      <?php if ($current): ?>
+        <p class="mt-3 text-sm leading-6 text-white/55">
+          <?php if ((int) $current['progress'] === 100): ?>
+            <strong class="text-aula-green">Curso completado.</strong> Puedes volver a consultar sus lecciones cuando quieras.
+          <?php else: ?>
+            Continúa con <strong class="text-white/80"><?= e($current['nextLesson']) ?></strong> en <?= e($current['title']) ?>.
+          <?php endif; ?>
+        </p>
+      <?php else: ?>
+        <p class="mt-3 text-sm leading-6 text-white/55">Inscríbete a un curso para comenzar tu progreso.</p>
+      <?php endif; ?>
+    </section>
   </aside>
 </div>
 <?php require PROJECT_ROOT . '/includes/layout/scripts.php'; ?>
