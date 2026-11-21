@@ -38,7 +38,7 @@ $initialCourse = $featuredCourses[1] ?? $featuredCourses[0] ?? null;
               >
                 <article class="course-carousel-card group block w-full overflow-hidden rounded-[1.15rem] border border-white/10 bg-aula-surface text-left shadow-aula transition duration-300 hover:border-white/20">
                   <div class="relative aspect-[4/3] overflow-hidden bg-aula-green-dark">
-                    <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="<?= e($course['title']) ?>" class="h-full w-full object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-90">
+                    <img src="<?= e(course_image_url($course)) ?>" alt="<?= e($course['title']) ?>" class="h-full w-full object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-90">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#100d10] via-[#100d10]/50 to-transparent"></div>
                     <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#100d10] via-[#100d10]/65 to-transparent"></div>
                     <span class="absolute left-5 top-5 border border-white/12 bg-aula-bg/75 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-aula-cream/85 backdrop-blur">
