@@ -31,5 +31,10 @@ try {
 }
 
 $slug = trim((string) ($_POST['slug'] ?? ''));
-header('Location: ' . url('curso.php?slug=' . rawurlencode($slug)));
+$idLeccionActual = (int) ($_POST['id_leccion_actual'] ?? 0);
+$destino = 'curso.php?slug=' . rawurlencode($slug);
+if ($idLeccionActual > 0) {
+    $destino .= '&leccion=' . $idLeccionActual;
+}
+header('Location: ' . url($destino));
 exit;
