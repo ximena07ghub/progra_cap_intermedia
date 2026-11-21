@@ -17,11 +17,6 @@ http_response_code(404);
 <body class="min-h-screen text-[#f5f0e8]">
     <main class="error-page-shell">
         <section class="error-page-card" aria-labelledby="error-title">
-            <div class="error-page-brand">
-                <span class="error-page-brand-mark">A</span>
-                <span>AulaGo</span>
-            </div>
-
             <img
                 class="error-page-illustration"
                 src="<?= e(asset('images/error-404-cable.svg')) ?>"
