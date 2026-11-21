@@ -570,7 +570,6 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                 <div class="min-h-11 border border-white/10 bg-white/[0.02] px-3 py-3 text-sm text-white/55" aria-readonly="true">
                   <?= e($perfilUsuario['fecha_nacimiento'] ?? 'No registrada') ?>
                 </div>
-                <small class="text-[10px] text-white/30">La fecha de nacimiento se define al crear la cuenta y no puede modificarse.</small>
               </label>
               <label class="grid gap-2">
                 <span class="text-xs font-bold text-white/55">Género</span>
