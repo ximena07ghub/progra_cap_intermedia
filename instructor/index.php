@@ -850,6 +850,8 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
                 </section>
 
+            <?php endforeach; ?>
+
 <!-- CONTENIDO -->
 
 <?php foreach ($cursos as $curso): ?>
