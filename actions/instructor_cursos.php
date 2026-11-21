@@ -279,11 +279,12 @@ try {
             $destino =
                 '#contenido-' . $idCurso;
 
-        } elseif ($accion === 'eliminar') {
+        } elseif ($accion === 'dar_baja') {
             $resultado =
-                $controlador->eliminar(
+                $controlador->cambiarEstado(
                     $idInstructor,
-                    $idCurso
+                    $idCurso,
+                    'desactivado'
                 );
 
             $destino = '#cursos';
