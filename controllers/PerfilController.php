@@ -16,8 +16,6 @@ class PerfilController
         $nombre = trim((string) ($datos['nombre'] ?? ''));
         $email = strtolower(trim((string) ($datos['email'] ?? '')));
         $genero = trim((string) ($datos['genero'] ?? ''));
-        $fechaNacimiento = trim((string) ($datos['fecha_nacimiento'] ?? ''));
-
         if ($nombre === '' || mb_strlen($nombre, 'UTF-8') > 150) {
             return ['exito' => false, 'mensaje' => 'El nombre debe tener entre 1 y 150 caracteres.'];
         }
@@ -31,14 +29,6 @@ class PerfilController
             return ['exito' => false, 'mensaje' => 'El género seleccionado no es válido.'];
         }
 
-        if ($fechaNacimiento !== '') {
-            $fecha = DateTime::createFromFormat('Y-m-d', $fechaNacimiento);
-            $hoy = new DateTime('today');
-            if ($fecha === false || $fecha->format('Y-m-d') !== $fechaNacimiento || $fecha > $hoy) {
-                return ['exito' => false, 'mensaje' => 'La fecha de nacimiento no es válida.'];
-            }
-        }
-
         $usuarioActual = $this->modeloUsuario->buscarPorId($idUsuario);
         if ($usuarioActual === null) {
             return ['exito' => false, 'mensaje' => 'La cuenta no existe.'];
@@ -49,6 +39,7 @@ class PerfilController
             return ['exito' => false, 'mensaje' => 'Ese correo pertenece a otra cuenta.'];
         }
 
+        $fechaNacimiento = (string) ($usuarioActual['fecha_nacimiento'] ?? '');
         $avatarFinal = $avatar ?? ($usuarioActual['avatar'] ?: null);
 
         $this->modeloUsuario->actualizarDatos(
