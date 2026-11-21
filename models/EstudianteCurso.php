@@ -94,7 +94,11 @@ class EstudianteCurso
     public function actualizarLeccion(int $idEstudiante, int $idCurso, int $idLeccion, bool $completada): bool
     {
         $inscripcion = $this->buscarInscripcion($idEstudiante, $idCurso);
-        if ($inscripcion === null || $inscripcion['estado'] === 'cancelada') {
+        if (
+            $inscripcion === null
+            || $inscripcion['estado'] === 'cancelada'
+            || $inscripcion['estado'] === 'completada'
+        ) {
             return false;
         }
 
