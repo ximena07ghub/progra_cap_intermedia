@@ -241,25 +241,28 @@ body {
   }
 }
 
-/* Página 404: mantiene la identidad oscura de AulaGo y la composición de cable desconectado. */
+/* Página 404: composición compacta, centrada y sin scroll. */
 .error-page-shell {
+  height: 100dvh;
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 2rem 1.25rem;
+  overflow: hidden;
+  padding: 1rem;
 }
 
 .error-page-card {
-  width: min(100%, 860px);
+  width: min(100%, 780px);
+  max-height: calc(100dvh - 2rem);
   position: relative;
   overflow: hidden;
   text-align: center;
-  padding: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.4rem, 3.2vh, 2.5rem) clamp(1.4rem, 4vw, 3.5rem);
   border: 1px solid rgba(245, 240, 232, 0.1);
   background:
-    radial-gradient(circle at 50% 15%, rgba(232, 137, 80, 0.1), transparent 18rem),
+    radial-gradient(circle at 50% 12%, rgba(232, 137, 80, 0.09), transparent 16rem),
     rgba(24, 19, 24, 0.82);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
 }
 
 .error-page-card::before {
@@ -271,85 +274,64 @@ body {
   background: linear-gradient(90deg, transparent, #e88950, transparent);
 }
 
-.error-page-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 2.2rem;
-  color: #f5f0e8;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.error-page-brand-mark {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 1px solid rgba(232, 137, 80, 0.5);
-  color: #efb38d;
-}
-
 .error-page-illustration {
   display: block;
-  width: min(100%, 650px);
-  max-height: 178px;
-  margin: 0 auto 0.6rem;
+  width: min(100%, 560px);
+  height: clamp(105px, 17vh, 145px);
+  margin: 0 auto 0.25rem;
   object-fit: contain;
   opacity: 0.92;
 }
 
 .error-page-kicker {
-  margin: 0.8rem 0 0;
+  margin: 0.25rem 0 0;
   color: #8eb67b;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .error-page-code {
-  margin: 0;
+  margin: 0.05rem 0 0;
   color: #f5f0e8;
-  font-size: clamp(5.8rem, 15vw, 9.5rem);
+  font-size: clamp(4.8rem, 13vh, 7.4rem);
   font-weight: 900;
-  line-height: 0.92;
-  letter-spacing: -0.075em;
-  text-shadow: 5px 5px 0 rgba(232, 137, 80, 0.16);
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+  text-shadow: 4px 4px 0 rgba(232, 137, 80, 0.15);
 }
 
 .error-page-title {
-  margin: 1.25rem 0 0;
+  margin: 0.8rem 0 0;
   color: #f5f0e8;
-  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-size: clamp(1.2rem, 2.7vh, 1.75rem);
   font-weight: 750;
 }
 
 .error-page-copy {
-  width: min(100%, 570px);
-  margin: 0.8rem auto 0;
+  width: min(100%, 550px);
+  margin: 0.55rem auto 0;
   color: rgba(245, 240, 232, 0.62);
-  font-size: 0.96rem;
-  line-height: 1.75;
+  font-size: clamp(0.82rem, 1.7vh, 0.94rem);
+  line-height: 1.55;
 }
 
 .error-page-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1.8rem;
+  gap: 0.7rem;
+  margin-top: 1.15rem;
 }
 
 .error-page-primary,
 .error-page-secondary {
-  min-width: 145px;
-  padding: 0.78rem 1.2rem;
+  min-width: 140px;
+  padding: 0.68rem 1.1rem;
   border: 1px solid transparent;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 750;
   letter-spacing: 0.04em;
   text-decoration: none;
@@ -384,7 +366,9 @@ body {
   }
 
   .error-page-card {
-    min-height: 100vh;
+    width: 100%;
+    max-height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -392,15 +376,37 @@ body {
   }
 
   .error-page-illustration {
-    max-height: 130px;
+    height: 105px;
   }
 
   .error-page-actions {
-    flex-direction: column;
+    width: min(100%, 320px);
+    margin-inline: auto;
+  }
+}
+
+@media (max-height: 650px) {
+  .error-page-card {
+    padding-block: 1rem;
   }
 
-  .error-page-primary,
-  .error-page-secondary {
-    width: 100%;
+  .error-page-illustration {
+    height: 90px;
+  }
+
+  .error-page-code {
+    font-size: 4.5rem;
+  }
+
+  .error-page-title {
+    margin-top: 0.5rem;
+  }
+
+  .error-page-copy {
+    line-height: 1.4;
+  }
+
+  .error-page-actions {
+    margin-top: 0.75rem;
   }
 }
