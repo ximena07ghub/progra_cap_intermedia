@@ -36,3 +36,5 @@ node_modules/
 # Estado temporal de pagos/inscripciones antes de MySQL
 /data/runtime/*.json
 
+/assets/uploads/cursos/*
+!/assets/uploads/cursos/.gitkeep

@@ -137,12 +137,12 @@ body {
     overflow: hidden !important;
 }
 
-.workspace-main {
-  min-height: 0;
-  overflow-y: hidden;
-  overscroll-behavior: contain;
-  padding-bottom: 3rem;
-}
+  .workspace-main {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 3rem;
+  }
 
   [data-workspace-panel] {
     min-width: 0;
