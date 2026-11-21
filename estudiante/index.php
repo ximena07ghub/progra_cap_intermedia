@@ -390,34 +390,16 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           <div class="mb-5 border border-aula-green/20 bg-aula-green/10 px-4 py-3 text-sm text-aula-green"><?= e($portalMessage) ?></div>
         <?php endif; ?>
 
-        <form action="<?= e(url('actions/estudiante_mensaje.php')) ?>" method="post" class="mb-6 grid gap-3 border border-white/10 bg-white/[0.015] p-5 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-end">
-          <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-          <label class="grid gap-2">
-            <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Curso</span>
-            <select name="id_curso" required class="min-h-11 border border-white/10 bg-aula-bg px-3 text-sm text-white">
-              <option value="">Selecciona un curso</option>
-              <?php foreach ($messageCourses as $messageCourse): ?>
-                <option value="<?= e($messageCourse['id_curso']) ?>"><?= e($messageCourse['titulo']) ?> · <?= e($messageCourse['instructor']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </label>
-          <label class="grid gap-2">
-            <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Nuevo mensaje</span>
-            <input name="contenido" maxlength="2000" required class="min-h-11 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange" placeholder="Escribe al instructor del curso">
-          </label>
-          <button type="submit" class="min-h-11 bg-aula-orange px-6 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Enviar</button>
-        </form>
-
         <?php if ($conversations === []): ?>
           <div class="border border-dashed border-white/10 p-8 text-center">
             <p class="text-sm text-white/40">Todavía no tienes conversaciones.</p>
             <p class="mt-2 text-xs text-white/25">Selecciona uno de tus cursos arriba para escribirle a su instructor.</p>
           </div>
         <?php else: ?>
-          <div class="workspace-message-shell grid min-h-0 border border-white/10 lg:grid-cols-[270px_minmax(0,1fr)]">
-            <aside class="conversation-list min-h-0 border-b border-white/10 bg-white/[0.015] lg:border-b-0 lg:border-r">
+          <div class="workspace-message-shell grid min-h-[520px] overflow-hidden border border-white/10 lg:h-[calc(100vh-245px)] lg:min-h-0 lg:grid-cols-[270px_minmax(0,1fr)]">
+            <aside class="conversation-list flex min-h-0 flex-col overflow-hidden border-b border-white/10 bg-white/[0.015] lg:border-b-0 lg:border-r">
               <div class="border-b border-white/10 p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-white/35">Conversaciones</p><span class="mt-1 block text-[10px] text-white/25">Tus instructores y seguimiento de cursos</span></div>
-              <div class="conversation-list-scroll lg:overflow-y-auto">
+              <div class="conversation-list-scroll min-h-0 flex-1 overflow-y-auto">
                 <?php foreach ($conversations as $index => $conversation): ?>
                   <?php $lastMessage = $conversation['messages'][count($conversation['messages']) - 1] ?? null; ?>
                   <button type="button" class="<?= $index === 0 ? 'is-selected ' : '' ?>conversation-button flex w-full items-center gap-3 border-b border-white/10 p-4 text-left transition hover:bg-white/[0.025]" data-conversation-button data-conversation-id="<?= e($conversation['id']) ?>">
@@ -430,14 +412,14 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
             <?php $activeConversation = $conversations[0]; ?>
             <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
-              <header class="flex items-center gap-3 border-b border-white/10 p-4 sm:p-5">
+              <header class="flex shrink-0 items-center gap-3 border-b border-white/10 p-4 sm:p-5">
                 <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($activeConversation['avatar']) ?></span>
                 <div class="min-w-0"><strong class="block truncate text-sm" data-thread-name><?= e($activeConversation['participant']) ?></strong><span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($activeConversation['course']) ?></span></div>
               </header>
 
-              <div class="message-stream min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5" data-message-stream></div>
+              <div class="message-stream min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5" data-message-stream></div>
 
-              <form action="<?= e(url('actions/estudiante_mensaje.php')) ?>" method="post" class="grid gap-3 border-t border-white/10 p-4 sm:grid-cols-[1fr_auto] sm:p-5" data-message-form>
+              <form action="<?= e(url('actions/estudiante_mensaje.php')) ?>" method="post" class="grid shrink-0 gap-3 border-t border-white/10 p-4 sm:grid-cols-[1fr_auto] sm:p-5" data-message-form>
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="id_curso" value="<?= e($activeConversation['courseId']) ?>" data-message-course-id>
                 <input name="contenido" maxlength="2000" required class="min-h-11 min-w-0 border border-white/10 bg-aula-bg px-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange" placeholder="Escribe un mensaje privado">
