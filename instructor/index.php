@@ -852,6 +852,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
 <!-- CONTENIDO -->
 
+<?php foreach ($cursos as $curso): ?>
 <section
     data-workspace-panel="contenido-<?= e($curso['id_curso']) ?>"
     data-title="Contenido"
@@ -859,214 +860,90 @@ require PROJECT_ROOT . '/includes/layout/head.php';
     hidden
 >
     <div class="mb-6 border border-white/10 p-5">
-        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">
-            Contenido del curso
-        </p>
-
-        <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div>
-                <h2 class="font-editorial text-3xl font-semibold">
-                    <?= e($curso['titulo']) ?>
-                </h2>
-
-                <p class="mt-2 text-sm text-white/35">
-                    Crea niveles para organizar el curso y agrega sus lecciones dentro de cada nivel.
-                </p>
-            </div>
-        </div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Contenido del curso</p>
+        <h2 class="mt-2 font-editorial text-3xl font-semibold"><?= e($curso['titulo']) ?></h2>
+        <p class="mt-2 text-sm text-white/35">Organiza el curso por niveles. Dentro de cada nivel agrega las lecciones que completará el estudiante.</p>
     </div>
 
-    <form
-        action="<?= e(url('actions/instructor_cursos.php')) ?>"
-        method="post"
-        class="border border-white/10 p-5"
-    >
-        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-        <input type="hidden" name="accion" value="crear_nivel">
-        <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
-
-        <h3 class="font-editorial text-xl font-semibold">
-            Nuevo nivel
-        </h3>
-
-        <p class="mt-1 text-xs text-white/35">
-            El nivel funciona como un módulo que agrupa varias lecciones.
-        </p>
-
-        <div class="mt-4 grid gap-3 md:grid-cols-2">
-            <label class="grid gap-2">
-                <span class="text-xs text-white/45">Título del nivel</span>
-                <input
-                    name="titulo"
-                    maxlength="150"
-                    required
-                    placeholder="Ej. Fundamentos"
-                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                >
-            </label>
-
-            <label class="grid gap-2">
-                <span class="text-xs text-white/45">Descripción</span>
-                <input
-                    name="descripcion"
-                    placeholder="Qué aprenderá el estudiante en este nivel"
-                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                >
-            </label>
-        </div>
-
-        <button type="submit" class="mt-4 text-xs font-bold text-aula-green">
-            + Crear nivel
-        </button>
-    </form>
-
     <?php if ($contenidos[(int) $curso['id_curso']] === []): ?>
-
-        <div class="mt-6 border border-dashed border-white/10 p-8 text-center">
-            <p class="text-sm text-white/35">
-                Este curso todavía no tiene niveles.
-            </p>
-            <p class="mt-2 text-xs text-white/25">
-                Crea el primer nivel y después podrás agregarle lecciones.
-            </p>
-        </div>
-
-    <?php else: ?>
-
-        <form
-            action="<?= e(url('actions/instructor_cursos.php')) ?>"
-            method="post"
-            class="mt-6"
-        >
+        <form action="<?= e(url('actions/instructor_cursos.php')) ?>" method="post" class="border border-white/10 p-6">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-            <input type="hidden" name="accion" value="guardar_contenido">
+            <input type="hidden" name="accion" value="crear_nivel">
             <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
+            <h3 class="font-editorial text-2xl font-semibold">Crear primer nivel</h3>
+            <p class="mt-1 text-xs text-white/35">Este será el primer módulo del curso. Después podrás agregar sus lecciones aquí mismo.</p>
+            <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <label class="grid gap-2"><span class="text-xs text-white/45">Título</span><input name="titulo" maxlength="150" required placeholder="Ej. Fundamentos" class="min-h-11 border border-white/10 bg-aula-bg px-3"></label>
+                <label class="grid gap-2"><span class="text-xs text-white/45">Descripción</span><input name="descripcion" placeholder="Qué aprenderá el estudiante" class="min-h-11 border border-white/10 bg-aula-bg px-3"></label>
+            </div>
+            <button type="submit" class="mt-5 bg-aula-green px-5 py-3 text-xs font-extrabold text-aula-bg">Crear nivel →</button>
+        </form>
+    <?php else: ?>
+        <?php foreach ($contenidos[(int) $curso['id_curso']] as $nivel): ?>
+            <article class="mb-6 border border-white/10">
+                <form action="<?= e(url('actions/instructor_cursos.php')) ?>" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="accion" value="guardar_contenido">
+                    <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
+                    <header class="border-b border-white/10 p-5">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div><span class="text-[10px] font-bold uppercase text-aula-orange-soft">Nivel <?= e($nivel['orden']) ?></span><h3 class="mt-1 font-editorial text-2xl font-semibold"><?= e($nivel['titulo']) ?></h3></div>
+                            <button type="submit" name="accion_secundaria" value="eliminar_nivel:<?= e($nivel['id_nivel']) ?>" formnovalidate onclick="return confirm('Se eliminarán este nivel, sus lecciones y el progreso relacionado. ¿Continuar?');" class="text-xs font-bold text-red-300">Eliminar nivel</button>
+                        </div>
+                        <div class="mt-4 grid gap-3 md:grid-cols-2">
+                            <label class="grid gap-2"><span class="text-xs text-white/40">Título del nivel</span><input name="niveles[<?= e($nivel['id_nivel']) ?>][titulo]" value="<?= e($nivel['titulo']) ?>" maxlength="150" required class="min-h-11 border border-white/10 bg-aula-bg px-3"></label>
+                            <label class="grid gap-2"><span class="text-xs text-white/40">Descripción</span><input name="niveles[<?= e($nivel['id_nivel']) ?>][descripcion]" value="<?= e($nivel['descripcion'] ?? '') ?>" class="min-h-11 border border-white/10 bg-aula-bg px-3"></label>
+                        </div>
+                    </header>
+                    <div class="p-5">
+                        <p class="text-[10px] font-bold uppercase text-aula-green">Lecciones · <?= e(count($nivel['lecciones'])) ?></p>
+                        <?php if ($nivel['lecciones'] === []): ?><p class="mt-3 border border-dashed border-white/10 p-4 text-sm text-white/30">Todavía no hay lecciones en este nivel.</p><?php endif; ?>
+                        <div class="mt-4 space-y-4">
+                            <?php foreach ($nivel['lecciones'] as $leccion): ?>
+                                <section class="border border-white/10 p-4">
+                                    <div class="flex justify-between gap-4"><strong class="text-xs text-aula-green">Lección <?= e($leccion['orden']) ?></strong><button type="submit" name="accion_secundaria" value="eliminar_leccion:<?= e($leccion['id_leccion']) ?>" formnovalidate onclick="return confirm('¿Eliminar esta lección y su progreso relacionado?');" class="text-xs text-red-300">Eliminar</button></div>
+                                    <div class="mt-3 grid gap-3">
+                                        <input name="lecciones[<?= e($leccion['id_leccion']) ?>][titulo]" value="<?= e($leccion['titulo']) ?>" maxlength="200" required class="min-h-11 border border-white/10 bg-aula-bg px-3">
+                                        <textarea name="lecciones[<?= e($leccion['id_leccion']) ?>][contenido]" placeholder="Contenido de la lección" class="min-h-24 border border-white/10 bg-aula-bg p-3"><?= e($leccion['contenido'] ?? '') ?></textarea>
+                                        <input type="url" name="lecciones[<?= e($leccion['id_leccion']) ?>][url_video]" value="<?= e($leccion['url_video'] ?? '') ?>" placeholder="URL del video (opcional)" class="min-h-11 border border-white/10 bg-aula-bg px-3">
+                                    </div>
+                                </section>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="submit" class="mt-4 border border-aula-green/30 px-4 py-2 text-xs font-bold text-aula-green">Guardar cambios del nivel</button>
+                    </div>
+                </form>
 
-            <div class="space-y-6">
+                <form action="<?= e(url('actions/instructor_cursos.php')) ?>" method="post" class="border-t border-white/10 bg-white/[0.015] p-5">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="accion" value="crear_leccion">
+                    <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
+                    <input type="hidden" name="id_nivel" value="<?= e($nivel['id_nivel']) ?>">
+                    <h4 class="font-editorial text-xl font-semibold">Agregar lección al nivel <?= e($nivel['orden']) ?></h4>
+                    <div class="mt-4 grid gap-3">
+                        <input name="titulo" maxlength="200" required placeholder="Título de la lección" class="min-h-11 border border-white/10 bg-aula-bg px-3">
+                        <textarea name="contenido" placeholder="Contenido que verá el estudiante" class="min-h-24 border border-white/10 bg-aula-bg p-3"></textarea>
+                        <input type="url" name="url_video" placeholder="URL del video (opcional)" class="min-h-11 border border-white/10 bg-aula-bg px-3">
+                    </div>
+                    <button type="submit" class="mt-4 text-xs font-bold text-aula-green">+ Agregar lección</button>
+                </form>
+            </article>
+        <?php endforeach; ?>
 
-                <?php foreach ($contenidos[(int) $curso['id_curso']] as $nivel): ?>
-
-                    <article class="border border-white/10">
-
-                        <header class="border-b border-white/10 p-5">
-                            <div class="flex flex-wrap items-start justify-between gap-4">
-                                <div>
-                                    <span class="text-[10px] font-bold uppercase tracking-[0.1em] text-aula-orange">
-                                        Nivel <?= e($nivel['orden']) ?>
-                                    </span>
-                                    <h3 class="mt-1 font-editorial text-2xl font-semibold">
-                                        <?= e($nivel['titulo']) ?>
-                                    </h3>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    name="accion_secundaria"
-                                    value="eliminar_nivel:<?= e($nivel['id_nivel']) ?>"
-                                    formnovalidate
-                                    onclick="return confirm('Se eliminarán este nivel, sus lecciones y el progreso relacionado. ¿Continuar?');"
-                                    class="text-xs font-bold text-red-300"
-                                >
-                                    Eliminar nivel
-                                </button>
-                            </div>
-
-                            <div class="mt-5 grid gap-3">
-                                <label class="grid gap-2">
-                                    <span class="text-xs font-bold text-white/45">Título del nivel</span>
-                                    <input
-                                        name="niveles[<?= e($nivel['id_nivel']) ?>][titulo]"
-                                        value="<?= e($nivel['titulo']) ?>"
-                                        maxlength="150"
-                                        required
-                                        class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                    >
-                                </label>
-
-                                <label class="grid gap-2">
-                                    <span class="text-xs font-bold text-white/45">Descripción</span>
-                                    <textarea
-                                        name="niveles[<?= e($nivel['id_nivel']) ?>][descripcion]"
-                                        class="min-h-20 border border-white/10 bg-aula-bg p-3"
-                                    ><?= e($nivel['descripcion'] ?? '') ?></textarea>
-                                </label>
-                            </div>
-                        </header>
-
-                        <div class="p-5">
-                            <div class="flex items-center justify-between gap-4">
-                                <div>
-                                    <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-aula-green">
-                                        Lecciones
-                                    </p>
-                                    <p class="mt-1 text-xs text-white/30">
-                                        <?= e(count($nivel['lecciones'])) ?>
-                                        <?= count($nivel['lecciones']) === 1 ? 'lección' : 'lecciones' ?>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <?php if ($nivel['lecciones'] === []): ?>
-                                <p class="mt-4 border border-dashed border-white/10 p-4 text-sm text-white/30">
-                                    Este nivel todavía no tiene lecciones.
-                                </p>
-                            <?php endif; ?>
-
-                            <div class="mt-4 space-y-4">
-                                <?php foreach ($nivel['lecciones'] as $leccion): ?>
-
-                                    <section class="border border-white/10 p-4">
-                                        <div class="flex items-center justify-between gap-4">
-                                            <span class="text-[10px] font-bold uppercase text-aula-green">
-                                                Lección <?= e($leccion['orden']) ?>
-                                            </span>
-
-                                            <button
-                                                type="submit"
-                                                name="accion_secundaria"
-                                                value="eliminar_leccion:<?= e($leccion['id_leccion']) ?>"
-                                                formnovalidate
-                                                onclick="return confirm('¿Eliminar esta lección y su progreso relacionado?');"
-                                                class="text-xs text-red-300"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-
-                                        <div class="mt-4 grid gap-3">
-                                            <label class="grid gap-2">
-                                                <span class="text-xs text-white/40">Título</span>
-                                                <input
-                                                    name="lecciones[<?= e($leccion['id_leccion']) ?>][titulo]"
-                                                    value="<?= e($leccion['titulo']) ?>"
-                                                    maxlength="200"
-                                                    required
-                                                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                                >
-                                            </label>
-
-                                            <label class="grid gap-2">
-                                                <span class="text-xs text-white/40">Contenido</span>
-                                                <textarea
-                                                    name="lecciones[<?= e($leccion['id_leccion']) ?>][contenido]"
-                                                    class="min-h-28 border border-white/10 bg-aula-bg p-3"
-                                                ><?= e($leccion['contenido'] ?? '') ?></textarea>
-                                            </label>
-
-                                            <label class="grid gap-2">
-                                                <span class="text-xs text-white/40">URL del video</span>
-                                                <input
-                                                    type="url"
-                                                    name="lecciones[<?= e($leccion['id_leccion']) ?>][url_video]"
-                                                    value="<?= e($leccion['url_video'] ?? '') ?>"
-                                                    placeholder="https://..."
-                                                    class="min-h-11 border border-white/10 bg-aula-bg px-3"
-                                                >
-                                            </label>
-                                        </div>
-                                    </section>
-
-                                <?php endforeach; ?>
+        <form action="<?= e(url('actions/instructor_cursos.php')) ?>" method="post" class="mt-8 border border-dashed border-white/10 p-5">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="accion" value="crear_nivel">
+            <input type="hidden" name="id_curso" value="<?= e($curso['id_curso']) ?>">
+            <h3 class="font-editorial text-xl font-semibold">Agregar otro nivel</h3>
+            <div class="mt-4 grid gap-3 md:grid-cols-2">
+                <input name="titulo" maxlength="150" required placeholder="Título del nuevo nivel" class="min-h-11 border border-white/10 bg-aula-bg px-3">
+                <input name="descripcion" placeholder="Descripción" class="min-h-11 border border-white/10 bg-aula-bg px-3">
+            </div>
+            <button type="submit" class="mt-4 text-xs font-bold text-aula-orange-soft">+ Crear otro nivel</button>
+        </form>
+    <?php endif; ?>
+</section>
+<?php endforeach; ?>
                             </div>
                         </div>
 
