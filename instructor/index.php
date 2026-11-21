@@ -500,7 +500,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                                         <form
                                             action="<?= e(url('actions/instructor_cursos.php')) ?>"
                                             method="post"
-                                            onsubmit="return confirm('Se eliminará el curso y toda su información relacionada. ¿Continuar?');"
+                                            onsubmit="return confirm('El curso dejará de estar disponible públicamente, pero conservará su información relacionada. ¿Deseas continuar?');"
                                         >
 
                                             <input
@@ -518,13 +518,13 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                                             <input
                                                 type="hidden"
                                                 name="accion"
-                                                value="eliminar"
+                                                value="dar_baja"
                                             >
 
                                             <button
                                                 class="border border-red-400/30 px-3 py-2 text-xs font-bold text-red-300"
                                             >
-                                                Eliminar
+                                                Dar de baja
                                             </button>
 
                                         </form>
