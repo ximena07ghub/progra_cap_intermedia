@@ -50,6 +50,9 @@ foreach ($rawConversations as $conversation) {
         'courseId' => (int) $conversation['id_curso'],
         'participant' => (string) $conversation['instructor'],
         'avatar' => $avatar !== '' ? $avatar : 'AG',
+        'avatarUrl' => !empty($conversation['instructor_avatar'])
+            ? url((string) $conversation['instructor_avatar'])
+            : '',
         'course' => (string) $conversation['curso'],
         'messages' => $conversation['mensajes'],
     ];
@@ -416,7 +419,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                 <?php foreach ($conversations as $index => $conversation): ?>
                   <?php $lastMessage = $conversation['messages'][count($conversation['messages']) - 1] ?? null; ?>
                   <button type="button" class="<?= $index === 0 ? 'is-selected ' : '' ?>conversation-button flex w-full items-center gap-3 border-b border-white/10 p-4 text-left transition hover:bg-white/[0.025]" data-conversation-button data-conversation-id="<?= e($conversation['id']) ?>">
-                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green"><?= e($conversation['avatar']) ?></span>
+                    <?php if ($conversation['avatarUrl'] !== ''): ?><img src="<?= e($conversation['avatarUrl']) ?>" alt="Foto de <?= e($conversation['participant']) ?>" class="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"><?php else: ?><span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green"><?= e($conversation['avatar']) ?></span><?php endif; ?>
                     <span class="min-w-0"><span class="flex items-center justify-between gap-2"><strong class="truncate text-sm"><?= e($conversation['participant']) ?></strong><small class="shrink-0 text-[9px] text-white/25"><?= e($lastMessage['time'] ?? '') ?></small></span><span class="mt-1 block truncate text-xs text-white/35"><?= e($lastMessage['text'] ?? $conversation['course']) ?></span><span class="mt-1 block truncate text-[10px] text-aula-green/70"><?= e($conversation['course']) ?></span></span>
                   </button>
                 <?php endforeach; ?>
@@ -426,7 +429,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
             <?php $activeConversation = $conversations[0]; ?>
             <section class="flex min-h-0 min-w-0 flex-col" data-message-thread>
               <header class="flex shrink-0 items-center gap-3 border-b border-white/10 p-4 sm:p-5">
-                <span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($activeConversation['avatar']) ?></span>
+                <?php if ($activeConversation['avatarUrl'] !== ''): ?><img src="<?= e($activeConversation['avatarUrl']) ?>" alt="Foto de perfil" class="h-10 w-10 rounded-full border border-white/10 object-cover" data-thread-avatar-image><span class="hidden" data-thread-avatar><?= e($activeConversation['avatar']) ?></span><?php else: ?><span class="grid h-10 w-10 place-items-center rounded-full bg-aula-green-dark text-xs font-extrabold text-aula-green" data-thread-avatar><?= e($activeConversation['avatar']) ?></span><?php endif; ?>
                 <div class="min-w-0"><strong class="block truncate text-sm" data-thread-name><?= e($activeConversation['participant']) ?></strong><span class="mt-1 block truncate text-xs text-white/35" data-thread-course><?= e($activeConversation['course']) ?></span></div>
               </header>
 
