@@ -87,6 +87,15 @@ class RegistroController
             ];
         }
 
+        $fechaLimite = (clone $hoy)->modify('-18 years');
+
+        if ($fecha > $fechaLimite) {
+            return [
+                'exito' => false,
+                'mensaje' => 'Debes tener al menos 18 años para registrarte.'
+            ];
+        }
+
         $passwordValida =
             strlen($password) >= 8
             && preg_match('/[A-Z]/', $password)
