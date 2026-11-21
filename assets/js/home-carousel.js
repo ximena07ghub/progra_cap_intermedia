@@ -2,19 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const root = document.querySelector('[data-home-carousel]')
   if (!root || typeof Swiper === 'undefined') return
 
-  const originalSlides = Array.from(root.querySelectorAll('.home-courses-swiper .swiper-slide'))
+  const carousel = root.querySelector('.home-courses-swiper')
+  const originalSlides = Array.from(carousel?.querySelectorAll('.swiper-slide') || [])
   const totalSlides = originalSlides.length
+  if (!carousel || totalSlides === 0) return
 
-  if (totalSlides > 1 && totalSlides < 6) {
-    const wrapper = root.querySelector('.home-courses-swiper .swiper-wrapper')
-    const copiesNeeded = Math.max(0, 6 - totalSlides)
-
-    for (let index = 0; index < copiesNeeded; index += 1) {
-      const clone = originalSlides[index % totalSlides].cloneNode(true)
-      clone.dataset.carouselClone = 'true'
-      wrapper?.appendChild(clone)
-    }
-  }
+  originalSlides.forEach((slide, index) => {
+    slide.dataset.courseIndex = String(index)
+  })
 
   const counter = root.querySelector('[data-carousel-counter]')
   const detail = (key) => root.querySelector(`[data-course-detail="${key}"]`)
@@ -43,18 +38,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (href) href.setAttribute('href', data.courseHref || '#')
 
     if (counter) {
-      const originalIndex = Number(slide.dataset.courseIndex ?? swiper.realIndex) % totalSlides
-      counter.textContent = `${String(originalIndex + 1).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`
+      const index = Number(data.courseIndex ?? swiper.realIndex)
+      counter.textContent = `${String(index + 1).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`
     }
   }
 
-  const swiper = new Swiper(root.querySelector('.home-courses-swiper'), {
+  const swiper = new Swiper(carousel, {
     centeredSlides: true,
     loop: totalSlides > 1,
-    loopAdditionalSlides: Math.max(totalSlides, 3),
+    loopAdditionalSlides: totalSlides,
+    loopPreventsSliding: false,
     slideToClickedSlide: true,
     grabCursor: true,
-    initialSlide: 1,
+    initialSlide: totalSlides > 1 ? 1 : 0,
     slidesPerView: 1.08,
     spaceBetween: 14,
     speed: 480,
@@ -67,9 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
     on: {
       init(instance) { updateDetail(instance) },
       slideChange(instance) { updateDetail(instance) },
+      loopFix(instance) { updateDetail(instance) },
     },
   })
 
-  root.querySelector('[data-carousel-prev]')?.addEventListener('click', () => swiper.slidePrev())
-  root.querySelector('[data-carousel-next]')?.addEventListener('click', () => swiper.slideNext())
+  root.querySelector('[data-carousel-prev]')?.addEventListener('click', () => {
+    if (totalSlides > 1) swiper.slidePrev()
+  })
+
+  root.querySelector('[data-carousel-next]')?.addEventListener('click', () => {
+    if (totalSlides > 1) swiper.slideNext()
+  })
 })
