@@ -169,6 +169,67 @@ function course_image_url(array $course): string
     return asset('images/' . $image);
 }
 
+function youtube_embed_url(?string $urlVideo): ?string
+{
+    $urlVideo = trim((string) $urlVideo);
+    if ($urlVideo === '') {
+        return null;
+    }
+
+    $parts = parse_url($urlVideo);
+    if (!is_array($parts)) {
+        return null;
+    }
+
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    $host = preg_replace('/^www\./', '', $host);
+    $path = trim((string) ($parts['path'] ?? ''), '/');
+    $videoId = '';
+
+    if ($host === 'youtu.be') {
+        $videoId = explode('/', $path)[0] ?? '';
+    } elseif (in_array($host, ['youtube.com', 'm.youtube.com'], true)) {
+        if ($path === 'watch') {
+            parse_str((string) ($parts['query'] ?? ''), $query);
+            $videoId = (string) ($query['v'] ?? '');
+        } elseif (preg_match('#^(?:embed|shorts)/([A-Za-z0-9_-]{6,})#', $path, $match)) {
+            $videoId = $match[1];
+        }
+    }
+
+    if (!preg_match('/^[A-Za-z0-9_-]{6,}$/', $videoId)) {
+        return null;
+    }
+
+    return 'https://www.youtube.com/embed/' . rawurlencode($videoId);
+}
+
+function home_course_videos(int $limit = 3): array
+{
+    $videos = [];
+
+    foreach (courses() as $course) {
+        foreach (public_course_lessons((int) $course['databaseId']) as $lesson) {
+            $embed = youtube_embed_url($lesson['url_video'] ?? null);
+            if ($embed === null) {
+                continue;
+            }
+
+            $videos[] = [
+                'course' => $course,
+                'lesson' => $lesson,
+                'embed' => $embed,
+            ];
+
+            if (count($videos) >= $limit) {
+                return $videos;
+            }
+        }
+    }
+
+    return $videos;
+}
+
 function public_course_lessons(int $idCurso): array
 {
     return public_catalog_model()->listarLecciones($idCurso);
