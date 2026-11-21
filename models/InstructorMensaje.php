@@ -14,7 +14,8 @@ class InstructorMensaje
                     c.id_conversacion,
                     c.id_curso,
                     cu.titulo AS curso,
-                    u.nombre AS estudiante
+                    u.nombre AS estudiante,
+                    u.avatar AS estudiante_avatar
                 FROM conversaciones c
                 INNER JOIN cursos cu ON cu.id_curso = c.id_curso
                 INNER JOIN usuarios u ON u.id_usuario = c.id_estudiante
