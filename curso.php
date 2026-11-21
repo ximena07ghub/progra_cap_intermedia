@@ -66,6 +66,8 @@ $studentCompleted = 0;
 $selectedLesson = null;
 $selectedLessonIndex = -1;
 
+$studentCertificate = null;
+
 if ($isStudentClassroom) {
     $studentLessons = student_course_lessons((int) $course['databaseId']);
     $studentCompleted = count(array_filter(
@@ -75,6 +77,23 @@ if ($isStudentClassroom) {
     $studentProgress = count($studentLessons) > 0
         ? (int) round(($studentCompleted / count($studentLessons)) * 100)
         : 0;
+
+    if ($studentProgress === 100) {
+        require_once PROJECT_ROOT . '/models/conexion.php';
+        require_once PROJECT_ROOT . '/models/EstudiantePortal.php';
+
+        $portalConfig = require PROJECT_ROOT . '/config/database.local.php';
+        $portalConexion = new Conexion($portalConfig);
+        $portalModel = new EstudiantePortal($portalConexion->obtenerConexion());
+        $certificates = $portalModel->listarCertificados((int) ($_SESSION['usuario_id'] ?? 0));
+
+        foreach ($certificates as $certificate) {
+            if ((int) ($certificate['id_curso'] ?? 0) === (int) $course['databaseId']) {
+                $studentCertificate = $certificate;
+                break;
+            }
+        }
+    }
 
     $requestedLesson = filter_var(
         $_GET['leccion'] ?? null,
@@ -143,6 +162,37 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         </div>
       </section>
 
+      <?php if ($studentProgress === 100): ?>
+      <section class="mx-auto max-w-aula px-6 py-10 lg:px-8 lg:py-14">
+        <div class="relative overflow-hidden border border-aula-green/25 bg-aula-surface/60 px-6 py-12 text-center shadow-aula sm:px-10 lg:py-16">
+          <div class="absolute inset-x-0 top-0 h-1 bg-aula-green"></div>
+          <div class="mx-auto grid h-20 w-20 place-items-center rounded-full border border-aula-yellow/30 bg-aula-yellow/10 text-4xl text-aula-yellow">★</div>
+          <p class="mt-7 text-[10px] font-bold uppercase tracking-[0.18em] text-aula-green">Meta alcanzada</p>
+          <h2 class="mt-3 font-editorial text-5xl font-semibold text-aula-cream sm:text-6xl">Curso completado</h2>
+          <p class="mx-auto mt-3 max-w-2xl text-lg text-white/55"><?= e($course['title']) ?></p>
+
+          <div class="mx-auto mt-9 max-w-2xl border border-white/10 bg-aula-bg/60 p-5">
+            <div class="flex items-center gap-4">
+              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-aula-green text-lg font-bold text-aula-bg">✓</span>
+              <div class="h-2 flex-1 overflow-hidden bg-white/10"><div class="h-full w-full bg-aula-green"></div></div>
+              <strong class="text-2xl text-aula-cream">100%</strong>
+            </div>
+            <p class="mt-4 text-sm text-white/45">Has completado las <?= e(count($studentLessons)) ?> lecciones de este curso.</p>
+          </div>
+
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <?php if ($studentCertificate): ?>
+              <a href="<?= e(url('estudiante/certificado.php?codigo=' . rawurlencode((string) $studentCertificate['codigo']))) ?>" class="inline-flex min-h-12 items-center justify-center bg-aula-green px-7 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Ver certificado →</a>
+            <?php else: ?>
+              <a href="<?= e(url('estudiante/#certificados')) ?>" class="inline-flex min-h-12 items-center justify-center bg-aula-green px-7 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-bg">Ir a certificados →</a>
+            <?php endif; ?>
+            <a href="<?= e(url('estudiante/#cursos')) ?>" class="inline-flex min-h-12 items-center justify-center border border-white/15 px-7 text-xs font-bold uppercase tracking-[0.08em] text-white/60">Volver a mis cursos</a>
+          </div>
+
+          <p class="mt-7 text-xs leading-5 text-white/30">Tu progreso final quedó registrado. Las lecciones completadas ya no pueden volver a marcarse como pendientes.</p>
+        </div>
+      </section>
+      <?php else: ?>
       <section class="mx-auto max-w-aula px-6 py-8 lg:px-8 lg:py-10">
         <div class="mb-7">
           <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Contenido del curso</p>
@@ -222,7 +272,9 @@ require PROJECT_ROOT . '/includes/layout/head.php';
             <?php endif; ?>
           </div>
         <?php endif; ?>
+
       </section>
+      <?php endif; ?>
 
       <section class="border-y border-white/10 bg-white/[0.015]">
         <div class="mx-auto grid max-w-aula gap-8 px-6 py-10 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
