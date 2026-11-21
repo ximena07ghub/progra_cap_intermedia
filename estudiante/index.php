@@ -18,12 +18,9 @@ $completedCount = count($kardex);
 $currentCourse = $enrolled[0] ?? null;
 $paymentState = trim((string) ($_GET['payment'] ?? ''));
 $purchasedSlug = trim((string) ($_GET['course'] ?? ''));
-$dashboardLessons = [
-    ['title' => $currentCourse['nextLesson'] ?? 'Continúa donde te quedaste', 'meta' => 'Lección actual', 'duration' => '18 min', 'state' => 'current'],
-    ['title' => 'Práctica guiada y registro', 'meta' => 'Siguiente', 'duration' => '22 min', 'state' => 'next'],
-    ['title' => 'Cómo sostener el cambio', 'meta' => 'Después', 'duration' => '17 min', 'state' => 'next'],
-    ['title' => 'Cierre y plan personal', 'meta' => 'Final del módulo', 'duration' => '14 min', 'state' => 'next'],
-];
+$dashboardLessons = $currentCourse
+    ? array_slice(student_course_lessons((int) $currentCourse['databaseId']), 0, 4)
+    : [];
 $weeklyActivity = [35, 62, 28, 76, 54, 88, 42];
 $weekLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 $workspaceRoleLabel = 'Espacio del estudiante';
@@ -232,7 +229,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
               <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-aula-green">Cursos en progreso</p>
               <h2 class="mt-2 font-editorial text-2xl font-semibold sm:text-3xl">Elige dónde continuar.</h2>
             </div>
-            <span class="hidden text-xs text-white/30 sm:block">Simulación hasta conectar progreso real</span>
+            <span class="hidden text-xs text-white/30 sm:block">Progreso guardado en tu cuenta</span>
           </div>
 
           <div class="mt-4 grid gap-3 md:grid-cols-3" data-dashboard-course-list>
@@ -244,13 +241,13 @@ require PROJECT_ROOT . '/includes/layout/head.php';
                 data-course-title="<?= e($course['title']) ?>"
                 data-course-category="<?= e($course['category']) ?>"
                 data-course-level="<?= e($course['level']) ?>"
-                data-course-image="<?= e(asset('images/' . $course['image'])) ?>"
+                data-course-image="<?= e(course_image_url($course)) ?>"
                 data-course-progress="<?= e($course['progress']) ?>"
                 data-course-next="<?= e($course['nextLesson']) ?>"
                 data-course-description="<?= e($course['description']) ?>"
                 data-course-href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']))) ?>"
               >
-                <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="" class="h-[72px] w-[72px] object-cover opacity-75 transition group-hover:opacity-95">
+                <img src="<?= e(course_image_url($course)) ?>" alt="" class="h-[72px] w-[72px] object-cover opacity-75 transition group-hover:opacity-95">
                 <span class="min-w-0 self-center">
                   <span class="block truncate text-[9px] font-bold uppercase tracking-[0.1em] text-aula-green"><?= e($course['category']) ?> · <?= e($course['level']) ?></span>
                   <strong class="mt-1 block truncate text-sm text-white/80"><?= e($course['title']) ?></strong>
@@ -266,7 +263,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
         <section class="mt-7 grid gap-5 xl:grid-cols-[1.08fr_.92fr]" data-dashboard-focus>
           <article class="border border-white/10 bg-white/[0.015]">
             <div class="relative aspect-[16/9] overflow-hidden bg-aula-green-dark">
-              <img src="<?= e(asset('images/' . $currentCourse['image'])) ?>" alt="<?= e($currentCourse['title']) ?>" class="h-full w-full object-cover opacity-65" data-dashboard-focus-image>
+              <img src="<?= e(course_image_url($currentCourse)) ?>" alt="<?= e($currentCourse['title']) ?>" class="h-full w-full object-cover opacity-65" data-dashboard-focus-image>
               <div class="absolute inset-0 bg-gradient-to-t from-aula-bg via-aula-bg/30 to-transparent"></div>
               <div class="absolute inset-x-0 bottom-0 p-5 sm:p-6">
                 <div class="flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-[0.12em]"><span class="text-aula-green" data-dashboard-focus-category><?= e($currentCourse['category']) ?></span><span class="text-white/30">·</span><span class="text-white/45" data-dashboard-focus-level><?= e($currentCourse['level']) ?></span></div>
@@ -288,14 +285,14 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           <aside class="border border-white/10 bg-white/[0.012]" aria-label="Próximas lecciones">
             <header class="flex items-center justify-between border-b border-white/10 p-5">
               <div><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9fcbd5]">Ruta actual</p><h3 class="mt-1 font-editorial text-xl font-semibold">Siguientes lecciones</h3></div>
-              <span class="text-[10px] text-white/30"><?= e(count($dashboardLessons)) ?> pendientes</span>
+              <span class="text-[10px] text-white/30"><?= e(count(array_filter($dashboardLessons, fn(array $leccion): bool => (int) ($leccion['completada'] ?? 0) !== 1))) ?> pendientes</span>
             </header>
             <div class="divide-y divide-white/10" data-dashboard-lesson-list>
               <?php foreach ($dashboardLessons as $index => $lesson): ?>
                 <button type="button" class="group grid w-full grid-cols-[36px_1fr_auto] items-center gap-3 px-5 py-4 text-left transition hover:bg-white/[0.025]">
                   <span class="grid h-8 w-8 place-items-center border <?= $index === 0 ? 'border-aula-orange/40 bg-aula-orange/10 text-aula-orange-soft' : 'border-white/10 text-white/35' ?> text-xs"><?= $index === 0 ? '▶' : e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
-                  <span class="min-w-0"><strong class="block truncate text-xs font-semibold <?= $index === 0 ? 'text-white/85' : 'text-white/60' ?>"><?= e($lesson['title']) ?></strong><small class="mt-1 block text-[10px] text-white/30"><?= e($lesson['meta']) ?></small></span>
-                  <span class="text-[10px] text-white/25"><?= e($lesson['duration']) ?></span>
+                  <span class="min-w-0"><strong class="block truncate text-xs font-semibold <?= $index === 0 ? 'text-white/85' : 'text-white/60' ?>"><?= e($lesson['titulo'] ?? '') ?></strong><small class="mt-1 block text-[10px] text-white/30"><?= e(($lesson['nivel'] ?? '') . ' · Lección ' . ($lesson['orden'] ?? '')) ?></small></span>
+                  <span class="text-[10px] text-white/25"><?= (int) ($lesson['completada'] ?? 0) === 1 ? '✓' : 'Pendiente' ?></span>
                 </button>
               <?php endforeach; ?>
             </div>
@@ -326,7 +323,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
               $justPurchased = $purchasedSlug !== '' && $purchasedSlug === $course['slug'] && in_array($paymentState, ['success', 'free'], true);
             ?>
             <article class="grid gap-4 border-b border-white/10 py-5 md:grid-cols-[92px_minmax(0,1fr)_auto] md:items-center <?= $justPurchased ? 'px-3' : '' ?>" <?= $justPurchased ? 'style="background-color:rgba(142,182,123,.045)"' : '' ?>">
-              <img src="<?= e(asset('images/' . $course['image'])) ?>" alt="<?= e($course['title']) ?>" class="h-20 w-full object-cover opacity-75 md:w-[92px]">
+              <img src="<?= e(course_image_url($course)) ?>" alt="<?= e($course['title']) ?>" class="h-20 w-full object-cover opacity-75 md:w-[92px]">
               <div class="min-w-0"><div class="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em]"><span class="text-aula-green"><?= e($course['category']) ?></span><span class="text-white/25">·</span><span class="text-white/35"><?= e($course['level']) ?></span><?php if ($justPurchased): ?><span class="text-aula-orange-soft">· NUEVO</span><?php endif; ?></div><h3 class="mt-2 font-editorial text-xl font-semibold text-white/85"><?= e($course['title']) ?></h3><p class="mt-1 line-clamp-1 text-xs text-white/35"><?= e($course['accent']) ?> · <?= e($course['instructor']) ?></p><div class="mt-2 flex flex-wrap gap-4 text-[11px] text-white/30"><span>★ <?= e($course['rating']) ?></span><span><?= e($course['duration']) ?></span><span><?= e(number_format((int) $course['students'])) ?> estudiantes</span></div></div>
               <div class="md:text-right">
                 <?php if ($owned): ?>
