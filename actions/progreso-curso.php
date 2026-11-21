@@ -31,5 +31,5 @@ try {
 }
 
 $slug = trim((string) ($_POST['slug'] ?? ''));
-header('Location: ' . url('curso.php?slug=' . rawurlencode($slug) . '&lesson=' . $idCurso));
+header('Location: ' . url('curso.php?slug=' . rawurlencode($slug)));
 exit;
