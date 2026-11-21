@@ -137,4 +137,40 @@ class EstudianteCurso
             $q->execute(['inscripcion' => $idInscripcion, 'codigo' => $codigo]);
         }
     }
+
+    public function resumenEstudiante(int $idEstudiante): array
+    {
+        $q = $this->conexion->prepare(
+            "SELECT
+                COUNT(*) AS cursos_total,
+                SUM(CASE WHEN estado = 'activa' THEN 1 ELSE 0 END) AS cursos_activos,
+                SUM(CASE WHEN estado = 'completada' THEN 1 ELSE 0 END) AS cursos_completados
+             FROM inscripciones
+             WHERE id_estudiante = :estudiante AND estado IN ('activa','completada')"
+        );
+        $q->execute(['estudiante' => $idEstudiante]);
+        $cursos = $q->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $q = $this->conexion->prepare(
+            "SELECT
+                COUNT(DISTINCT l.id_leccion) AS total_lecciones,
+                COUNT(DISTINCT CASE WHEN p.completada = 1 THEN l.id_leccion END) AS lecciones_completadas
+             FROM inscripciones i
+             INNER JOIN niveles n ON n.id_curso = i.id_curso AND n.activo = 1
+             INNER JOIN lecciones l ON l.id_nivel = n.id_nivel AND l.activo = 1
+             LEFT JOIN progreso_lecciones p ON p.id_inscripcion = i.id_inscripcion AND p.id_leccion = l.id_leccion
+             WHERE i.id_estudiante = :estudiante AND i.estado IN ('activa','completada')"
+        );
+        $q->execute(['estudiante' => $idEstudiante]);
+        $lecciones = $q->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        return [
+            'cursos_total' => (int) ($cursos['cursos_total'] ?? 0),
+            'cursos_activos' => (int) ($cursos['cursos_activos'] ?? 0),
+            'cursos_completados' => (int) ($cursos['cursos_completados'] ?? 0),
+            'total_lecciones' => (int) ($lecciones['total_lecciones'] ?? 0),
+            'lecciones_completadas' => (int) ($lecciones['lecciones_completadas'] ?? 0),
+        ];
+    }
+
 }
