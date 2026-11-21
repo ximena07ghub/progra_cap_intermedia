@@ -240,3 +240,167 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Página 404: mantiene la identidad oscura de AulaGo y la composición de cable desconectado. */
+.error-page-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+
+.error-page-card {
+  width: min(100%, 860px);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: clamp(2rem, 5vw, 4.5rem);
+  border: 1px solid rgba(245, 240, 232, 0.1);
+  background:
+    radial-gradient(circle at 50% 15%, rgba(232, 137, 80, 0.1), transparent 18rem),
+    rgba(24, 19, 24, 0.82);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+}
+
+.error-page-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #e88950, transparent);
+}
+
+.error-page-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 2.2rem;
+  color: #f5f0e8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.error-page-brand-mark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(232, 137, 80, 0.5);
+  color: #efb38d;
+}
+
+.error-page-illustration {
+  display: block;
+  width: min(100%, 650px);
+  max-height: 178px;
+  margin: 0 auto 0.6rem;
+  object-fit: contain;
+  opacity: 0.92;
+}
+
+.error-page-kicker {
+  margin: 0.8rem 0 0;
+  color: #8eb67b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.error-page-code {
+  margin: 0;
+  color: #f5f0e8;
+  font-size: clamp(5.8rem, 15vw, 9.5rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.075em;
+  text-shadow: 5px 5px 0 rgba(232, 137, 80, 0.16);
+}
+
+.error-page-title {
+  margin: 1.25rem 0 0;
+  color: #f5f0e8;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 750;
+}
+
+.error-page-copy {
+  width: min(100%, 570px);
+  margin: 0.8rem auto 0;
+  color: rgba(245, 240, 232, 0.62);
+  font-size: 0.96rem;
+  line-height: 1.75;
+}
+
+.error-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+.error-page-primary,
+.error-page-secondary {
+  min-width: 145px;
+  padding: 0.78rem 1.2rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.error-page-primary {
+  background: #e88950;
+  color: #160f12;
+}
+
+.error-page-secondary {
+  border-color: rgba(245, 240, 232, 0.16);
+  background: transparent;
+  color: #f5f0e8;
+}
+
+.error-page-primary:hover,
+.error-page-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.error-page-secondary:hover {
+  border-color: rgba(232, 137, 80, 0.55);
+  background: rgba(232, 137, 80, 0.06);
+}
+
+@media (max-width: 640px) {
+  .error-page-shell {
+    padding: 0;
+  }
+
+  .error-page-card {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-inline: 0;
+  }
+
+  .error-page-illustration {
+    max-height: 130px;
+  }
+
+  .error-page-actions {
+    flex-direction: column;
+  }
+
+  .error-page-primary,
+  .error-page-secondary {
+    width: 100%;
+  }
+}
