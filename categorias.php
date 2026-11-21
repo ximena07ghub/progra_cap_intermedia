@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/app.php';
 
 $pageTitle = 'Categorías | AulaGo';
-$pageDescription = 'Busca cursos por categoría, tema y nivel en AulaGo.';
+$pageDescription = 'Busca cursos por categoría y tema en AulaGo.';
 $allCourses = courses();
 $allCategories = categories();
 $pageScripts = ['catalog-filter.js'];
@@ -28,13 +28,24 @@ require PROJECT_ROOT . '/includes/layout/head.php';
           </h1>
         </div>
         <p class="self-end max-w-lg text-sm leading-7 text-white/45">
-          Usa esta sección cuando quieras buscar por tema, categoría o nivel. Los resultados aparecen aquí mismo para evitar saltos innecesarios entre pantallas.
+          Usa esta sección cuando quieras buscar por tema o categoría. Los resultados aparecen aquí mismo para evitar saltos innecesarios entre pantallas.
         </p>
       </div>
     </section>
 
     <section class="mx-auto max-w-aula px-6 py-10 lg:px-8 lg:py-12">
-      <form class="grid gap-4 rounded-aula-lg border border-white/10 bg-aula-surface/60 p-4 md:grid-cols-[1fr_auto] md:items-end md:p-5" data-filter-form>\n
+      <form class="grid gap-4 rounded-aula-lg border border-white/10 bg-aula-surface/60 p-4 md:grid-cols-[1fr_auto] md:items-end md:p-5" data-filter-form>
+        <label class="grid gap-2">
+          <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Buscar curso</span>
+          <input
+            data-filter-query
+            value="<?= e($_GET['q'] ?? '') ?>"
+            type="search"
+            placeholder="Diseño, hábitos, software, dibujo…"
+            class="rounded-aula border border-white/10 bg-aula-bg/70 px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-aula-orange/60"
+          >
+        </label>
+
         <button type="button" data-filter-clear class="min-h-[46px] rounded-aula border border-aula-orange/30 bg-aula-orange/10 px-5 text-xs font-extrabold uppercase tracking-[0.08em] text-aula-orange-soft transition hover:bg-aula-orange hover:text-aula-bg">
           Limpiar
         </button>
@@ -66,7 +77,7 @@ require PROJECT_ROOT . '/includes/layout/head.php';
 
       <div class="mt-8 hidden rounded-aula-lg border border-white/10 bg-aula-surface/50 p-8" data-filter-empty>
         <h3 class="font-editorial text-3xl font-semibold text-aula-cream">No encontramos cursos con esos filtros.</h3>
-        <p class="mt-3 text-sm text-white/40">Prueba otro término, nivel o categoría.</p>
+        <p class="mt-3 text-sm text-white/40">Prueba otro término o categoría.</p>
       </div>
     </section>
   </main>
