@@ -33,7 +33,7 @@ $initialCourse = $featuredCourses[1] ?? $featuredCourses[0] ?? null;
                 data-course-instructor="<?= e($course['instructor']) ?>"
                 data-course-wellbeing="<?= e($course['wellbeingFocus']) ?>"
                 data-course-duration="<?= e($course['duration']) ?>"
-                data-course-rating="<?= e($course['rating']) ?>"
+                data-course-rating="<?= e((int) ($course['reviews'] ?? 0) > 0 ? number_format((float) $course['rating'], 1) : 'Sin reseñas') ?>"
                 data-course-href="<?= e(url('curso.php?slug=' . rawurlencode($course['slug']))) ?>"
               >
                 <article class="course-carousel-card group block w-full overflow-hidden rounded-[1.15rem] border border-white/10 bg-aula-surface text-left shadow-aula transition duration-300 hover:border-white/20">
@@ -51,8 +51,12 @@ $initialCourse = $featuredCourses[1] ?? $featuredCourses[0] ?? null;
                   </div>
                   <div class="flex items-center justify-between gap-4 border-t border-white/[0.06] p-5">
                     <div class="flex items-center gap-2">
-                      <span class="text-aula-yellow" aria-hidden="true">★</span>
-                      <span class="text-sm font-bold text-aula-cream"><?= e($course['rating']) ?></span>
+                      <?php if ((int) ($course['reviews'] ?? 0) > 0): ?>
+                        <span class="text-aula-yellow" aria-hidden="true">★</span>
+                        <span class="text-sm font-bold text-aula-cream"><?= e(number_format((float) $course['rating'], 1)) ?></span>
+                      <?php else: ?>
+                        <span class="text-xs font-semibold text-white/35">Sin reseñas</span>
+                      <?php endif; ?>
                     </div>
                     <span class="text-xs text-white/38"><?= e($course['duration']) ?></span>
                   </div>
@@ -78,7 +82,7 @@ $initialCourse = $featuredCourses[1] ?? $featuredCourses[0] ?? null;
           <div class="flex justify-between gap-5"><span class="text-white/35">Instructor</span><span class="text-right font-semibold text-white/75" data-course-detail="instructor"><?= e($initialCourse['instructor']) ?></span></div>
           <div class="flex justify-between gap-5"><span class="text-white/35">Bienestar relacionado</span><span class="max-w-[12rem] text-right font-semibold text-white/75" data-course-detail="wellbeing"><?= e($initialCourse['wellbeingFocus']) ?></span></div>
         </div>
-        <div class="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs"><span class="text-white/35" data-course-detail="duration"><?= e($initialCourse['duration']) ?></span><span class="font-bold text-aula-yellow">★ <span data-course-detail="rating"><?= e($initialCourse['rating']) ?></span></span></div>
+        <div class="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs"><span class="text-white/35" data-course-detail="duration"><?= e($initialCourse['duration']) ?></span><span class="font-bold text-aula-yellow"><?php if ((int) ($initialCourse['reviews'] ?? 0) > 0): ?>★ <span data-course-detail="rating"><?= e(number_format((float) $initialCourse['rating'], 1)) ?></span><?php else: ?><span class="text-white/35" data-course-detail="rating">Sin reseñas</span><?php endif; ?></span></div>
         <a href="<?= e(url('curso.php?slug=' . rawurlencode($initialCourse['slug']))) ?>" data-course-detail="href" class="mt-7 inline-flex min-h-12 w-full items-center justify-center border border-aula-orange/60 bg-aula-orange/10 px-5 text-sm font-bold text-aula-orange-soft transition hover:bg-aula-orange hover:text-aula-bg">
           Conocer el curso
         </a>
