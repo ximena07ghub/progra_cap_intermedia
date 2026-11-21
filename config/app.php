@@ -240,6 +240,16 @@ function public_course_reviews(int $idCurso): array
     return public_catalog_model()->listarResenas($idCurso);
 }
 
+function home_public_reviews(int $limit = 6): array
+{
+    return public_catalog_model()->listarResenasPublicas($limit);
+}
+
+function home_public_rating_summary(): array
+{
+    return public_catalog_model()->promedioResenasPublicas();
+}
+
 function student_course_model(): EstudianteCurso
 {
     static $modelo = null;
