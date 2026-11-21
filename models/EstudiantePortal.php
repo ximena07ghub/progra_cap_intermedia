@@ -102,7 +102,8 @@ class EstudiantePortal
                     c.id_conversacion,
                     c.id_curso,
                     cu.titulo AS curso,
-                    u.nombre AS instructor
+                    u.nombre AS instructor,
+                    u.avatar AS instructor_avatar
                 FROM conversaciones c
                 INNER JOIN cursos cu ON cu.id_curso = c.id_curso
                 INNER JOIN usuarios u ON u.id_usuario = c.id_instructor
@@ -160,7 +161,8 @@ class EstudiantePortal
                     cu.id_curso,
                     cu.titulo,
                     cu.id_instructor,
-                    u.nombre AS instructor
+                    u.nombre AS instructor,
+                    u.avatar AS instructor_avatar
                 FROM inscripciones i
                 INNER JOIN cursos cu ON cu.id_curso = i.id_curso
                 INNER JOIN usuarios u ON u.id_usuario = cu.id_instructor
