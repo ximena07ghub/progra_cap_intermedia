@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const swiper = new Swiper(root.querySelector('.home-courses-swiper'), {
     centeredSlides: true,
-    loop: true,
-    loopAdditionalSlides: 3,
+    loop: false,
+    rewind: true,
     slideToClickedSlide: true,
     grabCursor: true,
     initialSlide: 1,
